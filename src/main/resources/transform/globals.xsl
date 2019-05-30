@@ -10,7 +10,7 @@
 
 <!-- keys -->
 
-<xsl:key name="tlc" match="TLCConcept | TLCProcess" use="@eId"/>
+<xsl:key name="tlc" match="TLCConcept | TLCProcess" use="@eId" />
 
 
 <!-- functions -->

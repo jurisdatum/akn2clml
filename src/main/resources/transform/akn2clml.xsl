@@ -245,6 +245,9 @@
 	</Title>
 </xsl:template>
 
+
+<!-- blocks -->
+
 <xsl:template match="intro | content | wrapUp">
 	<xsl:apply-templates />
 </xsl:template>
@@ -316,7 +319,29 @@
 
 <!-- footnotes -->
 
+<xsl:key name="footnote" match="note[@class='footnote']" use="@eId" />
+
+<xsl:template match="noteRef[@class='footnote']">
+	<FootnoteRef Ref="{ substring(@href, 2) }" />
+</xsl:template>
+
 <xsl:template name="footnotes">
+	<xsl:variable name="footnotes" as="element()*" select="/akomaNtoso/*/meta/notes/note[@class='footnote']" />
+	<xsl:if test="exists($footnotes)">
+		<Footnotes>
+			<xsl:apply-templates select="$footnotes" />
+		</Footnotes>
+	</xsl:if>
+</xsl:template>
+
+<xsl:template match="note[@class='footnote']">
+	<Footnote id="{ @eId }">
+		<FootnoteText>
+			<xsl:apply-templates>
+				<xsl:with-param name="context" select="('FootnoteText', 'Footnote')" tunnel="yes" />
+			</xsl:apply-templates>
+		</FootnoteText>
+	</Footnote>
 </xsl:template>
 
 </xsl:transform>
