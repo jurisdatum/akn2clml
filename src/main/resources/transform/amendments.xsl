@@ -63,7 +63,17 @@
 			<xsl:value-of select="$amendment-context" />
 		</xsl:attribute>
 		<xsl:attribute name="Format">
-			<xsl:text>default</xsl:text>
+			<xsl:choose>
+				<xsl:when test="@startQuote='“' and @endQuote='”'">
+					<xsl:text>double</xsl:text>
+				</xsl:when>
+				<xsl:when test="@startQuote='‘' and @endQuote='’'">
+					<xsl:text>single</xsl:text>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:text>default</xsl:text>
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:attribute>
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="('BlockAmendment', $context)" tunnel="yes" />
