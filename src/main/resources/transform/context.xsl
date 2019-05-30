@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<xsl:transform version="3.0"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
+	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
+	xmlns:map="http://www.w3.org/2005/xpath-functions/map" 
+	exclude-result-prefixes="xs local map">
+
+<xsl:function name="local:clml-element-is-structural" as="xs:boolean">
+	<xsl:param name="name" as="xs:string" />
+	<xsl:choose>
+		<xsl:when test="$name = ('P1', 'P2', 'P3', 'P4')">
+			<xsl:value-of select="true()" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="false()" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:clml-element-is-block" as="xs:boolean">
+	<xsl:param name="name" as="xs:string" />
+	<xsl:choose>
+		<xsl:when test="$name = ('Text')">
+			<xsl:value-of select="true()" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="false()" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:get-structure-wrapper" as="xs:string?">
+	<xsl:param name="context" as="xs:string*" />
+	<xsl:choose>
+		<xsl:when test="head($context) = 'P1'">
+			<xsl:text>P1para</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = 'P2'">
+			<xsl:text>P2para</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = 'P3'">
+			<xsl:text>P3para</xsl:text>
+		</xsl:when>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:get-block-wrapper" as="xs:string?">
+	<xsl:param name="context" as="xs:string*" />
+	<xsl:choose>
+		<xsl:when test="head($context) = 'P1'">
+			<xsl:text>P1para</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = 'P2'">
+			<xsl:text>P2para</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = 'P3'">
+			<xsl:text>P3para</xsl:text>
+		</xsl:when>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:get-wrapper" as="xs:string?">
+	<xsl:param name="clml" as="xs:string" />
+	<xsl:param name="context" as="xs:string*" />
+	<xsl:choose>
+		<xsl:when test="local:clml-element-is-structural($clml)">
+			<xsl:sequence select="local:get-structure-wrapper($context)" />
+		</xsl:when>
+		<xsl:when test="local:clml-element-is-block($clml)">
+			<xsl:sequence select="local:get-block-wrapper($context)" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:message terminate="yes" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:template name="wrap-as-necessary">
+	<xsl:param name="clml" as="element()+" />
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="wrapper" as="xs:string?" select="local:get-wrapper(local-name(head($clml)), $context)" />
+	<xsl:choose>
+		<xsl:when test="exists($wrapper)">
+			<xsl:element name="{ $wrapper }">
+				<xsl:copy-of select="$clml" />
+			</xsl:element>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:copy-of select="$clml" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
+
+<xsl:template name="apply-templates-with-context">
+	<xsl:param name="name" as="xs:string" />
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="wrapper" as="xs:string?" select="local:get-wrapper($name, $context)" />
+	<xsl:apply-templates>
+		<xsl:with-param name="context" select="($name, $wrapper, $context)" tunnel="yes" />
+	</xsl:apply-templates>
+</xsl:template>
+
+<xsl:template name="create-element-and-wrap-as-necessary">
+	<xsl:param name="name" as="xs:string" />
+	<xsl:param name="attributes" as="map(xs:string, xs:string)" select="map{}" />
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="wrapper" as="xs:string?" select="local:get-wrapper($name, $context)" />
+	<xsl:variable name="clml" as="element()">
+		<xsl:element name="{ $name }">
+			<xsl:for-each select="map:keys($attributes)">
+				<xsl:attribute name="{ . }">
+					<xsl:value-of select="map:get($attributes, .)" />
+				</xsl:attribute>
+			</xsl:for-each>
+			<xsl:apply-templates>
+				<xsl:with-param name="context" select="($name, $wrapper, $context)" tunnel="yes" />
+			</xsl:apply-templates>
+		</xsl:element>
+	</xsl:variable>
+	<xsl:choose>
+		<xsl:when test="exists($wrapper)">
+			<xsl:element name="{ $wrapper }">
+				<xsl:copy-of select="$clml" />
+			</xsl:element>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:copy-of select="$clml" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
+
+</xsl:transform>
