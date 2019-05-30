@@ -8,7 +8,7 @@
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
 	exclude-result-prefixes="xs local">
 
-<xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
+<xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes" xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation" suppress-indentation="ukl:Text" />
 
 <xsl:strip-space elements="*" />
 

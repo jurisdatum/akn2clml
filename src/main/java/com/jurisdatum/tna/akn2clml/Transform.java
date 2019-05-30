@@ -14,6 +14,7 @@ import com.jurisdatum.xml.Saxon;
 import net.sf.saxon.s9api.Destination;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.Serializer;
+import net.sf.saxon.s9api.Serializer.Property;
 import net.sf.saxon.s9api.Xslt30Transformer;
 import net.sf.saxon.s9api.XsltCompiler;
 import net.sf.saxon.s9api.XsltExecutable;
@@ -56,6 +57,7 @@ public class Transform {
 
 	public void transform(Source akn, OutputStream output) {
 		Serializer serializer = executable.getProcessor().newSerializer(output);
+		serializer.setOutputProperty(Property.SAXON_SUPPRESS_INDENTATION, "{http://www.legislation.gov.uk/namespaces/legislation}Text");
 		transform(akn, serializer);
 	}
 
