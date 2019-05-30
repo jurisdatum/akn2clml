@@ -58,11 +58,42 @@
 <xsl:template match="body">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<Body>
-		<xsl:apply-templates>
+		<xsl:apply-templates select="*[not(self::hcontainer[@name='schedules'])]">
 			<xsl:with-param name="context" select="('Body', $context)" tunnel="yes" />
 		</xsl:apply-templates>
 	</Body>
+	<xsl:if test="exists(hcontainer[@name='schedules']/following-sibling::node())">
+		<xsl:message terminate="yes" />
+	</xsl:if>
+	<xsl:apply-templates select="hcontainer[@name='schedules']" />
 </xsl:template>
+
+<xsl:template match="part">
+	<xsl:call-template name="create-element-and-wrap-as-necessary">
+		<xsl:with-param name="name" as="xs:string" select="'Part'" />
+	</xsl:call-template>
+</xsl:template>
+
+<xsl:template match="chapter">
+	<xsl:call-template name="create-element-and-wrap-as-necessary">
+		<xsl:with-param name="name" as="xs:string" select="'Chapter'" />
+	</xsl:call-template>
+</xsl:template>
+
+<xsl:template match="hcontainer[@name='crossheading']">
+	<xsl:call-template name="create-element-and-wrap-as-necessary">
+		<xsl:with-param name="name" as="xs:string" select="'Pblock'" />
+	</xsl:call-template>
+</xsl:template>
+
+<xsl:template match="hcontainer[@name='subheading']">
+	<xsl:call-template name="create-element-and-wrap-as-necessary">
+		<xsl:with-param name="name" as="xs:string" select="'PsubBlock'" />
+	</xsl:call-template>
+</xsl:template>
+
+
+<!-- numbered paragraphs -->
 
 <xsl:template match="section">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
@@ -82,16 +113,130 @@
 	</xsl:call-template>
 </xsl:template>
 
-<xsl:template match="paragraph">
+<xsl:template match="paragraph | subparagraph | hcontainer[@name=('subsubparagraph','step')]">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="name" as="xs:string">
+		<xsl:choose>
+			<xsl:when test="head($context) = ('Pblock', 'PsubBlock', 'ScheduleBody')">
+				<xsl:text>P1</xsl:text>
+			</xsl:when>
+			<xsl:when test="head($context) = ('P1')">
+				<xsl:text>P2</xsl:text>
+			</xsl:when>
+			<xsl:when test="head($context) = ('P2')">
+				<xsl:text>P3</xsl:text>
+			</xsl:when>
+			<xsl:when test="head($context) = ('P3')">
+				<xsl:text>P4</xsl:text>
+			</xsl:when>
+			<xsl:when test="head($context) = ('P4')">
+				<xsl:text>P5</xsl:text>
+			</xsl:when>
+			<xsl:when test="head($context) = ('P5')">
+				<xsl:text>P6</xsl:text>
+			</xsl:when>
+			<xsl:when test="head($context) = ('P6')">
+				<xsl:text>P7</xsl:text>
+			</xsl:when>
+			<xsl:when test="head($context) = ('P7')">
+				<xsl:text>P7</xsl:text>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:message terminate="yes">
+					<xsl:sequence select="$context" />
+				</xsl:message>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
 	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" as="xs:string" select="'P3'" />
+		<xsl:with-param name="name" as="xs:string" select="$name" />
 	</xsl:call-template>
 </xsl:template>
 
+<xsl:template match="hcontainer[@name='definition']">
+	<xsl:apply-templates />
+</xsl:template>
+
+
+<!-- schedules -->
+
+<xsl:template match="hcontainer[@name='schedules']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<Schedules>
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('Schedules', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</Schedules>
+</xsl:template>
+
+<xsl:template match="hcontainer[@name='schedule']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="child-context" as="xs:string*" select="('Schedule', $context)" />
+	<Schedule>
+		<xsl:apply-templates select="num">
+			<xsl:with-param name="context" select="$child-context" tunnel="yes" />
+		</xsl:apply-templates>
+		<xsl:if test="exists(heading)">
+			<TitleBlock>
+				<xsl:apply-templates select="heading">
+					<xsl:with-param name="context" select="('TitleBlock', $child-context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</TitleBlock>
+		</xsl:if>
+		<xsl:apply-templates select="num/authorialNote[@class='referenceNote']" mode="reference">
+			<xsl:with-param name="context" select="$child-context" tunnel="yes" />
+		</xsl:apply-templates>
+		<ScheduleBody>
+			<xsl:apply-templates select="*[not(self::num or self::heading)]">
+				<xsl:with-param name="context" select="('ScheduleBody', $child-context)" tunnel="yes" />
+			</xsl:apply-templates>
+		</ScheduleBody>
+	</Schedule>
+</xsl:template>
+
+<xsl:template match="hcontainer[@name='schedule']/num/authorialNote[@class='referenceNote']" />
+
+<xsl:template match="authorialNote" mode="reference">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<Reference>
+		<xsl:apply-templates mode="reference">
+			<xsl:with-param name="context" select="('Reference', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</Reference>
+</xsl:template>
+
+<xsl:template match="p" mode="reference">
+	<xsl:apply-templates />
+</xsl:template>
+
+
+<!-- numbers and headings -->
+
 <xsl:template match="num">
-	<Pnumber>
-		<xsl:apply-templates />
-	</Pnumber>
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="name" as="xs:string">
+		<xsl:choose>
+			<xsl:when test="head($context) = ('Part', 'Chapter')">
+				<xsl:text>Number</xsl:text>
+			</xsl:when>
+			<xsl:when test="head($context) = ('P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7')">
+				<xsl:text>Pnumber</xsl:text>
+			</xsl:when>
+			<xsl:when test="head($context) = ('Schedule')">
+				<xsl:text>Number</xsl:text>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:message terminate="yes">
+					<xsl:sequence select=".." />
+				</xsl:message>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:element name="{ $name }">
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</xsl:element>
 </xsl:template>
 
 <xsl:template match="heading">
@@ -138,6 +283,12 @@
 
 <xsl:template match="ref | rref">
 	<xsl:apply-templates />
+</xsl:template>
+
+<xsl:template match="def">
+	<Definition>
+		<xsl:apply-templates />
+	</Definition>
 </xsl:template>
 
 

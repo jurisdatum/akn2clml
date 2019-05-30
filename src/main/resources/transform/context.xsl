@@ -12,7 +12,13 @@
 <xsl:function name="local:clml-element-is-structural" as="xs:boolean">
 	<xsl:param name="name" as="xs:string" />
 	<xsl:choose>
-		<xsl:when test="$name = ('P1', 'P2', 'P3', 'P4')">
+		<xsl:when test="$name = ('Part', 'Chapter')">
+			<xsl:value-of select="true()" />
+		</xsl:when>
+		<xsl:when test="$name = ('Pblock', 'PsubBlock')">
+			<xsl:value-of select="true()" />
+		</xsl:when>
+		<xsl:when test="$name = ('P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
 		<xsl:otherwise>
@@ -45,6 +51,18 @@
 		<xsl:when test="head($context) = 'P3'">
 			<xsl:text>P3para</xsl:text>
 		</xsl:when>
+		<xsl:when test="head($context) = 'P4'">
+			<xsl:text>P4para</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = 'P5'">
+			<xsl:text>P5para</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = 'P6'">
+			<xsl:text>P6para</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = 'P7'">
+			<xsl:text>P7para</xsl:text>
+		</xsl:when>
 	</xsl:choose>
 </xsl:function>
 
@@ -60,6 +78,18 @@
 		<xsl:when test="head($context) = 'P3'">
 			<xsl:text>P3para</xsl:text>
 		</xsl:when>
+		<xsl:when test="head($context) = 'P4'">
+			<xsl:text>P4para</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = 'P5'">
+			<xsl:text>P5para</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = 'P6'">
+			<xsl:text>P6para</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = 'P7'">
+			<xsl:text>P7para</xsl:text>
+		</xsl:when>
 	</xsl:choose>
 </xsl:function>
 
@@ -74,7 +104,9 @@
 			<xsl:sequence select="local:get-block-wrapper($context)" />
 		</xsl:when>
 		<xsl:otherwise>
-			<xsl:message terminate="yes" />
+			<xsl:message terminate="yes">
+				<xsl:sequence select="$clml" />
+			</xsl:message>
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:function>
