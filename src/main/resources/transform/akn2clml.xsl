@@ -15,6 +15,7 @@
 <xsl:include href="metadata.xsl" />
 <xsl:include href="prelims.xsl" />
 <xsl:include href="context.xsl" />
+<xsl:include href="numbers.xsl" />
 <xsl:include href="amendments.xsl" />
 
 
@@ -298,13 +299,21 @@
 <!-- text -->
 
 <xsl:template match="text()">
-	<xsl:if test="starts-with(., ' ')">
-		<xsl:text> </xsl:text>
-	</xsl:if>
-	<xsl:value-of select="normalize-space(.)" />
-	<xsl:if test="ends-with(., ' ')">
-		<xsl:text> </xsl:text>
-	</xsl:if>
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:choose>
+		<xsl:when test="local:should-strip-punctuation-from-number(., $context)">
+			<xsl:call-template name="strip-punctuation-from-number" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:if test="starts-with(., ' ')">
+				<xsl:text> </xsl:text>
+			</xsl:if>
+			<xsl:value-of select="normalize-space(.)" />
+			<xsl:if test="ends-with(., ' ')">
+				<xsl:text> </xsl:text>
+			</xsl:if>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 
