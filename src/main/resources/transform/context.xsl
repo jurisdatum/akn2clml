@@ -6,7 +6,7 @@
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	xmlns:map="http://www.w3.org/2005/xpath-functions/map" 
+	xmlns:map="http://www.w3.org/2005/xpath-functions/map"
 	exclude-result-prefixes="xs local map">
 
 <xsl:function name="local:clml-element-is-structural" as="xs:boolean">

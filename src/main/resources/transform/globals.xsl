@@ -4,8 +4,9 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
+	xmlns:map="http://www.w3.org/2005/xpath-functions/map"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs local">
+	exclude-result-prefixes="xs map local">
 
 
 <!-- keys -->
@@ -15,20 +16,102 @@
 
 <!-- functions -->
 
+<xsl:variable name="long-types" as="map(xs:string, xs:string)" select="map{
+	'ukpga': 'UnitedKingdomPublicGeneralAct',
+	'ukla': 'UnitedKingdomLocalAct',
+	'asp': 'ScottishAct',
+	'anaw': 'WelshNationalAssemblyAct',
+	'mwa': 'WelshAssemblyMeasure',
+	'ukcm': 'UnitedKingdomChurchMeasure',
+	'nia': 'NorthernIrelandAct',
+	'aosp': 'ScottishOldAct',
+	'aep': 'EnglandAct',
+	'aip': 'IrelandAct',
+	'apgb': 'GreatBritainAct',
+	'mnia': 'NorthernIrelandAssemblyMeasure',
+	'apni': 'NorthernIrelandParliamentAct',
+	'uksi': 'UnitedKingdomStatutoryInstrument',
+	'wsi': 'WelshStatutoryInstrument',
+	'ssi': 'ScottishStatutoryInstrument',
+	'nisi': 'NorthernIrelandOrderInCouncil',
+	'nisr': 'NorthernIrelandStatutoryRule',
+	'ukci': 'UnitedKingdomChurchInstrument',
+	'ukmd': 'UnitedKingdomMinisterialDirection',
+	'ukmo': 'UnitedKingdomMinisterialOrder',
+	'uksro': 'UnitedKingdomStatutoryRuleOrOrder',
+	'nisro': 'NorthernIrelandStatutoryRuleOrOrder',
+	'ukdpb': 'UnitedKingdomDraftPublicBill',
+	'ukdsi': 'UnitedKingdomDraftStatutoryInstrument',
+	'sdsi': 'ScottishDraftStatutoryInstrument',
+	'nidsr': 'NorthernIrelandDraftStatutoryRule',
+	'eur': 'EuropeanUnionRegulation',
+	'eudn': 'EuropeanUnionDecision',
+	'eudr': 'EuropeanUnionDirective',
+	'eut': 'EuropeanUnionTreaty'
+}" />
+
+<xsl:variable name="short-types" as="map(xs:string, xs:string)" select="map{
+	'UnitedKingdomPublicGeneralAct': 'ukpga',
+	'UnitedKingdomLocalAct': 'ukla',
+	'ScottishAct': 'asp',
+	'WelshNationalAssemblyAct': 'anaw',
+	'WelshAssemblyMeasure': 'mwa',
+	'UnitedKingdomChurchMeasure': 'ukcm',
+	'NorthernIrelandAct': 'nia',
+	'ScottishOldAct': 'aosp',
+	'EnglandAct': 'aep',
+	'IrelandAct': 'aip',
+	'GreatBritainAct': 'apgb',
+	'NorthernIrelandAssemblyMeasure': 'mnia',
+	'NorthernIrelandParliamentAct': 'apni',
+	'UnitedKingdomStatutoryInstrument': 'uksi',
+	'WelshStatutoryInstrument': 'wsi',
+	'ScottishStatutoryInstrument': 'ssi',
+	'NorthernIrelandOrderInCouncil': 'nisi',
+	'NorthernIrelandStatutoryRule': 'nisr',
+	'UnitedKingdomChurchInstrument': 'ukci',
+	'UnitedKingdomMinisterialDirection': 'ukmd',
+	'UnitedKingdomMinisterialOrder': 'ukmo',
+	'UnitedKingdomStatutoryRuleOrOrder': 'uksro',
+	'NorthernIrelandStatutoryRuleOrOrder': 'nisro',
+	'UnitedKingdomDraftPublicBill': 'ukdpb',
+	'UnitedKingdomDraftStatutoryInstrument': 'ukdsi',
+	'ScottishDraftStatutoryInstrument': 'sdsi',
+	'NorthernIrelandDraftStatutoryRule': 'nidsr',
+	'EuropeanUnionRegulation': 'eur',
+	'EuropeanUnionDecision': 'eudn',
+	'EuropeanUnionDirective': 'eudr',
+	'EuropeanUnionTreaty': 'eut'
+}" />
+
+<xsl:variable name="primary-short-types" as="xs:string*" select="
+	( 'ukpga', 'ukla', 'asp', 'anaw', 'mwa', 'ukcm', 'nia', 'aosp', 'aep', 'aip', 'apgb', 'mnia', 'apni' )
+" />
+
+<xsl:variable name="secondary-short-types" as="xs:string*" select="
+	( 'uksi', 'wsi', 'ssi', 'nisi', 'nisr', 'ukci', 'ukmd', 'ukmo', 'uksro', 'nisro', 'ukdpb', 'ukdsi', 'sdsi', 'nidsr' )
+" />
+
+<xsl:variable name="eu-short-types" as="xs:string*" select="
+	( 'eur', 'eudn', 'eudr', 'eut' )
+" />
+
 <xsl:function name="local:long-type-from-short" as="xs:string">
 	<xsl:param name="short-type" as="xs:string" />
-	<xsl:choose>
-		<xsl:when test="$short-type = 'asp'">
-			<xsl:text>ScottishAct</xsl:text>
-		</xsl:when>
-	</xsl:choose>
+	<xsl:value-of select="map:get($long-types, $short-type)" />
 </xsl:function>
 
 <xsl:function name="local:category-from-short-type" as="xs:string">
 	<xsl:param name="short-type" as="xs:string" />
 	<xsl:choose>
-		<xsl:when test="$short-type = ('asp')">
+		<xsl:when test="$short-type = $primary-short-types">
 			<xsl:text>primary</xsl:text>
+		</xsl:when>
+		<xsl:when test="$short-type = $secondary-short-types">
+			<xsl:text>secondary</xsl:text>
+		</xsl:when>
+		<xsl:when test="$short-type = $eu-short-types">
+			<xsl:text>euretained</xsl:text>
 		</xsl:when>
 	</xsl:choose>
 </xsl:function>
