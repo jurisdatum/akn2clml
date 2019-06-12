@@ -12,6 +12,7 @@
 
 <xsl:strip-space elements="*" />
 
+<xsl:include href="globals.xsl" />
 <xsl:include href="metadata.xsl" />
 <xsl:include href="prelims.xsl" />
 <xsl:include href="context.xsl" />

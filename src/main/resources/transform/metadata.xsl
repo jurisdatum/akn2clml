@@ -7,8 +7,6 @@
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
 	exclude-result-prefixes="xs local">
 
-<xsl:include href="globals.xsl" />
-
 <xsl:template name="metadata">
 	<Metadata xmlns="http://www.legislation.gov.uk/namespaces/metadata" xmlns:dc="http://purl.org/dc/elements/1.1/">
 		<dc:identifier>
