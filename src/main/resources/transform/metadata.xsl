@@ -39,7 +39,8 @@
 </xsl:template>
 
 <xsl:template name="primary-metadata">
-	<xsl:variable name="assent-date" as="xs:date" select="//docDate[@name='assentDate']/@date" />
+	<!-- <xsl:variable name="assent-date" as="xs:date?" select="//docDate[@name='assentDate']/@date" /> -->
+	<xsl:variable name="work-date" as="xs:date" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRdate/@date" />
 	<PrimaryMetadata xmlns="http://www.legislation.gov.uk/namespaces/metadata">
 		<DocumentClassification>
 			<DocumentCategory Value="primary" />
@@ -48,7 +49,7 @@
 		</DocumentClassification>
 		<Year Value="{ $doc-year }" />
 		<Number Value="{ $doc-number }" />
-		<EnactmentDate Date="{ $assent-date }"/>
+		<EnactmentDate Date="{ $work-date }"/>
 	</PrimaryMetadata>
 </xsl:template>
 
