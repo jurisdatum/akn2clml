@@ -96,21 +96,53 @@
 
 <!-- numbered paragraphs -->
 
+<xsl:template name="small-level-content">
+	<xsl:variable name="content" as="element()*" select="*[not(self::num) and not(self::heading) and not(self::subheading)]" />
+	<xsl:variable name="children" as="element()*" select="$content[not(self::intro) and not(self::content) and not(self::wrapUp)]" />
+	<xsl:choose>
+		<xsl:when test="exists($children) and (every $child in $children satisfies $child/self::hcontainer[@name='definition'])">
+			<xsl:apply-templates select="intro" />
+			<xsl:call-template name="definition-list">
+				<xsl:with-param name="definitions" select="$children" />
+			</xsl:call-template>
+			<xsl:apply-templates select="wrapUp" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:apply-templates select="$content" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
+
 <xsl:template match="section">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<P1group>
-		<xsl:apply-templates select="heading" />
+		<xsl:apply-templates select="heading">
+			<xsl:with-param name="context" select="('P1group', $context)" tunnel="yes" />
+		</xsl:apply-templates>
 		<P1>
-			<xsl:apply-templates select="*[not(self::heading)]">
+			<xsl:apply-templates select="num">
 				<xsl:with-param name="context" select="('P1', 'P1group', $context)" tunnel="yes" />
 			</xsl:apply-templates>
+			<xsl:call-template name="small-level-content">
+				<xsl:with-param name="context" select="('P1', 'P1group', $context)" tunnel="yes" />
+			</xsl:call-template>
 		</P1>
 	</P1group>
 </xsl:template>
 
 <xsl:template match="subsection">
-	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" as="xs:string" select="'P2'" />
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:call-template name="wrap-as-necessary">
+		<xsl:with-param name="clml" as="element()">
+			<P2>
+				<xsl:apply-templates select="num | heading | subheading">
+					<xsl:with-param name="context" select="('P2', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+				<xsl:call-template name="small-level-content">
+					<xsl:with-param name="context" select="('P2', $context)" tunnel="yes" />
+				</xsl:call-template>
+			</P2>
+		</xsl:with-param>
 	</xsl:call-template>
 </xsl:template>
 
@@ -149,13 +181,45 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:variable>
-	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" as="xs:string" select="$name" />
+	<xsl:call-template name="wrap-as-necessary">
+		<xsl:with-param name="clml" as="element()">
+			<xsl:element name="{ $name }">
+				<xsl:apply-templates select="num | heading | subheading">
+					<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+				</xsl:apply-templates>
+				<xsl:call-template name="small-level-content">
+					<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+				</xsl:call-template>
+			</xsl:element>
+		</xsl:with-param>
+	</xsl:call-template>
+</xsl:template>
+
+
+<!-- definition lists -->
+
+<xsl:template name="definition-list">
+	<xsl:param name="definitions" as="element(hcontainer)+" />
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:param name="decoration" as="xs:string" select="'none'" />
+	<xsl:call-template name="wrap-as-necessary">
+		<xsl:with-param name="clml" as="element()+">
+			<UnorderedList Class="Definition" Decoration="{ $decoration }">
+				<xsl:apply-templates select="$definitions">
+					<xsl:with-param name="context" select="('UnorderedList', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</UnorderedList>
+		</xsl:with-param>
 	</xsl:call-template>
 </xsl:template>
 
 <xsl:template match="hcontainer[@name='definition']">
-	<xsl:apply-templates />
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<ListItem>
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('ListItem', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</ListItem>
 </xsl:template>
 
 
@@ -287,6 +351,18 @@
 
 <xsl:template match="ref | rref">
 	<xsl:apply-templates />
+</xsl:template>
+
+<xsl:template match="abbr">
+	<Abbreviation>
+		<xsl:if test="exists(@title)">
+			<xsl:attribute name="Expansion">
+				<xsl:value-of select="@title" />
+			</xsl:attribute>
+		</xsl:if>
+		<xsl:copy-of select="@xml:lang" />
+		<xsl:apply-templates />
+	</Abbreviation>
 </xsl:template>
 
 <xsl:template match="def">

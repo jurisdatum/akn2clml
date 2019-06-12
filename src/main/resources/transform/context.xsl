@@ -33,6 +33,9 @@
 		<xsl:when test="$name = ('Text')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
+		<xsl:when test="$name = ('UnorderedList')">
+			<xsl:value-of select="true()" />
+		</xsl:when>
 		<xsl:otherwise>
 			<xsl:value-of select="false()" />
 		</xsl:otherwise>
@@ -90,7 +93,7 @@
 		<xsl:when test="head($context) = 'P7'">
 			<xsl:text>P7para</xsl:text>
 		</xsl:when>
-		<xsl:when test="head($context) = 'FootnoteText'">
+		<xsl:when test="head($context) = ('ListItem', 'FootnoteText')">
 			<xsl:text>Para</xsl:text>
 		</xsl:when>
 	</xsl:choose>
