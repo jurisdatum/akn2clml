@@ -16,9 +16,18 @@
 		<xsl:apply-templates select="preface/block[@name='title']">
 			<xsl:with-param name="context" select="$child-context" tunnel="yes" />
 		</xsl:apply-templates>
-		<xsl:apply-templates select="coverPage/block[@name='number']">
-			<xsl:with-param name="context" select="$child-context" tunnel="yes" />
-		</xsl:apply-templates>
+		<xsl:choose>
+			<xsl:when test="exists(preface/block[@name='number'])">
+				<xsl:apply-templates select="preface/block[@name='number']">
+					<xsl:with-param name="context" select="$child-context" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates select="coverPage/block[@name='number']">
+					<xsl:with-param name="context" select="$child-context" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:otherwise>
+		</xsl:choose>
 		<xsl:apply-templates select="preface/longTitle">
 			<xsl:with-param name="context" select="$child-context" tunnel="yes" />
 		</xsl:apply-templates>
@@ -37,7 +46,7 @@
 	</Title>
 </xsl:template>
 
-<xsl:template match="coverPage/block[@name='number']">
+<xsl:template match="coverPage/block[@name='number'] | preface/block[@name='number']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<Number>
 		<xsl:apply-templates>
