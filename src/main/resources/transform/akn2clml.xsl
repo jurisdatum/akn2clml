@@ -27,7 +27,9 @@
 <xsl:template match="/akomaNtoso/*">
 	<Legislation SchemaVersion="2.0">
 		<xsl:call-template name="metadata" />
-		<xsl:call-template name="main" />
+		<xsl:if test="exists(Body)">
+			<xsl:call-template name="main" />
+		</xsl:if>
 		<xsl:call-template name="footnotes" />
 	</Legislation>
 </xsl:template>
@@ -37,6 +39,9 @@
 		<xsl:choose>
 			<xsl:when test="$doc-category = 'primary'">
 				<xsl:text>Primary</xsl:text>
+			</xsl:when>
+			<xsl:when test="$doc-category = 'secondary'">
+				<xsl:text>Secondary</xsl:text>
 			</xsl:when>
 		</xsl:choose>
 	</xsl:variable>

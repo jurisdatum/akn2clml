@@ -29,6 +29,9 @@
 			<xsl:when test="$doc-category = 'primary'">
 				<xsl:call-template name="primary-metadata" />
 			</xsl:when>
+			<xsl:when test="$doc-category = 'secondary'">
+				<xsl:call-template name="secondary-metadata" />
+			</xsl:when>
 			<xsl:otherwise>
 				<xsl:message terminate="yes" />
 			</xsl:otherwise>
@@ -49,6 +52,18 @@
 		<Number Value="{ $doc-number }" />
 		<EnactmentDate Date="{ $work-date }"/>
 	</PrimaryMetadata>
+</xsl:template>
+
+<xsl:template name="secondary-metadata">
+	<SecondaryMetadata xmlns="http://www.legislation.gov.uk/namespaces/metadata">
+		<DocumentClassification>
+			<DocumentCategory Value="secondary" />
+			<DocumentMainType Value="{ $doc-long-type }" />
+			<DocumentStatus Value="final" />
+		</DocumentClassification>
+		<Year Value="{ $doc-year }" />
+		<Number Value="{ $doc-number }" />
+	</SecondaryMetadata>
 </xsl:template>
 
 </xsl:transform>
