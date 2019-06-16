@@ -10,7 +10,7 @@
 	exclude-result-prefixes="xs ukl2 local">
 
 <xsl:template name="block-with-mod">
-	<xsl:if test="exists(node()[not(self::mod)][not(self::text()[not(normalize-space())])])">
+	<xsl:if test="exists(node()[not(self::mod) and not(self::text()[not(normalize-space())]) and not(self::inline/@name='AppendText')])">
 		<xsl:message terminate="yes" />
 	</xsl:if>
 	<xsl:apply-templates />

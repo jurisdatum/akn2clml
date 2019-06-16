@@ -17,7 +17,9 @@
 <xsl:include href="prelims.xsl" />
 <xsl:include href="context.xsl" />
 <xsl:include href="numbers.xsl" />
+<xsl:include href="lists.xsl" />
 <xsl:include href="amendments.xsl" />
+<xsl:include href="changes.xsl" />
 
 
 <xsl:template match="/akomaNtoso">
@@ -27,10 +29,11 @@
 <xsl:template match="/akomaNtoso/*">
 	<Legislation SchemaVersion="2.0">
 		<xsl:call-template name="metadata" />
-		<xsl:if test="exists(Body)">
+		<xsl:if test="exists(body)">
 			<xsl:call-template name="main" />
 		</xsl:if>
 		<xsl:call-template name="footnotes" />
+		<xsl:call-template name="commentaries" />
 	</Legislation>
 </xsl:template>
 
@@ -202,33 +205,6 @@
 </xsl:template>
 
 
-<!-- definition lists -->
-
-<xsl:template name="definition-list">
-	<xsl:param name="definitions" as="element(hcontainer)+" />
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:param name="decoration" as="xs:string" select="'none'" />
-	<xsl:call-template name="wrap-as-necessary">
-		<xsl:with-param name="clml" as="element()+">
-			<UnorderedList Class="Definition" Decoration="{ $decoration }">
-				<xsl:apply-templates select="$definitions">
-					<xsl:with-param name="context" select="('UnorderedList', $context)" tunnel="yes" />
-				</xsl:apply-templates>
-			</UnorderedList>
-		</xsl:with-param>
-	</xsl:call-template>
-</xsl:template>
-
-<xsl:template match="hcontainer[@name='definition']">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<ListItem>
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="('ListItem', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</ListItem>
-</xsl:template>
-
-
 <!-- schedules -->
 
 <xsl:template match="hcontainer[@name='schedules']">
@@ -346,6 +322,42 @@
 
 <!-- inline -->
 
+<xsl:template match="i">
+	<Emphasis>
+		<xsl:apply-templates />
+	</Emphasis>
+</xsl:template>
+
+<xsl:template match="b">
+	<Strong>
+		<xsl:apply-templates />
+	</Strong>
+</xsl:template>
+
+<xsl:template match="u">
+	<Underline>
+		<xsl:apply-templates />
+	</Underline>
+</xsl:template>
+
+<xsl:template match="inline[@name='smallCaps']">
+	<SmallCaps>
+		<xsl:apply-templates />
+	</SmallCaps>
+</xsl:template>
+
+<xsl:template match="sup">
+	<Superior>
+		<xsl:apply-templates />
+	</Superior>
+</xsl:template>
+
+<xsl:template match="sub">
+	<Inferior>
+		<xsl:apply-templates />
+	</Inferior>
+</xsl:template>
+
 <xsl:template match="docTitle | docNumber | docStage | docDate">
 	<xsl:apply-templates />
 </xsl:template>
@@ -355,12 +367,36 @@
 	<xsl:value-of select="local:resolve-tlc-show-as($tlc/@showAs)" />
 </xsl:template>
 
-<xsl:template match="ref | rref">
-	<xsl:apply-templates />
+<xsl:template match="ref">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<Citation URI="{ @href }" Class="" Year="" id="{ @eId }">
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('Citation', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</Citation>
 </xsl:template>
 
+<xsl:template match="ref[@class='subref']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<CitationSubRef URI="{ @href }" id="{ @eId }">
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('CitationSubRef', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</CitationSubRef>
+</xsl:template>
+
+<xsl:template match="rref">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<Citation URI="{ @from }" UpTo="{ @upTo }" Class="" Year="" id="{ @eId }">
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('Citation', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</Citation>
+</xsl:template>
+
+
 <xsl:template match="abbr">
-	<Abbreviation>
+	<xsl:element name="{ if (@class = 'acronym') then 'Acronym' else 'Abbreviation' }">
 		<xsl:if test="exists(@title)">
 			<xsl:attribute name="Expansion">
 				<xsl:value-of select="@title" />
@@ -368,13 +404,19 @@
 		</xsl:if>
 		<xsl:copy-of select="@xml:lang" />
 		<xsl:apply-templates />
-	</Abbreviation>
+	</xsl:element>
 </xsl:template>
 
 <xsl:template match="def">
 	<Definition>
 		<xsl:apply-templates />
 	</Definition>
+</xsl:template>
+
+<xsl:template match="term">
+	<Term>
+		<xsl:apply-templates />
+	</Term>
 </xsl:template>
 
 

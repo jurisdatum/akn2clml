@@ -93,7 +93,7 @@
 		<xsl:when test="head($context) = 'P7'">
 			<xsl:text>P7para</xsl:text>
 		</xsl:when>
-		<xsl:when test="head($context) = ('ListItem', 'FootnoteText')">
+		<xsl:when test="head($context) = ('ListItem', 'FootnoteText', 'Commentary')">
 			<xsl:text>Para</xsl:text>
 		</xsl:when>
 	</xsl:choose>

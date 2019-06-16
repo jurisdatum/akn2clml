@@ -46,4 +46,14 @@
 	</xsl:if>
 </xsl:template>
 
+<xsl:function name="local:strip-punctuation-for-number-override">
+	<xsl:param name="num" as="element(num)" />
+	<xsl:param name="decor" as="xs:string" />
+	<xsl:choose>
+		<xsl:when test="$decor = 'parens'">
+			<xsl:value-of select="substring($num, 2, string-length($num) - 2)" />
+		</xsl:when>
+	</xsl:choose>
+</xsl:function>
+
 </xsl:transform>
