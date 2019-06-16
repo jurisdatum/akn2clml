@@ -155,41 +155,95 @@
 	</xsl:call-template>
 </xsl:template>
 
+<xsl:function name="local:is-within-schedule" as="xs:boolean">
+	<xsl:param name="context" as="xs:string*" />
+	<xsl:choose>
+		<xsl:when test="empty($context)">
+			<xsl:message terminate="yes" />
+		</xsl:when>
+		<xsl:when test="head($context) = 'Schedule'">
+			<xsl:sequence select="true()" />
+		</xsl:when>
+		<xsl:when test="head($context) = ('Body', 'BlockAmendment')">
+			<xsl:sequence select="false()" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="local:is-within-schedule(tail($context))" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:one-more-than-context" as="xs:string">
+	<xsl:param name="context" as="xs:string*" />
+	<xsl:choose>
+		<xsl:when test="head($context) = ('Body', 'Part', 'Chapter', 'Pblock', 'PsubBlock', 'ScheduleBody')">
+			<xsl:text>P1</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = ('P1', 'P1para')">
+			<xsl:text>P2</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = ('P2', 'P2para')">
+			<xsl:text>P3</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = ('P3', 'P3para')">
+			<xsl:text>P4</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = ('P4', 'P4para')">
+			<xsl:text>P5</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = ('P5', 'P5para')">
+			<xsl:text>P6</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = ('P6', 'P6para')">
+			<xsl:text>P7</xsl:text>
+		</xsl:when>
+		<xsl:when test="head($context) = ('P7', 'P7para')">
+			<xsl:text>P7</xsl:text>
+		</xsl:when>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:get-structure-name" as="xs:string">
+	<xsl:param name="hcontainer" as="element()" />
+	<xsl:param name="context" as="xs:string*" />
+	<xsl:choose>
+		<xsl:when test="$hcontainer/self::paragraph">
+			<xsl:choose>
+				<xsl:when test="local:is-within-schedule($context)">
+					<xsl:choose>
+						<xsl:when test="head($context) = ('Schedule', 'Pblock')">
+							<xsl:text>P1</xsl:text>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:text>P3</xsl:text>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:choose>
+						<xsl:when test="$doc-category = 'primary'">
+							<xsl:choose>
+								<xsl:when test="$hcontainer/parent::section or $hcontainer/parent::subsection">
+									<xsl:text>P3</xsl:text>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of select="local:one-more-than-context($context)" />
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:when>
+					</xsl:choose>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:when>
+		<xsl:when test="$hcontainer/self::subparagraph">
+			<xsl:value-of select="local:one-more-than-context($context)" />
+		</xsl:when>
+	</xsl:choose>
+</xsl:function>
+
 <xsl:template match="paragraph | subparagraph | hcontainer[@name=('subsubparagraph','step')]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="name" as="xs:string">
-		<xsl:choose>
-			<xsl:when test="head($context) = ('Pblock', 'PsubBlock', 'ScheduleBody')">
-				<xsl:text>P1</xsl:text>
-			</xsl:when>
-			<xsl:when test="head($context) = ('P1')">
-				<xsl:text>P2</xsl:text>
-			</xsl:when>
-			<xsl:when test="head($context) = ('P2')">
-				<xsl:text>P3</xsl:text>
-			</xsl:when>
-			<xsl:when test="head($context) = ('P3')">
-				<xsl:text>P4</xsl:text>
-			</xsl:when>
-			<xsl:when test="head($context) = ('P4')">
-				<xsl:text>P5</xsl:text>
-			</xsl:when>
-			<xsl:when test="head($context) = ('P5')">
-				<xsl:text>P6</xsl:text>
-			</xsl:when>
-			<xsl:when test="head($context) = ('P6')">
-				<xsl:text>P7</xsl:text>
-			</xsl:when>
-			<xsl:when test="head($context) = ('P7')">
-				<xsl:text>P7</xsl:text>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:message terminate="yes">
-					<xsl:sequence select="$context" />
-				</xsl:message>
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:variable>
+	<xsl:variable name="name" as="xs:string" select="local:get-structure-name(., $context)" />
 	<xsl:call-template name="wrap-as-necessary">
 		<xsl:with-param name="clml" as="element()">
 			<xsl:element name="{ $name }">
