@@ -448,6 +448,14 @@
 	</Citation>
 </xsl:template>
 
+<xsl:template match="rref[@class='subref']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<CitationSubRef  URI="{ @from }" UpTo="{ @upTo }" Class="" Year="" id="{ @eId }">
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('CitationSubRef', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</CitationSubRef>
+</xsl:template>
 
 <xsl:template match="abbr">
 	<xsl:element name="{ if (@class = 'acronym') then 'Acronym' else 'Abbreviation' }">
