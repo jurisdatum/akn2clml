@@ -200,6 +200,11 @@
 		<xsl:when test="head($context) = ('P7', 'P7para')">
 			<xsl:text>P7</xsl:text>
 		</xsl:when>
+		<xsl:otherwise>
+			<xsl:message terminate="yes">
+				<xsl:sequence select="$context" />
+			</xsl:message>
+		</xsl:otherwise>
 	</xsl:choose>
 </xsl:function>
 
@@ -211,12 +216,19 @@
 			<xsl:choose>
 				<xsl:when test="local:is-within-schedule($context)">
 					<xsl:choose>
-						<xsl:when test="head($context) = ('Schedule', 'Pblock')">
+						<xsl:when test="head($context) = ('ScheduleBody', 'Pblock')">
 							<xsl:text>P1</xsl:text>
 						</xsl:when>
 						<xsl:otherwise>
 							<xsl:text>P3</xsl:text>
 						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:when>
+				<xsl:when test="$hcontainer/parent::quotedStructure">
+					<xsl:choose>
+						<xsl:when test="local:get-target-class($hcontainer/parent::*) = ('primary', 'unknown')">
+							<xsl:text>P3</xsl:text>
+						</xsl:when>
 					</xsl:choose>
 				</xsl:when>
 				<xsl:otherwise>
@@ -236,7 +248,18 @@
 			</xsl:choose>
 		</xsl:when>
 		<xsl:when test="$hcontainer/self::subparagraph">
-			<xsl:value-of select="local:one-more-than-context($context)" />
+			<xsl:choose>
+				<xsl:when test="$hcontainer/parent::quotedStructure">
+					<xsl:choose>
+						<xsl:when test="local:get-target-class($hcontainer/parent::*) = ('primary', 'unknown')">
+							<xsl:text>P4</xsl:text>
+						</xsl:when>
+					</xsl:choose>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="local:one-more-than-context($context)" />
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:when>
 	</xsl:choose>
 </xsl:function>
@@ -246,14 +269,33 @@
 	<xsl:variable name="name" as="xs:string" select="local:get-structure-name(., $context)" />
 	<xsl:call-template name="wrap-as-necessary">
 		<xsl:with-param name="clml" as="element()">
-			<xsl:element name="{ $name }">
-				<xsl:apply-templates select="num | heading | subheading">
-					<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
-				</xsl:apply-templates>
-				<xsl:call-template name="small-level-content">
-					<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
-				</xsl:call-template>
-			</xsl:element>
+			<xsl:choose>
+				<xsl:when test="exists(heading)">
+					<xsl:element name="{ concat($name, 'group') }">
+						<xsl:apply-templates select="heading | subheading">
+							<xsl:with-param name="context" select="(concat($name, 'group'), $context)" tunnel="yes" />
+						</xsl:apply-templates>
+						<xsl:element name="{ $name }">
+							<xsl:apply-templates select="num">
+								<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+							</xsl:apply-templates>
+							<xsl:call-template name="small-level-content">
+								<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+							</xsl:call-template>
+						</xsl:element>
+					</xsl:element>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:element name="{ $name }">
+						<xsl:apply-templates select="num | heading | subheading">
+							<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+						</xsl:apply-templates>
+						<xsl:call-template name="small-level-content">
+							<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+						</xsl:call-template>
+					</xsl:element>
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:with-param>
 	</xsl:call-template>
 </xsl:template>

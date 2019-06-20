@@ -5,9 +5,12 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:ukakn="https://www.legislation.gov.uk/namespaces/UK-AKN"
+	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:ukl2="http://legislation.gov.uk/namespaces/legis"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs ukl2 local">
+	exclude-result-prefixes="xs ukakn ukl ukl2 local">
+
 
 <xsl:template name="block-with-mod">
 	<xsl:if test="exists(node()[not(self::mod) and not(self::text()[not(normalize-space())]) and not(self::inline/@name='AppendText')])">
@@ -16,15 +19,31 @@
 	<xsl:apply-templates />
 </xsl:template>
 
+<xsl:function name="local:get-target-class" as="xs:string?">
+	<xsl:param name="qs" as="element(quotedStructure)" />
+	<xsl:sequence select="$qs/@ukakn:docCategory/string()" />
+</xsl:function>
+
 <xsl:template match="mod">
-	<xsl:if test="count(quotedStructure) != 1">
-		<xsl:message terminate="yes" />
-	</xsl:if>
-	<Text>
-		<xsl:apply-templates select="quotedStructure/preceding-sibling::node()" />
-	</Text>
-	<xsl:apply-templates select="quotedStructure" />
-	<xsl:apply-templates select="quotedStructure/following-sibling::node()" />
+	<xsl:choose>
+		<xsl:when test="empty(quotedStructure)">
+			<Text>
+				<xsl:apply-templates />
+			</Text>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:if test="count(quotedStructure) gt 1">
+				<xsl:message terminate="yes">
+					<xsl:sequence select="." />
+				</xsl:message>
+			</xsl:if>
+			<Text>
+				<xsl:apply-templates select="quotedStructure/preceding-sibling::node()" />
+			</Text>
+			<xsl:apply-templates select="quotedStructure" />
+			<xsl:apply-templates select="quotedStructure/following-sibling::node()" />
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="quotedStructure">
@@ -33,6 +52,9 @@
 		<xsl:choose>
 			<xsl:when test="exists(@ukl2:docName)">
 				<xsl:value-of select="local:category-from-short-type(@ukl2:docName)" />
+			</xsl:when>
+			<xsl:when test="exists(@ukakn:docCategory)">
+				<xsl:value-of select="@ukakn:docCategory" />
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:text>unknown</xsl:text>
@@ -75,9 +97,18 @@
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:attribute>
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="('BlockAmendment', $context)" tunnel="yes" />
-		</xsl:apply-templates>
+		<xsl:choose>
+			<xsl:when test="exists(*) and (every $child in * satisfies $child/self::hcontainer[@name='definition'])">
+				<xsl:call-template name="definition-list">
+					<xsl:with-param name="definitions" select="*" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="('BlockAmendment', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:otherwise>
+		</xsl:choose>
 	</BlockAmendment>
 </xsl:template>
 
@@ -85,6 +116,12 @@
 	<AppendText>
 		<xsl:apply-templates />
 	</AppendText>
+</xsl:template>
+
+<xsl:template match="quotedText">
+	<InlineAmendment>
+		<xsl:apply-templates />
+	</InlineAmendment>
 </xsl:template>
 
 </xsl:transform>
