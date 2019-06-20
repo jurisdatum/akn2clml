@@ -18,7 +18,7 @@
 		<xsl:when test="$name = ('Pblock', 'PsubBlock')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
-		<xsl:when test="$name = ('P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P')">
+		<xsl:when test="$name = ('P1group', 'P1', 'P2group', 'P2', 'P3', 'P3group', 'P4', 'P5', 'P6', 'P7', 'P')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
 		<xsl:otherwise>
