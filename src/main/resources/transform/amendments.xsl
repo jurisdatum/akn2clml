@@ -21,7 +21,14 @@
 
 <xsl:function name="local:get-target-class" as="xs:string?">
 	<xsl:param name="qs" as="element(quotedStructure)" />
-	<xsl:sequence select="$qs/@ukakn:docCategory/string()" />
+	<xsl:choose>
+		<xsl:when test="exists($qs/@ukl:TargetClass)">
+			<xsl:value-of select="$qs/@ukl:TargetClass" />
+		</xsl:when>
+		<xsl:when test="exists($qs/@ukl2:docName)">
+			<xsl:value-of select="local:category-from-short-type($qs/@ukl2:docName)" />
+		</xsl:when>
+	</xsl:choose>
 </xsl:function>
 
 <xsl:template match="mod">
