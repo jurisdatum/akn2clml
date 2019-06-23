@@ -20,6 +20,7 @@
 <xsl:include href="structure.xsl" />
 <xsl:include href="numbers.xsl" />
 <xsl:include href="lists.xsl" />
+<xsl:include href="tables.xsl" />
 <xsl:include href="amendments.xsl" />
 <xsl:include href="changes.xsl" />
 
@@ -105,6 +106,12 @@
 			</xsl:call-template>
 		</xsl:otherwise>
 	</xsl:choose>
+</xsl:template>
+
+<xsl:template match="blockContainer">
+	<xsl:call-template name="create-element-and-wrap-as-necessary">
+		<xsl:with-param name="name" as="xs:string" select="'BlockText'" />
+	</xsl:call-template>
 </xsl:template>
 
 
@@ -243,6 +250,10 @@
 	<Term>
 		<xsl:apply-templates />
 	</Term>
+</xsl:template>
+
+<xsl:template match="span[@ukl:Name]">
+	<Character Name="{ @ukl:Name }" />
 </xsl:template>
 
 
