@@ -22,8 +22,19 @@
 </xsl:template>
 
 <xsl:template match="hcontainer[@name='crossheading']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="name" as="xs:string">
+		<xsl:choose>
+			<xsl:when test="local:is-within-schedule($context) and exists(child::paragraph) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
+				<xsl:text>P1group</xsl:text>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:text>Pblock</xsl:text>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
 	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" as="xs:string" select="'Pblock'" />
+		<xsl:with-param name="name" as="xs:string" select="$name" />
 	</xsl:call-template>
 </xsl:template>
 
@@ -147,7 +158,7 @@
 			<xsl:choose>
 				<xsl:when test="local:is-within-schedule($context)">
 					<xsl:choose>
-						<xsl:when test="head($context) = ('ScheduleBody', 'Part', 'Chapter', 'Pblock')">
+						<xsl:when test="head($context) = ('ScheduleBody', 'Part', 'Chapter', 'Pblock', 'P1group')">
 							<xsl:text>P1</xsl:text>
 						</xsl:when>
 						<xsl:otherwise>
