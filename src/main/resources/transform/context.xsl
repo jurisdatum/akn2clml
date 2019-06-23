@@ -30,10 +30,7 @@
 <xsl:function name="local:clml-element-is-block" as="xs:boolean">
 	<xsl:param name="name" as="xs:string" />
 	<xsl:choose>
-		<xsl:when test="$name = ('Text')">
-			<xsl:value-of select="true()" />
-		</xsl:when>
-		<xsl:when test="$name = ('UnorderedList')">
+		<xsl:when test="$name = ('UnorderedList', 'Tabular', 'BlockText', 'Text')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
 		<xsl:otherwise>
@@ -93,7 +90,7 @@
 		<xsl:when test="head($context) = 'P7'">
 			<xsl:text>P7para</xsl:text>
 		</xsl:when>
-		<xsl:when test="head($context) = ('ListItem', 'FootnoteText', 'Commentary')">
+		<xsl:when test="head($context) = ('BlockText', 'ListItem', 'FootnoteText', 'Commentary', 'td')">
 			<xsl:text>Para</xsl:text>
 		</xsl:when>
 	</xsl:choose>
