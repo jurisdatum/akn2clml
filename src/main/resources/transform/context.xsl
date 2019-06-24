@@ -30,7 +30,7 @@
 <xsl:function name="local:clml-element-is-block" as="xs:boolean">
 	<xsl:param name="name" as="xs:string" />
 	<xsl:choose>
-		<xsl:when test="$name = ('UnorderedList', 'Tabular', 'BlockText', 'Text')">
+		<xsl:when test="$name = ('UnorderedList', 'Tabular', 'Formula', 'BlockText', 'Text')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
 		<xsl:otherwise>

@@ -23,6 +23,8 @@
 <xsl:include href="tables.xsl" />
 <xsl:include href="amendments.xsl" />
 <xsl:include href="changes.xsl" />
+<xsl:include href="math.xsl" />
+<xsl:include href="resources.xsl" />
 
 
 <xsl:template match="/akomaNtoso">
@@ -36,6 +38,7 @@
 			<xsl:call-template name="main" />
 		</xsl:if>
 		<xsl:call-template name="footnotes" />
+		<xsl:call-template name="resources" />
 		<xsl:call-template name="commentaries" />
 	</Legislation>
 </xsl:template>
