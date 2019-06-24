@@ -69,6 +69,9 @@
 <xsl:function name="local:get-block-wrapper" as="xs:string?">
 	<xsl:param name="context" as="xs:string*" />
 	<xsl:choose>
+		<xsl:when test="head($context) = ('Part', 'Chapter')">
+			<xsl:text>P</xsl:text>
+		</xsl:when>
 		<xsl:when test="head($context) = 'P1'">
 			<xsl:text>P1para</xsl:text>
 		</xsl:when>
