@@ -221,7 +221,7 @@
 
 <xsl:template match="rref[@class='subref']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<CitationSubRef id="{ @eId }" URI="{ @from }" UpTo="{ @upTo }" Class="" Year="">
+	<CitationSubRef id="{ @eId }" URI="{ @from }" UpTo="{ @upTo }">
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="('CitationSubRef', $context)" tunnel="yes" />
 		</xsl:apply-templates>
