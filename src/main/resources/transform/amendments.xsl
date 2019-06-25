@@ -44,9 +44,12 @@
 					<xsl:sequence select="." />
 				</xsl:message>
 			</xsl:if>
-			<Text>
-				<xsl:apply-templates select="quotedStructure/preceding-sibling::node()" />
-			</Text>
+			<xsl:variable name="before" as="node()*" select="quotedStructure/preceding-sibling::node()" />
+			<xsl:if test="exists($before) and not(every $n in $before satisfies ($n/self::text() and not(normalize-space($n))))">
+				<Text>
+					<xsl:apply-templates select="$before" />
+				</Text>
+			</xsl:if>
 			<xsl:apply-templates select="quotedStructure" />
 			<xsl:apply-templates select="quotedStructure/following-sibling::node()" />
 		</xsl:otherwise>
