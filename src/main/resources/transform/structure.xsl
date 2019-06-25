@@ -334,7 +334,10 @@
 			<xsl:when test="head($context) = ('P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7')">
 				<xsl:text>Pnumber</xsl:text>
 			</xsl:when>
-			<xsl:when test="head($context) = ('Schedule')">
+			<xsl:when test="head($context) = 'Schedule'">
+				<xsl:text>Number</xsl:text>
+			</xsl:when>
+			<xsl:when test="head($context) = ('Tabular')">
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
 			<xsl:otherwise>
