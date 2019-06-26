@@ -23,6 +23,24 @@
 				<xsl:when test="every $num in $list/item/num satisfies (starts-with($num, '(') and ends-with($num, ')'))">
 					<xsl:text>parens</xsl:text>
 				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies ends-with($num, ')')">
+					<xsl:text>parenRight</xsl:text>
+				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies (starts-with($num, '[') and ends-with($num, ']'))">
+					<xsl:text>brackets</xsl:text>
+				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies ends-with($num, ']')">
+					<xsl:text>bracketRight</xsl:text>
+				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies ends-with($num, '.')">
+					<xsl:text>period</xsl:text>
+				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies ends-with($num, ':')">
+					<xsl:text>colon</xsl:text>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:text>none</xsl:text>
+				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:when>
 		<xsl:otherwise>
@@ -35,8 +53,53 @@
 	<xsl:param name="list" as="element(blockList)" />
 	<xsl:param name="decor" as="xs:string" />
 	<xsl:choose>
-		<xsl:when test="($decor = 'parens') and (every $num in $list/item/num satisfies matches($num, '^\([a-z]+\)$'))">
-			<xsl:text>alpha</xsl:text>
+		<xsl:when test="$decor = 'parens'">
+			<xsl:choose>
+				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^\(\d+\)$')">
+					<xsl:text>arabic</xsl:text>
+				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^\([ivx]+\)$')">
+					<xsl:text>roman</xsl:text>
+				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^\([IVX]+\)$')">
+					<xsl:text>romanUpper</xsl:text>
+				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^\([a-z]+\)$')">
+					<xsl:text>alpha</xsl:text>
+				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^\([A-Z]+\)$')">
+					<xsl:text>alphaUpper</xsl:text>
+				</xsl:when>
+			</xsl:choose>
+		</xsl:when>
+<!-- 		<xsl:when test="$decor = 'parenRight'">
+		</xsl:when>
+		<xsl:when test="$decor = 'brackets'">
+		</xsl:when>
+		<xsl:when test="$decor = 'bracketRight'">
+		</xsl:when>
+		<xsl:when test="$decor = 'period'">
+		</xsl:when>
+		<xsl:when test="$decor = 'colon'">
+		</xsl:when> -->
+		<xsl:when test="$decor = 'none'">
+			<xsl:choose>
+				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^\d+$')">
+					<xsl:text>arabic</xsl:text>
+				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^[ivx]+$')">
+					<xsl:text>roman</xsl:text>
+				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^[IVX]+$')">
+					<xsl:text>romanUpper</xsl:text>
+				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^[a-z]+$')">
+					<xsl:text>alpha</xsl:text>
+				</xsl:when>
+				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^[A-Z]+$')">
+					<xsl:text>alphaUpper</xsl:text>
+				</xsl:when>
+			</xsl:choose>
 		</xsl:when>
 	</xsl:choose>
 </xsl:function>
