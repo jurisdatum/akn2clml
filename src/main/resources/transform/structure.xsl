@@ -236,6 +236,7 @@
 <xsl:template match="paragraph | subparagraph | clause | hcontainer[@name=('subsubparagraph','step')]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string" select="local:get-structure-name(., $context)" />
+	<xsl:variable name="name2" as="xs:string" select="if (exists(num)) then $name else 'P'" />
 	<xsl:call-template name="wrap-as-necessary">
 		<xsl:with-param name="clml" as="element()">
 			<xsl:choose>
@@ -244,23 +245,23 @@
 						<xsl:apply-templates select="heading | subheading">
 							<xsl:with-param name="context" select="(concat($name, 'group'), $context)" tunnel="yes" />
 						</xsl:apply-templates>
-						<xsl:element name="{ $name }">
+						<xsl:element name="{ $name2 }">
 							<xsl:apply-templates select="num">
-								<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+								<xsl:with-param name="context" select="($name2, $context)" tunnel="yes" />
 							</xsl:apply-templates>
 							<xsl:call-template name="small-level-content">
-								<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+								<xsl:with-param name="context" select="($name2, $context)" tunnel="yes" />
 							</xsl:call-template>
 						</xsl:element>
 					</xsl:element>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:element name="{ $name }">
+					<xsl:element name="{ $name2 }">
 						<xsl:apply-templates select="num | heading | subheading">
-							<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+							<xsl:with-param name="context" select="($name2, $context)" tunnel="yes" />
 						</xsl:apply-templates>
 						<xsl:call-template name="small-level-content">
-							<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+							<xsl:with-param name="context" select="($name2, $context)" tunnel="yes" />
 						</xsl:call-template>
 					</xsl:element>
 				</xsl:otherwise>
