@@ -66,34 +66,68 @@
 
 <xsl:template match="section">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<P1group>
-		<xsl:apply-templates select="heading">
-			<xsl:with-param name="context" select="('P1group', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-		<P1>
-			<xsl:apply-templates select="num">
-				<xsl:with-param name="context" select="('P1', 'P1group', $context)" tunnel="yes" />
-			</xsl:apply-templates>
-			<xsl:call-template name="small-level-content">
-				<xsl:with-param name="context" select="('P1', 'P1group', $context)" tunnel="yes" />
-			</xsl:call-template>
-		</P1>
-	</P1group>
+	<xsl:choose>
+		<xsl:when test="exists(heading)">
+			<P1group>
+				<xsl:apply-templates select="heading | subheading">
+					<xsl:with-param name="context" select="('P1group', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+				<P1>
+					<xsl:apply-templates select="num">
+						<xsl:with-param name="context" select="('P1', 'P1group', $context)" tunnel="yes" />
+					</xsl:apply-templates>
+					<xsl:call-template name="small-level-content">
+						<xsl:with-param name="context" select="('P1', 'P1group', $context)" tunnel="yes" />
+					</xsl:call-template>
+				</P1>
+			</P1group>
+		</xsl:when>
+		<xsl:otherwise>
+			<P1>
+				<xsl:apply-templates select="num">
+					<xsl:with-param name="context" select="('P1', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+				<xsl:call-template name="small-level-content">
+					<xsl:with-param name="context" select="('P1', $context)" tunnel="yes" />
+				</xsl:call-template>
+			</P1>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="subsection">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="clml" as="element()">
+		<xsl:choose>
+			<xsl:when test="exists(heading)">
+				<P2group>
+					<xsl:apply-templates select="heading | subheading">
+						<xsl:with-param name="context" select="('P2group', $context)" tunnel="yes" />
+					</xsl:apply-templates>
+					<P2>
+						<xsl:apply-templates select="num">
+							<xsl:with-param name="context" select="('P2', 'P2group', $context)" tunnel="yes" />
+						</xsl:apply-templates>
+						<xsl:call-template name="small-level-content">
+							<xsl:with-param name="context" select="('P2', P2group, $context)" tunnel="yes" />
+						</xsl:call-template>
+					</P2>
+				</P2group>
+			</xsl:when>
+			<xsl:otherwise>
+				<P2>
+					<xsl:apply-templates select="num">
+						<xsl:with-param name="context" select="('P2', $context)" tunnel="yes" />
+					</xsl:apply-templates>
+					<xsl:call-template name="small-level-content">
+						<xsl:with-param name="context" select="('P2', $context)" tunnel="yes" />
+					</xsl:call-template>
+				</P2>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
 	<xsl:call-template name="wrap-as-necessary">
-		<xsl:with-param name="clml" as="element()">
-			<P2>
-				<xsl:apply-templates select="num | heading | subheading">
-					<xsl:with-param name="context" select="('P2', $context)" tunnel="yes" />
-				</xsl:apply-templates>
-				<xsl:call-template name="small-level-content">
-					<xsl:with-param name="context" select="('P2', $context)" tunnel="yes" />
-				</xsl:call-template>
-			</P2>
-		</xsl:with-param>
+		<xsl:with-param name="clml" select="$clml" />
 	</xsl:call-template>
 </xsl:template>
 
