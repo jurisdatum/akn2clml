@@ -192,8 +192,11 @@
 			<xsl:choose>
 				<xsl:when test="local:is-within-schedule($context)">
 					<xsl:choose>
-						<xsl:when test="head($context) = ('ScheduleBody', 'Part', 'Chapter', 'Pblock', 'P1group')">
+						<xsl:when test="head($context) = ('ScheduleBody', 'Part', 'Chapter', 'Pblock', 'PsubBlock', 'P1group')">
 							<xsl:text>P1</xsl:text>
+						</xsl:when>
+						<xsl:when test="$hcontainer/parent::hcontainer[@name='step']">
+									<xsl:value-of select="local:one-more-than-context($context)" />
 						</xsl:when>
 						<xsl:otherwise>
 							<xsl:text>P3</xsl:text>
@@ -256,13 +259,14 @@
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:when>
+		<xsl:when test="$hcontainer/self::hcontainer/@name='subsubparagraph'">
+			<xsl:value-of select="local:one-more-than-context($context)" />
+		</xsl:when>
+		<xsl:when test="$hcontainer/self::hcontainer/@name='step'">
+			<xsl:value-of select="local:one-more-than-context($context)" />
+		</xsl:when>
 		<xsl:otherwise>
-			<xsl:message>
-				<xsl:sequence select="$hcontainer" />
-			</xsl:message>
-			<xsl:message>
-				<xsl:sequence select="$context" />
-			</xsl:message>
+			<xsl:value-of select="local:one-more-than-context($context)" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:function>

@@ -4,9 +4,11 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
+	xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
 	xmlns:map="http://www.w3.org/2005/xpath-functions/map"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs map local">
+	exclude-result-prefixes="xs ukm dc map local">
 
 
 <!-- keys -->
@@ -149,13 +151,55 @@
 
 <xsl:variable name="doc-subtype" as="xs:string" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRsubtype/@value" />
 
-<xsl:variable name="doc-year" as="xs:integer" select="xs:integer(key('tlc', 'varActYear')/@showAs)" />
+<xsl:variable name="doc-year" as="xs:integer">
+	<xsl:choose>
+		<xsl:when test="exists(/akomaNtoso/*/meta/proprietary/ukm:Year)">
+			<xsl:value-of select="xs:integer(/akomaNtoso/*/meta/proprietary/ukm:Year/@Value)" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="xs:integer(key('tlc', 'varActYear')/@showAs)" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:variable>
 
-<xsl:variable name="doc-number" as="xs:string" select="key('tlc', 'varActNo')/@showAs" />
+<xsl:variable name="doc-number" as="xs:string">
+	<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value" />
+	<xsl:choose>
+		<xsl:when test="exists($frbr)">
+			<xsl:choose>
+				<xsl:when test="$frbr = '#varProjectId'">
+					<xsl:value-of select="key('tlc', 'varProjectId')/@showAs" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="$frbr" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="key('tlc', 'varActNo')/@showAs" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:variable>
 
 <xsl:variable name="doc-title" as="xs:string">
-	<xsl:variable name="tlc" as="element()" select="key('tlc', 'varActTitle')" />
-	<xsl:value-of select="local:resolve-tlc-show-as($tlc/@showAs)" />
+	<xsl:variable name="dc-title" as="element()" select="/akomaNtoso/*/meta/proprietary/dc:title[1]" />
+	<xsl:choose>
+		<xsl:when test="exists($dc-title)">
+			<xsl:choose>
+				<xsl:when test="$dc-title/ref[@class='placeholder']">
+					<xsl:variable name="ref" as="xs:string" select="$dc-title/ref[@class='placeholder']/@href" />
+					<xsl:value-of select="key('tlc', substring($ref, 2))/@showAs" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="$dc-title" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:variable name="tlc" as="element()" select="key('tlc', 'varActTitle')" />
+			<xsl:value-of select="local:resolve-tlc-show-as($tlc/@showAs)" />
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:variable>
 
 <xsl:variable name="doc-short-id" as="xs:string">

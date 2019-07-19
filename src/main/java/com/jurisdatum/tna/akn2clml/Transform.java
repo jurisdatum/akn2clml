@@ -1,8 +1,11 @@
 package com.jurisdatum.tna.akn2clml;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -55,10 +58,26 @@ public class Transform {
 		}
 	}
 
-	public void transform(Source akn, OutputStream output) {
-		Serializer serializer = executable.getProcessor().newSerializer(output);
+	public void transform(Source akn, OutputStream clml) {
+		Serializer serializer = executable.getProcessor().newSerializer(clml);
 		serializer.setOutputProperty(Property.SAXON_SUPPRESS_INDENTATION, "{http://www.legislation.gov.uk/namespaces/legislation}Text");
 		transform(akn, serializer);
+	}
+
+	public void transform(InputStream akn, OutputStream clml) {
+		Source source = new StreamSource(akn);
+		transform(source, clml);
+	}
+
+	public String transform(String akn) {
+		ByteArrayInputStream input = new ByteArrayInputStream(akn.getBytes());
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		transform(input, output);
+		try {
+			return output.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }

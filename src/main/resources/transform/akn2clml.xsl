@@ -21,7 +21,9 @@
 <xsl:include href="numbers.xsl" />
 <xsl:include href="lists.xsl" />
 <xsl:include href="tables.xsl" />
+<xsl:include href="images.xsl" />
 <xsl:include href="amendments.xsl" />
+<xsl:include href="citations.xsl" />
 <xsl:include href="changes.xsl" />
 <xsl:include href="math.xsl" />
 <xsl:include href="resources.xsl" />
@@ -62,7 +64,7 @@
 			<xsl:with-param name="context" select="$name" tunnel="yes" />
 		</xsl:apply-templates>
 	</xsl:element>
-	<xsl:if test="exists(*[not(self::meta) and not(self::coverPage) and not(self::preface) and not(self::body)])">
+	<xsl:if test="exists(*[not(self::meta) and not(self::coverPage) and not(self::preface) and not(self::preamble) and not(self::body)])">
 		<xsl:message terminate="yes">
 		</xsl:message>
 	</xsl:if>
@@ -158,77 +160,6 @@
 
 <xsl:template match="docTitle | docNumber | docStage | docDate">
 	<xsl:apply-templates />
-</xsl:template>
-
-<xsl:template match="ref[@class='placeholder']">
-	<xsl:variable name="tlc" as="element()" select="key('tlc', substring(@href, 2))" />
-	<xsl:value-of select="local:resolve-tlc-show-as($tlc/@showAs)" />
-</xsl:template>
-
-<xsl:template match="ref">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<Citation id="{ @eId }" URI="{ @href }" Class="" Year="">
-		<xsl:if test="@ukl:Class">
-			<xsl:attribute name="Class">
-				<xsl:value-of select="@ukl:Class" />
-			</xsl:attribute>
-		</xsl:if>
-		<xsl:if test="@ukl:Year">
-			<xsl:attribute name="Year">
-				<xsl:value-of select="@ukl:Year" />
-			</xsl:attribute>
-		</xsl:if>
-		<xsl:if test="@ukl:Number">
-			<xsl:attribute name="Number">
-				<xsl:value-of select="@ukl:Number" />
-			</xsl:attribute>
-		</xsl:if>
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="('Citation', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</Citation>
-</xsl:template>
-
-<xsl:template match="ref[@class='subref']">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<CitationSubRef id="{ @eId }" URI="{ @href }">
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="('CitationSubRef', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</CitationSubRef>
-</xsl:template>
-
-<xsl:template match="rref">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<Citation id="{ @eId }" URI="{ @from }" UpTo="{ @upTo }">
-		<xsl:if test="@ukl:Class">
-			<xsl:attribute name="Class">
-				<xsl:value-of select="@ukl:Class" />
-			</xsl:attribute>
-		</xsl:if>
-		<xsl:if test="@ukl:Year">
-			<xsl:attribute name="Year">
-				<xsl:value-of select="@ukl:Year" />
-			</xsl:attribute>
-		</xsl:if>
-		<xsl:if test="@ukl:Number">
-			<xsl:attribute name="Number">
-				<xsl:value-of select="@ukl:Number" />
-			</xsl:attribute>
-		</xsl:if>
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="('Citation', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</Citation>
-</xsl:template>
-
-<xsl:template match="rref[@class='subref']">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<CitationSubRef id="{ @eId }" URI="{ @from }" UpTo="{ @upTo }">
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="('CitationSubRef', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</CitationSubRef>
 </xsl:template>
 
 <xsl:template match="abbr">

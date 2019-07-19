@@ -34,6 +34,9 @@
 		<xsl:apply-templates select="preface/block[@name='DateOfEnactment']">
 			<xsl:with-param name="context" select="$child-context" tunnel="yes" />
 		</xsl:apply-templates>
+		<xsl:apply-templates select="preamble">
+			<xsl:with-param name="context" select="$child-context" tunnel="yes" />
+		</xsl:apply-templates>
 	</xsl:element>
 </xsl:template>
 
@@ -79,6 +82,35 @@
 	<xsl:if test="exists(node()[not(self::p or self::text()[not(normalize-space())])])">
 		<xsl:message terminate="yes" />
 	</xsl:if>
+</xsl:template>
+
+<xsl:template match="preamble">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="name" as="xs:string">
+		<xsl:variable name="context1" as="xs:string" select="head($context)" />
+		<xsl:choose>
+			<xsl:when test="$context1 = 'PrimaryPrelims'">
+				<xsl:text>PrimaryPreamble</xsl:text>
+			</xsl:when>
+			<xsl:when test="$context1 = 'SecondaryPrelims'">
+				<xsl:text>SecondaryPreamble</xsl:text>
+			</xsl:when>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:element name="{ $name }">
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</xsl:element>
+</xsl:template>
+
+<xsl:template match="formula[@name='EnactingText']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<EnactingText>
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('EnactingText', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</EnactingText>
 </xsl:template>
 
 <xsl:template match="toc" />
