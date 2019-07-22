@@ -5,8 +5,9 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs local">
+	exclude-result-prefixes="xs html local">
 
 
 <xsl:template match="part">
@@ -141,7 +142,7 @@
 		<xsl:when test="$head = 'Schedule'">
 			<xsl:sequence select="true()" />
 		</xsl:when>
-		<xsl:when test="$head = ('Body', 'BlockAmendment')">
+		<xsl:when test="$head = ('Body', 'BlockAmendment', 'td')">
 			<xsl:sequence select="false()" />
 		</xsl:when>
 		<xsl:otherwise>
@@ -198,7 +199,7 @@
 							<xsl:text>P1</xsl:text>
 						</xsl:when>
 						<xsl:when test="$hcontainer/parent::hcontainer[@name='step']">
-									<xsl:value-of select="local:one-more-than-context($context)" />
+							<xsl:value-of select="local:one-more-than-context($context)" />
 						</xsl:when>
 						<xsl:otherwise>
 							<xsl:text>P3</xsl:text>
@@ -216,6 +217,9 @@
 							</xsl:message>
 						</xsl:otherwise>
 					</xsl:choose>
+				</xsl:when>
+				<xsl:when test="$hcontainer/parent::html:td">
+					<xsl:text>P3</xsl:text>
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:choose>
