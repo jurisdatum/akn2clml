@@ -98,6 +98,9 @@
 		<xsl:when test="$head = ('EnactingText', 'BlockText', 'ListItem', 'FootnoteText', 'Commentary', 'td')">
 			<xsl:text>Para</xsl:text>
 		</xsl:when>
+		<xsl:when test="$head = 'ScheduleBody'">
+			<xsl:text>P</xsl:text>
+		</xsl:when>
 	</xsl:choose>
 </xsl:function>
 
