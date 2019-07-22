@@ -26,11 +26,29 @@
 <xsl:template match="html:*">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:copy>
-		<xsl:copy-of select="@*" />
+		<xsl:apply-templates select="@*" />
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="(local-name(.), $context)" tunnel="yes" />
 		</xsl:apply-templates>
 	</xsl:copy>
+</xsl:template>
+
+<xsl:template match="html:th/@width | html:th/@height | html:td/@width | html:td/@height" priority="1">
+	<xsl:attribute name="{ name() }">
+		<xsl:choose>
+			<xsl:when test="matches(., '^\d+$')">
+				<xsl:value-of select="." />
+				<xsl:text>px</xsl:text>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="." />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:attribute>
+</xsl:template>
+
+<xsl:template match="html:*/@*">
+	<xsl:copy-of select="." />
 </xsl:template>
 
 </xsl:transform>
