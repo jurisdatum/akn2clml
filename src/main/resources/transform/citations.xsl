@@ -34,6 +34,47 @@
 	</xsl:analyze-string>
 </xsl:function>
 
+<xsl:function name="local:parse-old-eu-uri" as="element()?">
+	<xsl:param name="uri" as="xs:string" />
+	<xsl:analyze-string select="$uri" regex="^https?://www.legislation.gov.uk/(id/)?european/(regulation|decision|directive)/(\d{{4}})/(\d+)(/.+)?$">
+		<xsl:matching-substring>
+			<components xmlns="">
+				<xsl:attribute name="Class">
+					<xsl:choose>
+						<xsl:when test="regex-group(2) = 'regulation'">
+							<xsl:text>EuropeanUnionRegulation</xsl:text>
+						</xsl:when>
+						<xsl:when test="regex-group(2) = 'decision'">
+							<xsl:text>EuropeanUnionDecision</xsl:text>
+						</xsl:when>
+						<xsl:when test="regex-group(2) = 'directive'">
+							<xsl:text>EuropeanUnionDirective</xsl:text>
+						</xsl:when>
+					</xsl:choose>
+				</xsl:attribute>
+				<xsl:attribute name="Year">
+					<xsl:value-of select="regex-group(3)" />
+				</xsl:attribute>
+				<xsl:attribute name="Number">
+					<xsl:value-of select="regex-group(4)" />
+				</xsl:attribute>
+				<xsl:if test="normalize-space(regex-group(5))">
+					<xsl:attribute name="Section">
+						<xsl:value-of select="translate(substring(regex-group(5), 2), '/', '-')" />
+					</xsl:attribute>
+				</xsl:if>
+			</components>
+		</xsl:matching-substring>
+	</xsl:analyze-string>
+</xsl:function>
+
+<xsl:function name="local:parse-uri" as="element()?">
+	<xsl:param name="uri" as="xs:string" />
+	<xsl:variable name="components" as="element()?" select="local:parse-lgu-uri($uri)" />
+	<xsl:sequence select="if (exists($components)) then $components else local:parse-old-eu-uri($uri)" />
+</xsl:function>
+
+
 <xsl:variable name="citations" as="element()*" select="//ref[not(@class='placeholder')] | //rref" />
 
 <xsl:function name="local:make-citation-id" as="xs:string?">
@@ -51,7 +92,7 @@
 
 <xsl:template match="ref">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="components" as="element()?" select="local:parse-lgu-uri(@href)" />
+	<xsl:variable name="components" as="element()?" select="local:parse-uri(@href)" />
 	<Citation>
 		<xsl:attribute name="id">
 			<xsl:value-of select="local:make-citation-id(.)" />
@@ -101,7 +142,7 @@
 
 <xsl:template match="ref[@class='subref']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="components" as="element()?" select="local:parse-lgu-uri(@href)" />
+	<xsl:variable name="components" as="element()?" select="local:parse-uri(@href)" />
 	<CitationSubRef>
 		<xsl:attribute name="id">
 			<xsl:value-of select="local:make-citation-id(.)" />
@@ -124,8 +165,8 @@
 
 <xsl:template match="rref">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="components" as="element()?" select="local:parse-lgu-uri(@from)" />
-	<xsl:variable name="components2" as="element()?" select="local:parse-lgu-uri(@upTo)" />
+	<xsl:variable name="components" as="element()?" select="local:parse-uri(@from)" />
+	<xsl:variable name="components2" as="element()?" select="local:parse-uri(@upTo)" />
 	<Citation>
 		<xsl:attribute name="id">
 			<xsl:value-of select="local:make-citation-id(.)" />
@@ -153,8 +194,8 @@
 
 <xsl:template match="rref[@class='subref']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="components" as="element()?" select="local:parse-lgu-uri(@from)" />
-	<xsl:variable name="components2" as="element()?" select="local:parse-lgu-uri(@upTo)" />
+	<xsl:variable name="components" as="element()?" select="local:parse-uri(@from)" />
+	<xsl:variable name="components2" as="element()?" select="local:parse-uri(@upTo)" />
 	<CitationSubRef>
 		<xsl:attribute name="id">
 			<xsl:value-of select="local:make-citation-id(.)" />
