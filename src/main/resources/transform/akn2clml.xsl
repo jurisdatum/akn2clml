@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<xsl:transform version="3.0"
+<xsl:transform version="2.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
@@ -9,7 +9,7 @@
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
 	exclude-result-prefixes="xs ukl local">
 
-<xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes" xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation" suppress-indentation="ukl:Text" />
+<xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes" xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation" />
 
 <xsl:strip-space elements="*" />
 
@@ -46,7 +46,7 @@
 </xsl:template>
 
 <xsl:template name="main">
-	<xsl:variable name="name" as="xs:string">
+	<xsl:variable name="name" as="xs:string?">
 		<xsl:choose>
 			<xsl:when test="$doc-category = 'primary'">
 				<xsl:text>Primary</xsl:text>

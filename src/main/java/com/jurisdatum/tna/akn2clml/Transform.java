@@ -1,12 +1,10 @@
 package com.jurisdatum.tna.akn2clml;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.util.Properties;
 
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
@@ -16,13 +14,12 @@ import com.jurisdatum.xml.Saxon;
 
 import net.sf.saxon.s9api.Destination;
 import net.sf.saxon.s9api.SaxonApiException;
-import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.Serializer.Property;
-import net.sf.saxon.s9api.Xslt30Transformer;
 import net.sf.saxon.s9api.XsltCompiler;
 import net.sf.saxon.s9api.XsltExecutable;
+import net.sf.saxon.s9api.XsltTransformer;
 
-public class Transform {
+public class Transform implements com.jurisdatum.xml.Transform {
 	
 	private static final String stylesheet = "/transform/akn2clml.xsl";
 	
@@ -50,34 +47,25 @@ public class Transform {
 	}
 	
 	private void transform(Source akn, Destination destination) {
-		Xslt30Transformer transform = executable.load30();
+		XsltTransformer transform = executable.load();
 		try {
-			transform.transform(akn, destination);
+			transform.setSource(akn);
+			transform.setDestination(destination);
+			transform.transform();
 		} catch (SaxonApiException e) {
 			throw new RuntimeException(e);
 		}
 	}
-
-	public void transform(Source akn, OutputStream clml) {
-		Serializer serializer = executable.getProcessor().newSerializer(clml);
-		serializer.setOutputProperty(Property.SAXON_SUPPRESS_INDENTATION, "{http://www.legislation.gov.uk/namespaces/legislation}Text");
-		transform(akn, serializer);
+	
+	private static Properties properties = new Properties();
+	static {
+		properties.setProperty(Property.INDENT.toString(), "yes");
+		properties.setProperty(Property.SAXON_SUPPRESS_INDENTATION.toString(), "{http://www.legislation.gov.uk/namespaces/legislation}Text");
 	}
-
-	public void transform(InputStream akn, OutputStream clml) {
-		Source source = new StreamSource(akn);
-		transform(source, clml);
-	}
-
-	public String transform(String akn) {
-		ByteArrayInputStream input = new ByteArrayInputStream(akn.getBytes());
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		transform(input, output);
-		try {
-			return output.toString("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
+	
+	public void transform(Source akn, Result result) {
+		Destination destination = Saxon.makeDestination(result, properties);
+		transform(akn, destination);
 	}
 
 }

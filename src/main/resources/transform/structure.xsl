@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<xsl:transform version="3.0"
+<xsl:transform version="2.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
@@ -133,47 +133,49 @@
 
 <xsl:function name="local:is-within-schedule" as="xs:boolean">
 	<xsl:param name="context" as="xs:string*" />
+	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:choose>
 		<xsl:when test="empty($context)">
 			<xsl:message terminate="yes" />
 		</xsl:when>
-		<xsl:when test="head($context) = 'Schedule'">
+		<xsl:when test="$head = 'Schedule'">
 			<xsl:sequence select="true()" />
 		</xsl:when>
-		<xsl:when test="head($context) = ('Body', 'BlockAmendment')">
+		<xsl:when test="$head = ('Body', 'BlockAmendment')">
 			<xsl:sequence select="false()" />
 		</xsl:when>
 		<xsl:otherwise>
-			<xsl:sequence select="local:is-within-schedule(tail($context))" />
+			<xsl:sequence select="local:is-within-schedule(subsequence($context, 2))" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:function>
 
 <xsl:function name="local:one-more-than-context" as="xs:string">
 	<xsl:param name="context" as="xs:string*" />
+	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:choose>
-		<xsl:when test="head($context) = ('Body', 'Part', 'Chapter', 'Pblock', 'PsubBlock', 'ScheduleBody')">
+		<xsl:when test="$head = ('Body', 'Part', 'Chapter', 'Pblock', 'PsubBlock', 'ScheduleBody')">
 			<xsl:text>P1</xsl:text>
 		</xsl:when>
-		<xsl:when test="head($context) = ('P1', 'P1para')">
+		<xsl:when test="$head = ('P1', 'P1para')">
 			<xsl:text>P2</xsl:text>
 		</xsl:when>
-		<xsl:when test="head($context) = ('P2', 'P2para')">
+		<xsl:when test="$head = ('P2', 'P2para')">
 			<xsl:text>P3</xsl:text>
 		</xsl:when>
-		<xsl:when test="head($context) = ('P3', 'P3para')">
+		<xsl:when test="$head = ('P3', 'P3para')">
 			<xsl:text>P4</xsl:text>
 		</xsl:when>
-		<xsl:when test="head($context) = ('P4', 'P4para')">
+		<xsl:when test="$head = ('P4', 'P4para')">
 			<xsl:text>P5</xsl:text>
 		</xsl:when>
-		<xsl:when test="head($context) = ('P5', 'P5para')">
+		<xsl:when test="$head = ('P5', 'P5para')">
 			<xsl:text>P6</xsl:text>
 		</xsl:when>
-		<xsl:when test="head($context) = ('P6', 'P6para')">
+		<xsl:when test="$head = ('P6', 'P6para')">
 			<xsl:text>P7</xsl:text>
 		</xsl:when>
-		<xsl:when test="head($context) = ('P7', 'P7para')">
+		<xsl:when test="$head = ('P7', 'P7para')">
 			<xsl:text>P7</xsl:text>
 		</xsl:when>
 		<xsl:otherwise>
@@ -184,7 +186,7 @@
 	</xsl:choose>
 </xsl:function>
 
-<xsl:function name="local:get-structure-name" as="xs:string">
+<xsl:function name="local:get-structure-name" as="xs:string?">
 	<xsl:param name="hcontainer" as="element()" />
 	<xsl:param name="context" as="xs:string*" />
 	<xsl:choose>
@@ -192,7 +194,7 @@
 			<xsl:choose>
 				<xsl:when test="local:is-within-schedule($context)">
 					<xsl:choose>
-						<xsl:when test="head($context) = ('ScheduleBody', 'Part', 'Chapter', 'Pblock', 'PsubBlock', 'P1group')">
+						<xsl:when test="$context[1] = ('ScheduleBody', 'Part', 'Chapter', 'Pblock', 'PsubBlock', 'P1group')">
 							<xsl:text>P1</xsl:text>
 						</xsl:when>
 						<xsl:when test="$hcontainer/parent::hcontainer[@name='step']">
@@ -365,18 +367,19 @@
 
 <xsl:template match="num">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:variable name="name" as="xs:string">
 		<xsl:choose>
-			<xsl:when test="head($context) = ('Part', 'Chapter')">
+			<xsl:when test="$head = ('Part', 'Chapter')">
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
-			<xsl:when test="head($context) = ('P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7')">
+			<xsl:when test="$head = ('P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7')">
 				<xsl:text>Pnumber</xsl:text>
 			</xsl:when>
-			<xsl:when test="head($context) = 'Schedule'">
+			<xsl:when test="$head = 'Schedule'">
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
-			<xsl:when test="head($context) = ('Tabular')">
+			<xsl:when test="$head = ('Tabular')">
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
 			<xsl:otherwise>

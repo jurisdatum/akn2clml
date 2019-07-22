@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<xsl:transform version="3.0"
+<xsl:transform version="2.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
@@ -10,18 +10,19 @@
 
 <xsl:function name="local:should-strip-punctuation-from-number" as="xs:boolean">
 	<xsl:param name="text" as="text()" />
-	<xsl:param name="context" as="xs:string*" />
+	<xsl:param name="context" as="xs:string+" />
+	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:choose>
 		<xsl:when test="empty($text/parent::num)">
 			<xsl:value-of select="false()" />
 		</xsl:when>
-		<xsl:when test="head($context) = ('groupOfParts', 'part', 'chapter', 'schedule')">
+		<xsl:when test="$head = ('groupOfParts', 'part', 'chapter', 'schedule')">
 			<xsl:value-of select="false()" />
 		</xsl:when>
-		<xsl:when test="head($context) = 'section'">
+		<xsl:when test="$head = 'section'">
 			<xsl:value-of select="false()" />
 		</xsl:when>
-		<xsl:when test="head($context) = 'paragraph' and head(tail($context)) = 'schedule'">
+		<xsl:when test="$head = 'paragraph' and subsequence($context, 2)[1] = 'schedule'">
 			<xsl:value-of select="false()" />
 		</xsl:when>
 		<xsl:when test="matches(normalize-space($text), '^\(\d+[A-Z]?\)$')">
@@ -59,6 +60,9 @@
 		<xsl:when test="$decor = 'none'">
 			<xsl:value-of select="$num" />
 		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="$num" />
+		</xsl:otherwise>
 	</xsl:choose>
 </xsl:function>
 

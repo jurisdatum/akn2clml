@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<xsl:transform version="3.0"
+<xsl:transform version="2.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
@@ -10,7 +10,7 @@
 	exclude-result-prefixes="xs ukl local">
 
 
-<xsl:function name="local:parse-lgu-uri" as="element(Q{}components)?">
+<xsl:function name="local:parse-lgu-uri" as="element()?">
 	<xsl:param name="uri" as="xs:string" />
 	<xsl:analyze-string select="$uri" regex="^https?://www.legislation.gov.uk/(id/)?([a-z]{{3,5}})/(\d{{4}})/(\d+)(/.+)?$">
 		<xsl:matching-substring>
@@ -51,7 +51,7 @@
 
 <xsl:template match="ref">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="components" as="element(Q{}components)?" select="local:parse-lgu-uri(@href)" />
+	<xsl:variable name="components" as="element()?" select="local:parse-lgu-uri(@href)" />
 	<Citation>
 		<xsl:attribute name="id">
 			<xsl:value-of select="local:make-citation-id(.)" />
@@ -101,7 +101,7 @@
 
 <xsl:template match="ref[@class='subref']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="components" as="element(Q{}components)?" select="local:parse-lgu-uri(@href)" />
+	<xsl:variable name="components" as="element()?" select="local:parse-lgu-uri(@href)" />
 	<CitationSubRef>
 		<xsl:attribute name="id">
 			<xsl:value-of select="local:make-citation-id(.)" />
@@ -124,8 +124,8 @@
 
 <xsl:template match="rref">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="components" as="element(Q{}components)?" select="local:parse-lgu-uri(@from)" />
-	<xsl:variable name="components2" as="element(Q{}components)?" select="local:parse-lgu-uri(@upTo)" />
+	<xsl:variable name="components" as="element()?" select="local:parse-lgu-uri(@from)" />
+	<xsl:variable name="components2" as="element()?" select="local:parse-lgu-uri(@upTo)" />
 	<Citation>
 		<xsl:attribute name="id">
 			<xsl:value-of select="local:make-citation-id(.)" />
@@ -153,8 +153,8 @@
 
 <xsl:template match="rref[@class='subref']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="components" as="element(Q{}components)?" select="local:parse-lgu-uri(@from)" />
-	<xsl:variable name="components2" as="element(Q{}components)?" select="local:parse-lgu-uri(@upTo)" />
+	<xsl:variable name="components" as="element()?" select="local:parse-lgu-uri(@from)" />
+	<xsl:variable name="components2" as="element()?" select="local:parse-lgu-uri(@upTo)" />
 	<CitationSubRef>
 		<xsl:attribute name="id">
 			<xsl:value-of select="local:make-citation-id(.)" />
