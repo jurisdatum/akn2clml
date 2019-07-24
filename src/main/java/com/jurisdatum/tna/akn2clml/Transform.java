@@ -46,7 +46,7 @@ public class Transform implements com.jurisdatum.xml.Transform {
 		}
 	}
 	
-	private void transform(Source akn, Destination destination) {
+	void transform(Source akn, Destination destination) {
 		XsltTransformer transform = executable.load();
 		try {
 			transform.setSource(akn);
@@ -57,14 +57,14 @@ public class Transform implements com.jurisdatum.xml.Transform {
 		}
 	}
 	
-	private static Properties properties = new Properties();
+	static Properties properties = new Properties();
 	static {
 		properties.setProperty(Property.INDENT.toString(), "yes");
 		properties.setProperty(Property.SAXON_SUPPRESS_INDENTATION.toString(), "{http://www.legislation.gov.uk/namespaces/legislation}Text");
 	}
 	
-	public void transform(Source akn, Result result) {
-		Destination destination = Saxon.makeDestination(result, properties);
+	public void transform(Source akn, Result clml) {
+		Destination destination = Saxon.makeDestination(clml, properties);
 		transform(akn, destination);
 	}
 

@@ -2,6 +2,7 @@ package com.jurisdatum.tna.akn2clml;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -10,12 +11,12 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 
 public class Lambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-	private final Transform transform;
+	private final LDAPP transform;
 
 	public Lambda() throws IOException {
-		transform = new Transform();
+		transform = new LDAPP();
 	}
-
+	
 	@Override
 	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
 		String akn = request.getBody();
@@ -25,9 +26,11 @@ public class Lambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGa
 				.withHeaders(Collections.singletonMap("Content-Type", "text/plain"))
 				.withBody("body is empty");
 		}
+		Map<String, String> params = request.getQueryStringParameters();
+		String isbn = params == null ? null : params.get("isbn");
 		String clml;
 		try {
-			clml = transform.transform(akn);
+			clml = transform.transform(akn, isbn);
 		} catch (Exception e) {
 			return new APIGatewayProxyResponseEvent()
 				.withStatusCode(500)

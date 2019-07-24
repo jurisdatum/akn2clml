@@ -28,7 +28,7 @@ public interface Transform {
 		try {
 			return output.toString("UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
+			return output.toString();
 		}
 	}
 

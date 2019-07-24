@@ -15,13 +15,6 @@
 		<dc:title>
 			<xsl:value-of select="$doc-title" />
 		</dc:title>
-		<dc:publisher>
-			<xsl:choose>
-				<xsl:when test="$doc-short-type = 'asp'">
-					<xsl:text>Queen's Printer for Scotland</xsl:text>
-				</xsl:when>
-			</xsl:choose>
-		</dc:publisher>
 		<dc:modified>
 			<xsl:value-of select="adjust-date-to-timezone(current-date(), ())" />
 		</dc:modified>
