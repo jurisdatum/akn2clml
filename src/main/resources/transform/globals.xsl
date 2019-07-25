@@ -12,6 +12,8 @@
 
 <!-- keys -->
 
+<xsl:key name="id" match="*" use="@eId" />
+
 <xsl:key name="tlc" match="TLCConcept | TLCProcess" use="@eId" />
 
 

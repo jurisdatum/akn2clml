@@ -24,9 +24,10 @@
 				<xsl:attribute name="Number">
 					<xsl:value-of select="regex-group(4)" />
 				</xsl:attribute>
-				<xsl:if test="normalize-space(regex-group(5))">
+				<xsl:variable name="section" select="substring(regex-group(5), 2)" />
+				<xsl:if test="$section != ''">
 					<xsl:attribute name="Section">
-						<xsl:value-of select="translate(substring(regex-group(5), 2), '/', '-')" />
+						<xsl:value-of select="translate($section, '/', '-')" />
 					</xsl:attribute>
 				</xsl:if>
 			</components>
@@ -134,6 +135,9 @@
 				<xsl:value-of select="$components/@Section" />
 			</xsl:attribute>
 		</xsl:if>
+		<xsl:attribute name="URI">
+			<xsl:value-of select="@href" />
+		</xsl:attribute>
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="('Citation', $context)" tunnel="yes" />
 		</xsl:apply-templates>
@@ -147,9 +151,9 @@
 		<xsl:attribute name="id">
 			<xsl:value-of select="local:make-citation-id(.)" />
 		</xsl:attribute>
-		<xsl:if test="exists(parent::ref)">
+		<xsl:if test="exists(@ukl:CitationRef) and exists(key('id', @ukl:CitationRef))">
 			<xsl:attribute name="CitationRef">
-				<xsl:value-of select="local:make-citation-id(..)" />
+				<xsl:value-of select="local:make-citation-id(key('id', @ukl:CitationRef)[1])" />
 			</xsl:attribute>
 		</xsl:if>
 		<xsl:if test="exists($components/@Section)">
@@ -157,6 +161,9 @@
 				<xsl:value-of select="$components/@Section" />
 			</xsl:attribute>
 		</xsl:if>
+		<xsl:attribute name="URI">
+			<xsl:value-of select="@href" />
+		</xsl:attribute>
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="('CitationSubRef', $context)" tunnel="yes" />
 		</xsl:apply-templates>
@@ -186,6 +193,12 @@
 		<xsl:attribute name="EndSectionRef">
 			<xsl:value-of select="$components2/@Section" />
 		</xsl:attribute>
+		<xsl:attribute name="URI">
+			<xsl:value-of select="@href" />
+		</xsl:attribute>
+		<xsl:attribute name="UpTo">
+			<xsl:value-of select="@upTo" />
+		</xsl:attribute>
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="('Citation', $context)" tunnel="yes" />
 		</xsl:apply-templates>
@@ -200,9 +213,9 @@
 		<xsl:attribute name="id">
 			<xsl:value-of select="local:make-citation-id(.)" />
 		</xsl:attribute>
-		<xsl:if test="exists(parent::ref)">
+		<xsl:if test="exists(@ukl:CitationRef) and exists(key('id', @ukl:CitationRef))">
 			<xsl:attribute name="CitationRef">
-				<xsl:value-of select="local:make-citation-id(..)" />
+				<xsl:value-of select="local:make-citation-id(key('id', @ukl:CitationRef)[1])" />
 			</xsl:attribute>
 		</xsl:if>
 		<xsl:attribute name="StartSectionRef">
@@ -210,6 +223,12 @@
 		</xsl:attribute>
 		<xsl:attribute name="EndSectionRef">
 			<xsl:value-of select="$components2/@Section" />
+		</xsl:attribute>
+		<xsl:attribute name="URI">
+			<xsl:value-of select="@from" />
+		</xsl:attribute>
+		<xsl:attribute name="UpTo">
+			<xsl:value-of select="@upTo" />
 		</xsl:attribute>
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="('Citation', $context)" tunnel="yes" />
