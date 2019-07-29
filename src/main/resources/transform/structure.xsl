@@ -9,16 +9,180 @@
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
 	exclude-result-prefixes="xs html local">
 
+<xsl:variable name="mapping" as="element()">
+	<akn xmlns="">
+		<primary>
+			<section clml="P1" />
+			<subsection clml="P2" />
+			<paragraph clml="P3" />
+			<subparagraph clml="P4" />
+			<clause clml="P5" />
+			<subclause clml="P6" />
+			<subsubparagraph clml="P5" />
+		</primary>
+		<secondary>
+			<order>
+				<article clml="P1" />
+				<paragraph clml="P2" />
+				<subparagraph clml="P3" />
+				<clause clml="P4" />
+				<subclause clml="P5" />
+				<point clml="P6" />
+			</order>
+			<regulation>
+				<regulation clml="P1" />
+				<paragraph clml="P2" />
+				<subparagraph clml="P3" />
+				<clause clml="P4" />
+				<subclause clml="P5" />
+				<point clml="P6" />
+			</regulation>
+			<rule>
+				<rule clml="P1" />
+				<paragraph clml="P2" />
+				<subparagraph clml="P3" />
+				<clause clml="P4" />
+				<subclause clml="P5" />
+				<point clml="P6" />
+			</rule>
+		</secondary>
+		<schedule>
+			<paragraph clml="P1" />
+			<subparagraph clml="P2" />
+			<paragraph class="para1" clml="P3" />
+			<subparagraph class="para2" clml="P4" />
+			<clause clml="P5" />
+			<subclause clml="P6" />
+			<subsubparagraph clml="P5" />
+		</schedule>
+		<euretained>
+		</euretained>
+	</akn>
+</xsl:variable>
+
+<xsl:function name="local:get-structure-name" as="xs:string?">
+	<xsl:param name="doc-class" as="xs:string" />
+	<xsl:param name="doc-subclass" as="xs:string" />
+	<xsl:param name="schedule" as="xs:boolean" />
+	<xsl:param name="akn-element-name" as="xs:string" />
+	<xsl:param name="akn-element-class" as="xs:string?" />
+	<xsl:choose>
+		<xsl:when test="$schedule">
+			<xsl:variable name="match" as="element()?" select="$mapping/*:schedule/*[local-name()=$akn-element-name][exists(@class)][@class = $akn-element-class]" />
+			<xsl:choose>
+				<xsl:when test="exists($akn-element-class) and exists($match)">
+					<xsl:value-of select="$match/@clml" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="$mapping/*:schedule/*[local-name()=$akn-element-name][1]/@clml" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:when>
+		<xsl:when test="$doc-class = 'secondary'">
+			<xsl:value-of select="$mapping/*:secondary/*[local-name()=$doc-subclass]/*[local-name()=$akn-element-name]/@clml" />
+		</xsl:when>
+		<xsl:when test="$doc-class = 'euretained'">
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="$mapping/*:primary/*[local-name()=$akn-element-name]/@clml" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:akn-is-within-schedule" as="xs:boolean">
+	<xsl:param name="akn" as="element()" />
+	<xsl:choose>
+		<xsl:when test="empty($akn/parent::*)">
+			<xsl:value-of select="false()" />
+		</xsl:when>
+		<xsl:when test="$akn/parent::hcontainer[@name='schedule']">
+			<xsl:value-of select="true()" />
+		</xsl:when>
+		<xsl:when test="$akn/parent::quotedStructure">
+			<xsl:value-of select="local:target-is-schedule($akn/parent::*)" />
+		</xsl:when>
+		<xsl:when test="$akn/parent::html:td">
+			<xsl:value-of select="false()" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="local:akn-is-within-schedule($akn/parent::*)" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:get-structure-name" as="xs:string?">
+	<xsl:param name="akn" as="element()" />
+	<xsl:param name="context" as="xs:string*" />
+	<xsl:variable name="qs" as="element()?" select="$akn/ancestor::quotedStructure[1]" />
+	<xsl:variable name="doc-class" as="xs:string">
+		<xsl:choose>
+			<xsl:when test="exists($qs)">
+				<xsl:value-of select="local:get-target-class($qs)" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="$doc-category" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:variable name="doc-subclass" as="xs:string?">
+		<xsl:choose>
+			<xsl:when test="exists($qs)">
+				<xsl:value-of select="local:get-target-subclass($qs)" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="$doc-subtype" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:variable name="within-schedule" as="xs:boolean">
+		<xsl:choose>
+			<xsl:when test="local:akn-is-within-schedule($akn)">
+				<xsl:sequence select="true()" />
+			</xsl:when>
+			<xsl:when test="exists($qs)">
+				<xsl:sequence select="local:target-is-schedule($qs)" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:sequence select="false()" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:variable name="akn-class" as="xs:string?">
+		<xsl:choose>
+			<xsl:when test="exists($akn/@class)">
+				<xsl:value-of select="$akn/@class" />
+			</xsl:when>
+			<xsl:when test="not(local:akn-is-within-schedule($akn))" />
+			<xsl:when test="$akn/self::paragraph and ($akn/parent::paragraph or $akn/parent::subparagraph)">
+				<xsl:text>para1</xsl:text>
+			</xsl:when>
+			<xsl:when test="$akn/self::subparagraph and ($akn/parent::paragraph/parent::paragraph or $akn/parent::paragraph/parent::subparagraph) ">
+				<xsl:text>para2</xsl:text>
+			</xsl:when>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:variable name="akn-element-name" as="xs:string" select="if ($akn/self::hcontainer) then $akn/@name else local-name($akn)" />
+	<xsl:variable name="name" select="local:get-structure-name($doc-class, $doc-subclass, $within-schedule, $akn-element-name, $akn-class)" />
+	<xsl:choose>
+		<xsl:when test="$akn/ancestor-or-self::hcontainer[@name='step']">
+			<xsl:value-of select="local:one-more-than-context($context)" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="$name" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
 
 <xsl:template match="part">
 	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" as="xs:string" select="'Part'" />
+		<xsl:with-param name="name" select="'Part'" />
 	</xsl:call-template>
 </xsl:template>
 
 <xsl:template match="chapter">
 	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" as="xs:string" select="'Chapter'" />
+		<xsl:with-param name="name" select="'Chapter'" />
 	</xsl:call-template>
 </xsl:template>
 
@@ -26,7 +190,7 @@
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string">
 		<xsl:choose>
-			<xsl:when test="local:is-within-schedule($context) and exists(child::paragraph) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
+			<xsl:when test="local:akn-is-within-schedule(.) and exists(child::paragraph) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
 				<xsl:text>P1group</xsl:text>
 			</xsl:when>
 			<xsl:otherwise>
@@ -35,13 +199,13 @@
 		</xsl:choose>
 	</xsl:variable>
 	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" as="xs:string" select="$name" />
+		<xsl:with-param name="name" select="$name" />
 	</xsl:call-template>
 </xsl:template>
 
 <xsl:template match="hcontainer[@name='subheading']">
 	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" as="xs:string" select="'PsubBlock'" />
+		<xsl:with-param name="name" select="'PsubBlock'" />
 	</xsl:call-template>
 </xsl:template>
 
@@ -65,7 +229,7 @@
 	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="section">
+<xsl:template match="section | hcontainer[@name='regulation']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:choose>
 		<xsl:when test="exists(heading)">
@@ -82,6 +246,13 @@
 					</xsl:call-template>
 				</P1>
 			</P1group>
+		</xsl:when>
+		<xsl:when test="empty(num)">
+			<P>
+				<xsl:call-template name="small-level-content">
+					<xsl:with-param name="context" select="('P', $context)" tunnel="yes" />
+				</xsl:call-template>
+			</P>
 		</xsl:when>
 		<xsl:otherwise>
 			<P1>
@@ -132,25 +303,6 @@
 	</xsl:call-template>
 </xsl:template>
 
-<xsl:function name="local:is-within-schedule" as="xs:boolean">
-	<xsl:param name="context" as="xs:string*" />
-	<xsl:variable name="head" as="xs:string" select="$context[1]" />
-	<xsl:choose>
-		<xsl:when test="empty($context)">
-			<xsl:message terminate="yes" />
-		</xsl:when>
-		<xsl:when test="$head = 'Schedule'">
-			<xsl:sequence select="true()" />
-		</xsl:when>
-		<xsl:when test="$head = ('Body', 'BlockAmendment', 'td')">
-			<xsl:sequence select="false()" />
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:sequence select="local:is-within-schedule(subsequence($context, 2))" />
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:function>
-
 <xsl:function name="local:one-more-than-context" as="xs:string">
 	<xsl:param name="context" as="xs:string*" />
 	<xsl:variable name="head" as="xs:string" select="$context[1]" />
@@ -183,96 +335,6 @@
 			<xsl:message terminate="yes">
 				<xsl:sequence select="$context" />
 			</xsl:message>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:function>
-
-<xsl:function name="local:get-structure-name" as="xs:string?">
-	<xsl:param name="hcontainer" as="element()" />
-	<xsl:param name="context" as="xs:string*" />
-	<xsl:choose>
-		<xsl:when test="$hcontainer/self::paragraph">
-			<xsl:choose>
-				<xsl:when test="local:is-within-schedule($context)">
-					<xsl:choose>
-						<xsl:when test="$context[1] = ('ScheduleBody', 'Part', 'Chapter', 'Pblock', 'PsubBlock', 'P1group')">
-							<xsl:text>P1</xsl:text>
-						</xsl:when>
-						<xsl:when test="$hcontainer/parent::hcontainer[@name='step']">
-							<xsl:value-of select="local:one-more-than-context($context)" />
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:text>P3</xsl:text>
-						</xsl:otherwise>
-					</xsl:choose>
-				</xsl:when>
-				<xsl:when test="$hcontainer/parent::quotedStructure">
-					<xsl:choose>
-						<xsl:when test="local:get-target-class($hcontainer/parent::*) = ('primary', 'unknown')">
-							<xsl:text>P3</xsl:text>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:message>
-								<xsl:sequence select="$hcontainer/parent::quotedStructure" />
-							</xsl:message>
-						</xsl:otherwise>
-					</xsl:choose>
-				</xsl:when>
-				<xsl:when test="$hcontainer/parent::html:td">
-					<xsl:text>P3</xsl:text>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:choose>
-						<xsl:when test="$doc-category = 'primary'">
-							<xsl:choose>
-								<xsl:when test="$hcontainer/parent::section or $hcontainer/parent::subsection">
-									<xsl:text>P3</xsl:text>
-								</xsl:when>
-								<xsl:otherwise>
-									<xsl:value-of select="local:one-more-than-context($context)" />
-								</xsl:otherwise>
-							</xsl:choose>
-						</xsl:when>
-					</xsl:choose>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="$hcontainer/self::subparagraph">
-			<xsl:choose>
-				<xsl:when test="$hcontainer/parent::quotedStructure">
-					<xsl:choose>
-						<xsl:when test="local:get-target-class($hcontainer/parent::*) = ('primary', 'unknown')">
-							<xsl:text>P4</xsl:text>
-						</xsl:when>
-					</xsl:choose>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select="local:one-more-than-context($context)" />
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="$hcontainer/self::clause">
-			<xsl:choose>
-				<xsl:when test="$hcontainer/parent::quotedStructure">
-					<xsl:choose>
-						<xsl:when test="local:get-target-class($hcontainer/parent::*) = ('primary', 'unknown')">
-							<xsl:text>P5</xsl:text>
-						</xsl:when>
-					</xsl:choose>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select="local:one-more-than-context($context)" />
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="$hcontainer/self::hcontainer/@name='subsubparagraph'">
-			<xsl:value-of select="local:one-more-than-context($context)" />
-		</xsl:when>
-		<xsl:when test="$hcontainer/self::hcontainer/@name='step'">
-			<xsl:value-of select="local:one-more-than-context($context)" />
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:value-of select="local:one-more-than-context($context)" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:function>
@@ -311,6 +373,12 @@
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:with-param>
+	</xsl:call-template>
+</xsl:template>
+
+<xsl:template match="level">
+	<xsl:call-template name="create-element-and-wrap-as-necessary">
+		<xsl:with-param name="name" select="'P2group'" />
 	</xsl:call-template>
 </xsl:template>
 
@@ -374,7 +442,7 @@
 	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:variable name="name" as="xs:string">
 		<xsl:choose>
-			<xsl:when test="$head = ('Part', 'Chapter')">
+			<xsl:when test="$head = ('Part', 'Chapter', 'Pblock')">
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
 			<xsl:when test="$head = ('P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7')">

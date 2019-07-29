@@ -154,7 +154,7 @@
 	<xsl:value-of select="local:category-from-short-type($doc-short-type)" />
 </xsl:variable>
 
-<xsl:variable name="doc-subtype" as="xs:string" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRsubtype/@value" />
+<xsl:variable name="doc-subtype" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRsubtype/@value" />
 
 <xsl:variable name="doc-year" as="xs:integer">
 	<xsl:choose>

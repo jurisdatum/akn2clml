@@ -12,13 +12,6 @@
 	exclude-result-prefixes="xs ukakn ukl ukl2 local">
 
 
-<xsl:template name="block-with-mod">
-	<xsl:if test="exists(node()[not(self::mod) and not(self::text()[not(normalize-space())]) and not(self::inline/@name='AppendText')])">
-		<xsl:message terminate="yes" />
-	</xsl:if>
-	<xsl:apply-templates />
-</xsl:template>
-
 <xsl:function name="local:get-target-class" as="xs:string?">
 	<xsl:param name="qs" as="element(quotedStructure)" />
 	<xsl:choose>
@@ -30,6 +23,40 @@
 		</xsl:when>
 	</xsl:choose>
 </xsl:function>
+
+<xsl:function name="local:get-target-subclass" as="xs:string">
+	<xsl:param name="qs" as="element(quotedStructure)" />
+	<xsl:choose>
+		<xsl:when test="exists($qs/@ukl:TargetSubClass)">
+			<xsl:value-of select="$qs/@ukl:TargetSubClass" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:text>unknown</xsl:text>
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:target-is-schedule" as="xs:boolean?">
+	<xsl:param name="qs" as="element(quotedStructure)" />
+	<xsl:choose>
+		<xsl:when test="exists($qs/@ukl:Context)">
+			<xsl:value-of select="$qs/@ukl:Context = 'schedule'" />
+		</xsl:when>
+		<xsl:when test="exists($qs/descendant::*[@class = ('schProv1', 'schProv2')])">
+			<xsl:sequence select="true()" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="false()" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:template name="block-with-mod">
+	<xsl:if test="exists(node()[not(self::mod) and not(self::text()[not(normalize-space())]) and not(self::inline/@name='AppendText')])">
+		<xsl:message terminate="yes" />
+	</xsl:if>
+	<xsl:apply-templates />
+</xsl:template>
 
 <xsl:template match="mod">
 	<xsl:choose>
@@ -58,41 +85,25 @@
 
 <xsl:template match="quotedStructure">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="target-class" as="xs:string">
-		<xsl:choose>
-			<xsl:when test="exists(@ukl2:docName)">
-				<xsl:value-of select="local:category-from-short-type(@ukl2:docName)" />
-			</xsl:when>
-			<xsl:when test="exists(@ukakn:docCategory)">
-				<xsl:value-of select="@ukakn:docCategory" />
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:text>unknown</xsl:text>
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:variable>
-	<xsl:variable name="amendment-context" as="xs:string">
-		<xsl:choose>
-			<xsl:when test="false()">
-				<xsl:text>main</xsl:text>
-			</xsl:when>
-			<xsl:when test="false()">
-				<xsl:text>schedule</xsl:text>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:text>unknown</xsl:text>
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:variable>
 	<BlockAmendment>
 		<xsl:attribute name="TargetClass">
-			<xsl:value-of select="$target-class" />
+			<xsl:value-of select="local:get-target-class(.)" />
 		</xsl:attribute>
 		<xsl:attribute name="TargetSubClass">
-			<xsl:text>unknown</xsl:text>
+			<xsl:value-of select="local:get-target-subclass(.)" />
 		</xsl:attribute>
 		<xsl:attribute name="Context">
-			<xsl:value-of select="$amendment-context" />
+			<xsl:choose>
+				<xsl:when test="exists(@ukl:Context)">
+					<xsl:value-of select="@ukl:Context" />
+				</xsl:when>
+				<xsl:when test="local:target-is-schedule(.)">
+					<xsl:text>schedule</xsl:text>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:text>main</xsl:text>
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:attribute>
 		<xsl:attribute name="Format">
 			<xsl:choose>
