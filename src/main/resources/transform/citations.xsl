@@ -94,54 +94,68 @@
 <xsl:template match="ref">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="components" as="element()?" select="local:parse-uri(@href)" />
-	<Citation>
-		<xsl:attribute name="id">
-			<xsl:value-of select="local:make-citation-id(.)" />
-		</xsl:attribute>
-		<xsl:attribute name="Class">
-			<xsl:choose>
-				<xsl:when test="exists($components)">
-					<xsl:value-of select="$components/@Class" />
-				</xsl:when>
-				<xsl:when test="exists(@ukl:Class)">
-					<xsl:value-of select="@ukl:Class" />
-				</xsl:when>
-			</xsl:choose>
-		</xsl:attribute>
-		<xsl:attribute name="Year">
-			<xsl:choose>
-				<xsl:when test="exists($components)">
-					<xsl:value-of select="$components/@Year" />
-				</xsl:when>
-				<xsl:when test="exists(@ukl:Year)">
-					<xsl:value-of select="@ukl:Year" />
-				</xsl:when>
-			</xsl:choose>
-		</xsl:attribute>
-		<xsl:if test="exists($components) or exists(@ukl:Number)">
-			<xsl:attribute name="Number">
-				<xsl:choose>
-					<xsl:when test="exists($components)">
-						<xsl:value-of select="$components/@Number" />
-					</xsl:when>
-					<xsl:when test="exists(exists(@ukl:Number))">
-						<xsl:value-of select="@ukl:Number" />
-					</xsl:when>
-				</xsl:choose>
-			</xsl:attribute>
-		</xsl:if>
-		<xsl:if test="exists($components/@Section)">
-			<xsl:attribute name="SectionRef">
-				<xsl:value-of select="$components/@Section" />
-			</xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="URI">
-			<xsl:value-of select="@href" />
-		</xsl:attribute>
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="('Citation', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</Citation>
+	<xsl:choose>
+		<xsl:when test="exists($components) or (exists(@ukl:Class) and exists(@ukl:Year))">
+			<Citation>
+				<xsl:attribute name="id">
+					<xsl:value-of select="local:make-citation-id(.)" />
+				</xsl:attribute>
+				<xsl:attribute name="Class">
+					<xsl:choose>
+						<xsl:when test="exists($components)">
+							<xsl:value-of select="$components/@Class" />
+						</xsl:when>
+						<xsl:when test="exists(@ukl:Class)">
+							<xsl:value-of select="@ukl:Class" />
+						</xsl:when>
+					</xsl:choose>
+				</xsl:attribute>
+				<xsl:attribute name="Year">
+					<xsl:choose>
+						<xsl:when test="exists($components)">
+							<xsl:value-of select="$components/@Year" />
+						</xsl:when>
+						<xsl:when test="exists(@ukl:Year)">
+							<xsl:value-of select="@ukl:Year" />
+						</xsl:when>
+					</xsl:choose>
+				</xsl:attribute>
+				<xsl:if test="exists($components) or exists(@ukl:Number)">
+					<xsl:attribute name="Number">
+						<xsl:choose>
+							<xsl:when test="exists($components)">
+								<xsl:value-of select="$components/@Number" />
+							</xsl:when>
+							<xsl:when test="exists(exists(@ukl:Number))">
+								<xsl:value-of select="@ukl:Number" />
+							</xsl:when>
+						</xsl:choose>
+					</xsl:attribute>
+				</xsl:if>
+				<xsl:if test="exists($components/@Section)">
+					<xsl:attribute name="SectionRef">
+						<xsl:value-of select="$components/@Section" />
+					</xsl:attribute>
+				</xsl:if>
+				<xsl:attribute name="URI">
+					<xsl:value-of select="@href" />
+				</xsl:attribute>
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="('Citation', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</Citation>
+		</xsl:when>
+		<xsl:when test="starts-with(@href, '#')">
+			<InternalLink Ref="{ substring(@href, 2) }">
+				<xsl:apply-templates />
+			</InternalLink>
+		</xsl:when>
+		<xsl:otherwise>
+			<ExternalLink URI="{ @href }">
+				<xsl:apply-templates />
+			</ExternalLink>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="ref[@class='subref']">
@@ -174,35 +188,54 @@
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="components" as="element()?" select="local:parse-uri(@from)" />
 	<xsl:variable name="components2" as="element()?" select="local:parse-uri(@upTo)" />
-	<Citation>
-		<xsl:attribute name="id">
-			<xsl:value-of select="local:make-citation-id(.)" />
-		</xsl:attribute>
-		<xsl:attribute name="Class">
-			<xsl:value-of select="$components/@Class" />
-		</xsl:attribute>
-		<xsl:attribute name="Year">
-			<xsl:value-of select="$components/@Year" />
-		</xsl:attribute>
-		<xsl:attribute name="Number">
-			<xsl:value-of select="$components/Number" />
-		</xsl:attribute>
-		<xsl:attribute name="StartSectionRef">
-			<xsl:value-of select="$components/@Section" />
-		</xsl:attribute>
-		<xsl:attribute name="EndSectionRef">
-			<xsl:value-of select="$components2/@Section" />
-		</xsl:attribute>
-		<xsl:attribute name="URI">
-			<xsl:value-of select="@href" />
-		</xsl:attribute>
-		<xsl:attribute name="UpTo">
-			<xsl:value-of select="@upTo" />
-		</xsl:attribute>
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="('Citation', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</Citation>
+	<xsl:choose>
+		<xsl:when test="exists($components)">
+			<Citation>
+				<xsl:attribute name="id">
+					<xsl:value-of select="local:make-citation-id(.)" />
+				</xsl:attribute>
+				<xsl:attribute name="Class">
+					<xsl:value-of select="$components/@Class" />
+				</xsl:attribute>
+				<xsl:attribute name="Year">
+					<xsl:value-of select="$components/@Year" />
+				</xsl:attribute>
+				<xsl:attribute name="Number">
+					<xsl:value-of select="$components/Number" />
+				</xsl:attribute>
+				<xsl:attribute name="StartSectionRef">
+					<xsl:value-of select="$components/@Section" />
+				</xsl:attribute>
+				<xsl:attribute name="EndSectionRef">
+					<xsl:value-of select="$components2/@Section" />
+				</xsl:attribute>
+				<xsl:attribute name="URI">
+					<xsl:value-of select="@from" />
+				</xsl:attribute>
+				<xsl:attribute name="UpTo">
+					<xsl:value-of select="@upTo" />
+				</xsl:attribute>
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="('Citation', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</Citation>
+		</xsl:when>
+		<xsl:when test="exists(ref[@href=current()/@from]) and exists(ref[@href=current()/@upTo])">
+			<Span>
+				<xsl:apply-templates />
+			</Span>
+		</xsl:when>
+		<xsl:when test="starts-with(@from, '#')">
+			<InternalLink Ref="{ substring(@from, 2) }" EndRef="{ if (starts-with(@upTo, '#')) then substring(@upTo, 2) else @upTo }">
+				<xsl:apply-templates />
+			</InternalLink>
+		</xsl:when>
+		<xsl:otherwise>
+			<ExternalLink URI="{ @from }">
+				<xsl:apply-templates />
+			</ExternalLink>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="rref[@class='subref']">
