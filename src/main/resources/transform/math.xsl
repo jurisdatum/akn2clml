@@ -24,6 +24,12 @@
 	</Formula>
 </xsl:template>
 
+<xsl:template match="tblock[@class='formula']/num">
+	<equationNumber>
+		<xsl:apply-templates />
+	</equationNumber>
+</xsl:template>
+
 <xsl:template match="math:*">
 	<xsl:element name="{ local-name() }" namespace="http://www.w3.org/1998/Math/MathML">
 		<xsl:copy-of select="@*"/>
