@@ -158,6 +158,61 @@
 	</xsl:call-template>
 </xsl:template>
 
+<xsl:function name="local:get-contiguous-definitions" as="element(hcontainer)*">
+	<xsl:param name="elements" as="element()*" />
+	<xsl:choose>
+		<xsl:when test="empty($elements)">
+			<xsl:sequence select="()" />
+		</xsl:when>
+		<xsl:when test="$elements[1]/self::hcontainer[@name='definition']">
+			<xsl:sequence select="($elements[1], local:get-contiguous-definitions(subsequence($elements, 2)))" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="()" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:get-elements-following-contiguous-definitions" as="element()*">
+	<xsl:param name="elements" as="element()*" />
+	<xsl:choose>
+		<xsl:when test="empty($elements)">
+			<xsl:sequence select="()" />
+		</xsl:when>
+		<xsl:when test="$elements[1]/self::hcontainer[@name='definition']">
+			<xsl:sequence select="local:get-elements-following-contiguous-definitions(subsequence($elements, 2))" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="$elements" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:template name="group-definitions-for-block-amendment">
+	<xsl:param name="elements" as="element()*" />
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:param name="decoration" as="xs:string" select="'none'" />
+	<xsl:if test="exists($elements)">
+		<xsl:variable name="first" as="element()" select="$elements[1]" />
+		<xsl:choose>
+			<xsl:when test="$first/self::hcontainer[@name='definition']">
+				<xsl:call-template name="definition-list">
+					<xsl:with-param name="definitions" select="local:get-contiguous-definitions($elements)" />
+				</xsl:call-template>
+				<xsl:call-template name="group-definitions-for-block-amendment">
+					<xsl:with-param name="elements" select="local:get-elements-following-contiguous-definitions($elements)" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates select="$first" />
+				<xsl:call-template name="group-definitions-for-block-amendment">
+					<xsl:with-param name="elements" select="subsequence($elements, 2)" />
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:if>
+</xsl:template>
+
 <xsl:template match="hcontainer[@name='definition']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<ListItem>

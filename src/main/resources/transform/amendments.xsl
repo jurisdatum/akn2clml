@@ -124,6 +124,11 @@
 					<xsl:with-param name="definitions" select="*" />
 				</xsl:call-template>
 			</xsl:when>
+			<xsl:when test="exists(*) and (every $child in * satisfies ($child/self::p or $child/self::hcontainer[@name='definition']))">
+				<xsl:call-template name="group-definitions-for-block-amendment">
+					<xsl:with-param name="elements" select="*" />
+				</xsl:call-template>
+			</xsl:when>
 			<xsl:otherwise>
 				<xsl:apply-templates>
 					<xsl:with-param name="context" select="('BlockAmendment', $context)" tunnel="yes" />
