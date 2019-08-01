@@ -382,6 +382,16 @@
 	</xsl:call-template>
 </xsl:template>
 
+<xsl:template match="hcontainer[@name='wrapper']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="name" as="xs:string" select="concat($context[1], 'para')" />
+	<xsl:element name="{ $name }">
+		<xsl:apply-templates>
+				<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</xsl:element>
+</xsl:template>
+
 
 <!-- schedules -->
 
