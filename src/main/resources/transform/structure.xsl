@@ -168,6 +168,12 @@
 			<xsl:when test="$akn/self::subparagraph and ($akn/parent::paragraph/parent::hcontainer[@name=('wrapper1','wrapper2')]/parent::paragraph or $akn/parent::paragraph/parent::hcontainer[@name=('wrapper1','wrapper2')]/parent::subparagraph) ">
 				<xsl:text>para2</xsl:text>
 			</xsl:when>
+			<xsl:when test="$akn/self::subparagraph and $akn/parent::subparagraph "> <!-- asp/2013/15 -->
+				<xsl:text>para2</xsl:text>
+			</xsl:when>
+			<xsl:when test="$akn/self::subparagraph and ($akn/parent::hcontainer[@name=('wrapper1','wrapper2')]/parent::subparagraph) "> <!-- asp/2013/15 -->
+				<xsl:text>para2</xsl:text>
+			</xsl:when>
 		</xsl:choose>
 	</xsl:variable>
 	<xsl:variable name="akn-element-name" as="xs:string" select="if ($akn/self::hcontainer) then $akn/@name else local-name($akn)" />
