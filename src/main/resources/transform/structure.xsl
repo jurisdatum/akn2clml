@@ -156,13 +156,16 @@
 			<xsl:when test="$akn/self::paragraph and ($akn/parent::paragraph or $akn/parent::subparagraph)">
 				<xsl:text>para1</xsl:text>
 			</xsl:when>
-			<xsl:when test="$akn/self::paragraph and ($akn/parent::hcontainer[@name='wrapper1']/parent::paragraph or $akn/parent::hcontainer[@name='wrapper1']/parent::subparagraph)">
+			<xsl:when test="$akn/self::paragraph and ($akn/parent::hcontainer[@name=('wrapper1','wrapper2')]/parent::paragraph or $akn/parent::hcontainer[@name=('wrapper1','wrapper2')]/parent::subparagraph)">
 				<xsl:text>para1</xsl:text>
 			</xsl:when>
 			<xsl:when test="$akn/self::subparagraph and ($akn/parent::paragraph/parent::paragraph or $akn/parent::paragraph/parent::subparagraph) ">
 				<xsl:text>para2</xsl:text>
 			</xsl:when>
-			<xsl:when test="$akn/self::subparagraph and ($akn/parent::hcontainer[@name='wrapper1']/parent::paragraph/parent::paragraph or $akn/parent::hcontainer[@name='wrapper1']/parent::paragraph/parent::subparagraph) ">
+			<xsl:when test="$akn/self::subparagraph and ($akn/parent::hcontainer[@name=('wrapper1','wrapper2')]/parent::paragraph/parent::paragraph or $akn/parent::hcontainer[@name=('wrapper1','wrapper2')]/parent::paragraph/parent::subparagraph) ">
+				<xsl:text>para2</xsl:text>
+			</xsl:when>
+			<xsl:when test="$akn/self::subparagraph and ($akn/parent::paragraph/parent::hcontainer[@name=('wrapper1','wrapper2')]/parent::paragraph or $akn/parent::paragraph/parent::hcontainer[@name=('wrapper1','wrapper2')]/parent::subparagraph) ">
 				<xsl:text>para2</xsl:text>
 			</xsl:when>
 		</xsl:choose>
