@@ -40,16 +40,32 @@
 <xsl:template match="img">
 	<xsl:variable name="res-id" as="xs:string" select="local:make-resource-id(.)" />
 	<Image ResourceRef="{ $res-id }">
-		<xsl:if test="exists(@width) or exists(@ukl:Width)">
-			<xsl:attribute name="Width">
-				<xsl:value-of select="if (exists(@ukl:Width)) then @ukl:Width else @width" />
-			</xsl:attribute>
-		</xsl:if>
-		<xsl:if test="exists(@height) or exists(@ukl:Height)">
-			<xsl:attribute name="Height">
-				<xsl:value-of select="if (exists(@ukl:Height)) then @ukl:Height else @height" />
-			</xsl:attribute>
-		</xsl:if>
+		<xsl:attribute name="Width">
+			<xsl:choose>
+				<xsl:when test="exists(@ukl:Width)">
+					<xsl:value-of select="@ukl:Width" />
+				</xsl:when>
+				<xsl:when test="exists(@width)">
+					<xsl:value-of select="@width" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:text>auto</xsl:text>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:attribute>
+		<xsl:attribute name="Height">
+			<xsl:choose>
+				<xsl:when test="exists(@ukl:Height)">
+					<xsl:value-of select="@ukl:Height" />
+				</xsl:when>
+				<xsl:when test="exists(@height)">
+					<xsl:value-of select="@height" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:text>auto</xsl:text>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:attribute>
 	</Image>
 </xsl:template>
 
