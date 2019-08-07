@@ -156,7 +156,13 @@
 			<xsl:when test="$akn/self::paragraph and ($akn/parent::paragraph or $akn/parent::subparagraph)">
 				<xsl:text>para1</xsl:text>
 			</xsl:when>
+			<xsl:when test="$akn/self::paragraph and ($akn/parent::hcontainer[@name='wrapper1']/parent::paragraph or $akn/parent::hcontainer[@name='wrapper1']/parent::subparagraph)">
+				<xsl:text>para1</xsl:text>
+			</xsl:when>
 			<xsl:when test="$akn/self::subparagraph and ($akn/parent::paragraph/parent::paragraph or $akn/parent::paragraph/parent::subparagraph) ">
+				<xsl:text>para2</xsl:text>
+			</xsl:when>
+			<xsl:when test="$akn/self::subparagraph and ($akn/parent::hcontainer[@name='wrapper1']/parent::paragraph/parent::paragraph or $akn/parent::hcontainer[@name='wrapper1']/parent::paragraph/parent::subparagraph) ">
 				<xsl:text>para2</xsl:text>
 			</xsl:when>
 		</xsl:choose>
@@ -190,7 +196,7 @@
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string">
 		<xsl:choose>
-			<xsl:when test="local:akn-is-within-schedule(.) and exists(child::paragraph) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
+			<xsl:when test="local:akn-is-within-schedule(.) and exists(child::paragraph) and empty(child::paragraph/heading) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
 				<xsl:text>P1group</xsl:text>
 			</xsl:when>
 			<xsl:otherwise>
@@ -213,6 +219,7 @@
 <!-- numbered paragraphs -->
 
 <xsl:template name="small-level-content">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="content" as="element()*" select="*[not(self::num) and not(self::heading) and not(self::subheading)]" />
 	<xsl:variable name="children" as="element()*" select="$content[not(self::intro) and not(self::content) and not(self::wrapUp)]" />
 	<xsl:choose>
@@ -222,6 +229,14 @@
 				<xsl:with-param name="definitions" select="$children" />
 			</xsl:call-template>
 			<xsl:apply-templates select="wrapUp" />
+		</xsl:when>
+		<xsl:when test="not($context[1] = 'P') and empty($children[self::hcontainer[@name='wrapper1']])">
+			<xsl:variable name="name" as="xs:string" select="concat($context[1], 'para')" />
+			<xsl:element name="{ $name }">
+				<xsl:apply-templates select="$content">
+						<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:element>
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:apply-templates select="$content" />
@@ -382,7 +397,9 @@
 	</xsl:call-template>
 </xsl:template>
 
-<xsl:template match="hcontainer[@name='wrapper']">
+<!-- hcontainer[@name='wrapper1'] maps P?paras where more than one sibling contain structural children -->
+
+<xsl:template match="hcontainer[@name='wrapper1']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string" select="concat($context[1], 'para')" />
 	<xsl:element name="{ $name }">
@@ -390,6 +407,12 @@
 				<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
 		</xsl:apply-templates>
 	</xsl:element>
+</xsl:template>
+
+<!-- hcontainer[@name='wrapper2'] wraps groups of numbered paragraphs that are siblings but separated by content -->
+
+<xsl:template match="hcontainer[@name='wrapper2']">
+	<xsl:apply-templates />
 </xsl:template>
 
 
@@ -465,6 +488,9 @@
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
 			<xsl:otherwise>
+				<xsl:message>
+					<xsl:sequence select="$context" />
+				</xsl:message>
 				<xsl:message terminate="yes">
 					<xsl:sequence select=".." />
 				</xsl:message>
