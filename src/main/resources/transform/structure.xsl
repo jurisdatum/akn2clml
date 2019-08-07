@@ -253,7 +253,7 @@
 	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="section | hcontainer[@name='regulation']">
+<xsl:template match="section | article | rule | hcontainer[@name='regulation']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:choose>
 		<xsl:when test="exists(heading)">
