@@ -493,7 +493,7 @@
 			<xsl:when test="$head = 'Schedule'">
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
-			<xsl:when test="$head = ('Tabular')">
+			<xsl:when test="$head = ('Tabular', 'Form')">
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
 			<xsl:otherwise>
