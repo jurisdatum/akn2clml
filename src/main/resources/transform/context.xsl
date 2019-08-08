@@ -111,6 +111,16 @@
 		<xsl:when test="local:clml-element-is-structural($clml)">
 			<xsl:sequence select="local:get-structure-wrapper($context)" />
 		</xsl:when>
+		<xsl:when test="$clml = ('Tabular', 'Figure', 'Form')">
+			<xsl:choose>
+				<xsl:when test="$context[1] = 'ScheduleBody'">
+					<xsl:sequence select="()" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:sequence select="local:get-block-wrapper($context)" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:when>
 		<xsl:when test="local:clml-element-is-block($clml)">
 			<xsl:sequence select="local:get-block-wrapper($context)" />
 		</xsl:when>
