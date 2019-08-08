@@ -5,9 +5,10 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs html local">
+	exclude-result-prefixes="xs ukl html local">
 
 <xsl:variable name="mapping" as="element()">
 	<akn xmlns="">
@@ -495,6 +496,9 @@
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
 			<xsl:when test="$head = ('Tabular', 'Form')">
+				<xsl:text>Number</xsl:text>
+			</xsl:when>
+			<xsl:when test="($head = 'BlockAmendment') and (@ukl:Context = ('Part', 'Chapter', 'Pblock'))"> <!-- see asp/2000/5 FragmentNumber -->
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
 			<xsl:otherwise>
