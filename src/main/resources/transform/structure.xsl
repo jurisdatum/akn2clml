@@ -205,7 +205,8 @@
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string">
 		<xsl:choose>
-			<xsl:when test="local:akn-is-within-schedule(.) and exists(child::paragraph) and empty(child::paragraph/heading) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
+			<!-- LDAPP uses crossheadings for certain schedule paragraphs -->
+			<xsl:when test="false() and local:akn-is-within-schedule(.) and exists(child::paragraph) and empty(child::paragraph/heading) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
 				<xsl:text>P1group</xsl:text>
 			</xsl:when>
 			<xsl:otherwise>
