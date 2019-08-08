@@ -498,7 +498,7 @@
 			<xsl:when test="$head = ('Tabular', 'Form')">
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
-			<xsl:when test="($head = 'BlockAmendment') and (@ukl:Context = ('Part', 'Chapter', 'Pblock'))"> <!-- see asp/2000/5 FragmentNumber -->
+			<xsl:when test="@ukl:Context = ('Part', 'Chapter', 'Pblock')"> <!-- see asp/2000/5 FragmentNumber -->
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
 			<xsl:otherwise>
@@ -511,17 +511,41 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:variable>
-	<xsl:element name="{ $name }">
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</xsl:element>
+	<xsl:choose>
+		<xsl:when test="exists(@ukl:Context)">
+			<FragmentNumber Context="{ @ukl:Context }">
+				<xsl:element name="{ $name }">
+					<xsl:apply-templates>
+						<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+					</xsl:apply-templates>
+				</xsl:element>
+			</FragmentNumber>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:element name="{ $name }">
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:element>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="heading">
-	<Title>
-		<xsl:apply-templates />
-	</Title>
+	<xsl:choose>
+		<xsl:when test="exists(@ukl:Context)">
+			<FragmentTitle Context="{ @ukl:Context }">
+				<Title>
+					<xsl:apply-templates />
+				</Title>
+			</FragmentTitle>
+		</xsl:when>
+		<xsl:otherwise>
+			<Title>
+				<xsl:apply-templates />
+			</Title>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 </xsl:transform>
