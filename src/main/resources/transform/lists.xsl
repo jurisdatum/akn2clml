@@ -109,20 +109,24 @@
 	<xsl:variable name="ordered" as="xs:boolean" select="local:is-ordered(.)" />
 	<xsl:variable name="name" as="xs:string" select="if ($ordered) then 'OrderedList' else 'UnorderedList'" />
 	<xsl:variable name="decor" as="xs:string" select="local:get-decoration(., $ordered)" />
-	<xsl:element name="{ $name }">
-		<xsl:if test="$ordered">
-			<xsl:attribute name="Type">
-				<xsl:value-of select="local:get-type-of-ordered-list(., $decor)" />
-			</xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="Decoration">
-			<xsl:value-of select="$decor" />
-		</xsl:attribute>
-		<xsl:apply-templates>
-			<xsl:with-param name="decor" select="$decor" />
-			<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</xsl:element>
+	<xsl:call-template name="wrap-as-necessary">
+		<xsl:with-param name="clml" as="element()">
+			<xsl:element name="{ $name }">
+				<xsl:if test="$ordered">
+					<xsl:attribute name="Type">
+						<xsl:value-of select="local:get-type-of-ordered-list(., $decor)" />
+					</xsl:attribute>
+				</xsl:if>
+				<xsl:attribute name="Decoration">
+					<xsl:value-of select="$decor" />
+				</xsl:attribute>
+				<xsl:apply-templates>
+					<xsl:with-param name="decor" select="$decor" />
+					<xsl:with-param name="context" select="($name, local:get-wrapper($name, $context), $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:element>
+		</xsl:with-param>
+	</xsl:call-template>
 </xsl:template>
 
 <xsl:template match="item">
