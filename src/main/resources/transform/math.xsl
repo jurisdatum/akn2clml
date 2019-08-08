@@ -40,7 +40,9 @@
 <xsl:template match="blockContainer[@class='where']">
 	<Where>
 		<Para>
-			<xsl:apply-templates />
+			<xsl:call-template name="group-definitions-for-block-amendment">
+				<xsl:with-param name="elements" select="*" />
+			</xsl:call-template>
 		</Para>
 	</Where>
 </xsl:template>

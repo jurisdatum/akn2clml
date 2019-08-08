@@ -144,7 +144,7 @@
 <!-- definition lists -->
 
 <xsl:template name="definition-list">
-	<xsl:param name="definitions" as="element(hcontainer)+" />
+	<xsl:param name="definitions" as="element()+" />
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:param name="decoration" as="xs:string" select="'none'" />
 	<xsl:call-template name="wrap-as-necessary">
@@ -158,13 +158,16 @@
 	</xsl:call-template>
 </xsl:template>
 
-<xsl:function name="local:get-contiguous-definitions" as="element(hcontainer)*">
+<xsl:function name="local:get-contiguous-definitions" as="element()*">
 	<xsl:param name="elements" as="element()*" />
 	<xsl:choose>
 		<xsl:when test="empty($elements)">
 			<xsl:sequence select="()" />
 		</xsl:when>
 		<xsl:when test="$elements[1]/self::hcontainer[@name='definition']">
+			<xsl:sequence select="($elements[1], local:get-contiguous-definitions(subsequence($elements, 2)))" />
+		</xsl:when>
+		<xsl:when test="$elements[1]/self::tblock[@class='definition']">
 			<xsl:sequence select="($elements[1], local:get-contiguous-definitions(subsequence($elements, 2)))" />
 		</xsl:when>
 		<xsl:otherwise>
@@ -182,6 +185,9 @@
 		<xsl:when test="$elements[1]/self::hcontainer[@name='definition']">
 			<xsl:sequence select="local:get-elements-following-contiguous-definitions(subsequence($elements, 2))" />
 		</xsl:when>
+		<xsl:when test="$elements[1]/self::tblock[@class='definition']">
+			<xsl:sequence select="local:get-elements-following-contiguous-definitions(subsequence($elements, 2))" />
+		</xsl:when>
 		<xsl:otherwise>
 			<xsl:sequence select="$elements" />
 		</xsl:otherwise>
@@ -195,7 +201,7 @@
 	<xsl:if test="exists($elements)">
 		<xsl:variable name="first" as="element()" select="$elements[1]" />
 		<xsl:choose>
-			<xsl:when test="$first/self::hcontainer[@name='definition']">
+			<xsl:when test="$first/self::hcontainer[@name='definition'] or $first/self::tblock[@class='definition']">
 				<xsl:call-template name="definition-list">
 					<xsl:with-param name="definitions" select="local:get-contiguous-definitions($elements)" />
 				</xsl:call-template>
@@ -213,7 +219,7 @@
 	</xsl:if>
 </xsl:template>
 
-<xsl:template match="hcontainer[@name='definition']">
+<xsl:template match="hcontainer[@name='definition'] | tblock[@class='definition']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<ListItem>
 		<xsl:apply-templates>
