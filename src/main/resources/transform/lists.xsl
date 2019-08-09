@@ -52,54 +52,64 @@
 <xsl:function name="local:get-type-of-ordered-list" as="xs:string?">
 	<xsl:param name="list" as="element(blockList)" />
 	<xsl:param name="decor" as="xs:string" />
+	<xsl:variable name="begin-end" as="xs:string+">
+		<xsl:choose>
+			<xsl:when test="$decor = 'none'">
+				<xsl:sequence select="'^', '$'" />
+			</xsl:when>
+			<xsl:when test="$decor = 'parens'">
+				<xsl:sequence select="('^\(', '\)$')" />
+			</xsl:when>
+			<xsl:when test="$decor = 'parenRight'">
+				<xsl:sequence select="('^', '\)$')" />
+			</xsl:when>
+			<xsl:when test="$decor = 'brackets'">
+				<xsl:sequence select="('^\[', '\]$')" />
+			</xsl:when>
+			<xsl:when test="$decor = 'bracketRight'">
+				<xsl:sequence select="('^', '\]$')" />
+			</xsl:when>
+			<xsl:when test="$decor = 'period'">
+				<xsl:sequence select="('^', '\.$')" />
+			</xsl:when>
+			<xsl:when test="$decor = 'colon'">
+				<xsl:sequence select="('^', ':$')" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:sequence select="'^', '$'" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:variable name="arabic-pattern" as="xs:string">
+		<xsl:value-of select="concat($begin-end[1], '\d+', $begin-end[2])" />
+	</xsl:variable>
+	<xsl:variable name="roman-pattern" as="xs:string">
+		<xsl:value-of select="concat($begin-end[1], '[ivx]+', $begin-end[2])" />
+	</xsl:variable>
+	<xsl:variable name="roman-upper-pattern" as="xs:string">
+		<xsl:value-of select="concat($begin-end[1], '[IVX]+', $begin-end[2])" />
+	</xsl:variable>
+	<xsl:variable name="alpha-pattern" as="xs:string">
+		<xsl:value-of select="concat($begin-end[1], '[a-z]+', $begin-end[2])" />
+	</xsl:variable>
+	<xsl:variable name="alpha-upper-pattern" as="xs:string">
+		<xsl:value-of select="concat($begin-end[1], '[A-Z]+', $begin-end[2])" />
+	</xsl:variable>
 	<xsl:choose>
-		<xsl:when test="$decor = 'parens'">
-			<xsl:choose>
-				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^\(\d+\)$')">
-					<xsl:text>arabic</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^\([ivx]+\)$')">
-					<xsl:text>roman</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^\([IVX]+\)$')">
-					<xsl:text>romanUpper</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^\([a-z]+\)$')">
-					<xsl:text>alpha</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^\([A-Z]+\)$')">
-					<xsl:text>alphaUpper</xsl:text>
-				</xsl:when>
-			</xsl:choose>
+		<xsl:when test="every $num in $list/item/num satisfies matches($num, $arabic-pattern)">
+			<xsl:text>arabic</xsl:text>
 		</xsl:when>
-<!-- 		<xsl:when test="$decor = 'parenRight'">
+		<xsl:when test="every $num in $list/item/num satisfies matches($num, $roman-pattern)">
+			<xsl:text>roman</xsl:text>
 		</xsl:when>
-		<xsl:when test="$decor = 'brackets'">
+		<xsl:when test="every $num in $list/item/num satisfies matches($num, $roman-upper-pattern)">
+			<xsl:text>romanUpper</xsl:text>
 		</xsl:when>
-		<xsl:when test="$decor = 'bracketRight'">
+		<xsl:when test="every $num in $list/item/num satisfies matches($num, $alpha-pattern)">
+			<xsl:text>alpha</xsl:text>
 		</xsl:when>
-		<xsl:when test="$decor = 'period'">
-		</xsl:when>
-		<xsl:when test="$decor = 'colon'">
-		</xsl:when> -->
-		<xsl:when test="$decor = 'none'">
-			<xsl:choose>
-				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^\d+$')">
-					<xsl:text>arabic</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^[ivx]+$')">
-					<xsl:text>roman</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^[IVX]+$')">
-					<xsl:text>romanUpper</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^[a-z]+$')">
-					<xsl:text>alpha</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies matches($num, '^[A-Z]+$')">
-					<xsl:text>alphaUpper</xsl:text>
-				</xsl:when>
-			</xsl:choose>
+		<xsl:when test="every $num in $list/item/num satisfies matches($num, $alpha-upper-pattern)">
+			<xsl:text>alphaUpper</xsl:text>
 		</xsl:when>
 	</xsl:choose>
 </xsl:function>
