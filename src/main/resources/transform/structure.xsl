@@ -67,6 +67,7 @@
 	<xsl:param name="schedule" as="xs:boolean" />
 	<xsl:param name="akn-element-name" as="xs:string" />
 	<xsl:param name="akn-element-class" as="xs:string?" />
+	<xsl:variable name="doc-subclass" as="xs:string" select="if ($doc-subclass = 'unknown') then 'order' else $doc-subclass" />
 	<xsl:choose>
 		<xsl:when test="$schedule">
 			<xsl:variable name="match" as="element()?" select="$mapping/*:schedule/*[local-name()=$akn-element-name][exists(@class)][@class = $akn-element-class]" />
