@@ -106,6 +106,9 @@
 				</xsl:with-param>
 			</xsl:call-template>
 		</xsl:when>
+		<xsl:when test="exists(embeddedStructure)">
+			<xsl:apply-templates />
+		</xsl:when>
 		<xsl:otherwise>
 			<xsl:call-template name="create-element-and-wrap-as-necessary">
 				<xsl:with-param name="name" as="xs:string" select="'Text'" />

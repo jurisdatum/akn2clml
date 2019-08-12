@@ -51,6 +51,27 @@
 	</xsl:choose>
 </xsl:function>
 
+<xsl:function name="local:get-structure-format" as="xs:string">
+	<xsl:param name="s" as="element()" /> <!-- quotedStructure or embeddedStructure -->
+	<xsl:choose>
+		<xsl:when test="$s/@startQuote='“' and $s/@endQuote='”'">
+			<xsl:text>double</xsl:text>
+		</xsl:when>
+		<xsl:when test="$s/@startQuote='‘' and $s/@endQuote='’'">
+			<xsl:text>single</xsl:text>
+		</xsl:when>
+		<xsl:when test="empty($s/@startQuote) and empty($s/@endQuote)">
+			<xsl:text>none</xsl:text>
+		</xsl:when>
+		<xsl:when test="$s/@startQuote='' and $s/@endQuote=''">
+			<xsl:text>none</xsl:text>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:text>default</xsl:text>
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
 <xsl:template name="block-with-mod">
 	<xsl:if test="exists(node()[not(self::mod) and not(self::text()[not(normalize-space())]) and not(self::inline/@name='AppendText')])">
 		<xsl:message terminate="yes" />
@@ -106,17 +127,7 @@
 			</xsl:choose>
 		</xsl:attribute>
 		<xsl:attribute name="Format">
-			<xsl:choose>
-				<xsl:when test="@startQuote='“' and @endQuote='”'">
-					<xsl:text>double</xsl:text>
-				</xsl:when>
-				<xsl:when test="@startQuote='‘' and @endQuote='’'">
-					<xsl:text>single</xsl:text>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:text>default</xsl:text>
-				</xsl:otherwise>
-			</xsl:choose>
+			<xsl:value-of select="local:get-structure-format(.)" />
 		</xsl:attribute>
 		<xsl:choose>
 			<xsl:when test="exists(*) and (every $child in * satisfies $child/self::hcontainer[@name='definition'])">
@@ -124,7 +135,7 @@
 					<xsl:with-param name="definitions" select="*" />
 				</xsl:call-template>
 			</xsl:when>
-			<xsl:when test="exists(*) and (every $child in * satisfies ($child/self::p or $child/self::hcontainer[@name='definition']))">
+			<xsl:when test="exists(hcontainer[@name='definition']) and (every $child in * satisfies ($child/self::p or $child/self::hcontainer[@name='definition']))">
 				<xsl:call-template name="group-definitions-for-block-amendment">
 					<xsl:with-param name="elements" select="*" />
 				</xsl:call-template>
@@ -148,6 +159,41 @@
 	<InlineAmendment>
 		<xsl:apply-templates />
 	</InlineAmendment>
+</xsl:template>
+
+<xsl:template match="embeddedStructure">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<BlockExtract>
+		<xsl:attribute name="SourceClass">
+			<xsl:value-of select="if (exists(@ukl:SourceClass)) then @ukl:SourceClass else 'unknown'" />
+		</xsl:attribute>
+		<xsl:attribute name="SourceSubClass">
+			<xsl:value-of select="if (exists(@ukl:SourceSubClass)) then @ukl:SourceSubClass else 'unknown'" />
+		</xsl:attribute>
+		<xsl:attribute name="Context">
+			<xsl:value-of select="if (exists(@ukl:Context)) then @ukl:Context else 'unknown'" />
+		</xsl:attribute>
+		<xsl:attribute name="Format">
+			<xsl:value-of select="local:get-structure-format(.)" />
+		</xsl:attribute>
+		<xsl:choose>
+			<xsl:when test="exists(*) and (every $child in * satisfies $child/self::hcontainer[@name='definition'])">
+				<xsl:call-template name="definition-list">
+					<xsl:with-param name="definitions" select="*" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:when test="exists(hcontainer[@name='definition']) and (every $child in * satisfies ($child/self::p or $child/self::hcontainer[@name='definition']))">
+				<xsl:call-template name="group-definitions-for-block-amendment">
+					<xsl:with-param name="elements" select="*" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="('BlockExtract', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:otherwise>
+		</xsl:choose>
+	</BlockExtract>
 </xsl:template>
 
 </xsl:transform>
