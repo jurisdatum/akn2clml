@@ -211,6 +211,9 @@
 			<xsl:when test="false() and local:akn-is-within-schedule(.) and exists(child::paragraph) and empty(child::paragraph/heading) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
 				<xsl:text>P1group</xsl:text>
 			</xsl:when>
+			<xsl:when test="parent::hcontainer[@name='schedule'] and exists(child::paragraph) and empty(child::paragraph/heading) and empty(preceding-sibling::hcontainer[@name='crossheading']/paragraph/heading) and empty(following-sibling::hcontainer[@name='crossheading']/paragraph/heading)">
+				<xsl:text>P1group</xsl:text>
+			</xsl:when>
 			<xsl:otherwise>
 				<xsl:text>Pblock</xsl:text>
 			</xsl:otherwise>
@@ -457,9 +460,36 @@
 			<xsl:with-param name="context" select="$child-context" tunnel="yes" />
 		</xsl:apply-templates>
 		<ScheduleBody>
-			<xsl:apply-templates select="*[not(self::num or self::heading)]">
-				<xsl:with-param name="context" select="('ScheduleBody', $child-context)" tunnel="yes" />
-			</xsl:apply-templates>
+			<xsl:variable name="content" as="element()*" select="*[not(self::num or self::heading)]" />
+			<xsl:variable name="children" as="element()*" select="$content[not(self::intro) and not(self::content) and not(self::wrapUp)]" />
+			<xsl:choose>
+				<xsl:when test="exists($children) and (every $child in $children satisfies $child/self::paragraph[@class='para1'])">
+					<P>
+						<xsl:apply-templates select="$content">
+							<xsl:with-param name="context" select="('P', 'ScheduleBody', $child-context)" tunnel="yes" />
+						</xsl:apply-templates>
+					</P>
+				</xsl:when>
+				<xsl:when test="exists($children) and (every $child in $children satisfies $child/self::hcontainer[@name='definition'])">
+					<P>
+						<xsl:apply-templates select="intro">
+							<xsl:with-param name="context" select="('P', 'ScheduleBody', $child-context)" tunnel="yes" />
+						</xsl:apply-templates>
+						<xsl:call-template name="definition-list">
+							<xsl:with-param name="definitions" select="$children" />
+							<xsl:with-param name="context" select="('P', 'ScheduleBody', $child-context)" tunnel="yes" />
+						</xsl:call-template>
+						<xsl:apply-templates select="wrapUp">
+							<xsl:with-param name="context" select="('P', 'ScheduleBody', $child-context)" tunnel="yes" />
+						</xsl:apply-templates>
+					</P>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:apply-templates select="$content">
+						<xsl:with-param name="context" select="('ScheduleBody', $child-context)" tunnel="yes" />
+					</xsl:apply-templates>
+				</xsl:otherwise>
+			</xsl:choose>
 		</ScheduleBody>
 	</Schedule>
 </xsl:template>
