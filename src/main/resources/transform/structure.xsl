@@ -244,6 +244,13 @@
 			</xsl:call-template>
 			<xsl:apply-templates select="wrapUp" />
 		</xsl:when>
+		<xsl:when test="some $child in $children satisfies $child/self::hcontainer[@name='definition']">
+			<xsl:apply-templates select="intro" />
+			<xsl:call-template name="group-definitions-for-block-amendment">
+				<xsl:with-param name="elements" select="$children" />
+			</xsl:call-template>
+			<xsl:apply-templates select="wrapUp" />
+		</xsl:when>
 		<xsl:when test="not($context[1] = 'P') and empty($children[self::hcontainer[@name='wrapper1']])">
 			<xsl:variable name="name" as="xs:string" select="concat($context[1], 'para')" />
 			<xsl:element name="{ $name }">
