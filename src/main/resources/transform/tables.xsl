@@ -13,7 +13,15 @@
 <xsl:template match="tblock[@class='tabular']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<Tabular Orientation="{ @ukl:Orientation }">
-		<xsl:apply-templates>
+		<xsl:variable name="table-text" as="element(p)*" select="if (exists(*[not(self::p)])) then *[not(self::p)]/preceding-sibling::p else *" />
+		<xsl:if test="exists($table-text)">
+			<TableText>
+				<xsl:apply-templates select="$table-text">
+					<xsl:with-param name="context" select="('TableText', 'Tabular', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</TableText>
+		</xsl:if>
+		<xsl:apply-templates select="* except $table-text">
 			<xsl:with-param name="context" select="('Tabular', $context)" tunnel="yes" />
 		</xsl:apply-templates>
 	</Tabular>

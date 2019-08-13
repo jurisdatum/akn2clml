@@ -95,7 +95,7 @@
 		<xsl:when test="$head = 'P7'">
 			<xsl:text>P7para</xsl:text>
 		</xsl:when>
-		<xsl:when test="$head = ('EnactingText', 'BlockText', 'ListItem', 'FootnoteText', 'Commentary', 'td')">
+		<xsl:when test="$head = ('EnactingText', 'BlockText', 'ListItem', 'FootnoteText', 'Commentary', 'TableText', 'th', 'td')">
 			<xsl:text>Para</xsl:text>
 		</xsl:when>
 		<xsl:when test="$head = 'ScheduleBody'">
