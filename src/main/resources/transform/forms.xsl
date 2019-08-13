@@ -18,6 +18,15 @@
 	</Form>
 </xsl:template>
 
+<xsl:template match="tblock[@class='form']/heading">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<TitleBlock>
+		<xsl:next-match>
+			<xsl:with-param name="context" select="('TitleBlock', $context)" tunnel="yes" />
+		</xsl:next-match>
+	</TitleBlock>
+</xsl:template>
+
 <xsl:template match="tblock[@class='form']/p[exists(img) and (count(*) eq 1)]">
 	<IncludedDocument ResourceRef="{ local:make-resource-id(*) }" />
 </xsl:template>
