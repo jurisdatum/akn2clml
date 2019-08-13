@@ -224,8 +224,23 @@
 </xsl:template>
 
 <xsl:template match="hcontainer[@name='subheading']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="name" as="xs:string">
+		<xsl:choose>
+			<!-- LDAPP uses crossheadings for certain schedule paragraphs -->
+			<xsl:when test="false()">
+				<xsl:text>P1group</xsl:text>
+			</xsl:when>
+			<xsl:when test="parent::hcontainer[@name='crossheading'] and local:akn-is-within-schedule(.) and exists(child::paragraph) and empty(child::paragraph/heading) and empty(preceding-sibling::hcontainer[@name='subheading']/paragraph/heading) and empty(following-sibling::hcontainer[@name='subheading']/paragraph/heading)">
+				<xsl:text>P1group</xsl:text>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:text>PsubBlock</xsl:text>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
 	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" select="'PsubBlock'" />
+		<xsl:with-param name="name" select="$name" />
 	</xsl:call-template>
 </xsl:template>
 
