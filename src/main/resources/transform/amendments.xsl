@@ -157,7 +157,9 @@
 
 <xsl:template match="quotedText">
 	<InlineAmendment>
+		<xsl:value-of select="@startQuote" />
 		<xsl:apply-templates />
+		<xsl:value-of select="@endtQuote" />
 	</InlineAmendment>
 </xsl:template>
 
