@@ -190,57 +190,64 @@
 	</xsl:choose>
 </xsl:function>
 
+<xsl:template name="big-level">
+	<xsl:param name="name" as="xs:string" />
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:element name="{ $name }">
+		<xsl:call-template name="alt-version-refs" />
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</xsl:element>
+</xsl:template>
+
 <xsl:template match="part">
-	<xsl:call-template name="create-element-and-wrap-as-necessary">
+	<xsl:call-template name="big-level">
 		<xsl:with-param name="name" select="'Part'" />
 	</xsl:call-template>
 </xsl:template>
 
 <xsl:template match="chapter">
-	<xsl:call-template name="create-element-and-wrap-as-necessary">
+	<xsl:call-template name="big-level">
 		<xsl:with-param name="name" select="'Chapter'" />
 	</xsl:call-template>
 </xsl:template>
 
 <xsl:template match="hcontainer[@name='crossheading']">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="name" as="xs:string">
-		<xsl:choose>
-			<!-- LDAPP uses crossheadings for certain schedule paragraphs -->
-			<xsl:when test="false() and local:akn-is-within-schedule(.) and exists(child::paragraph) and empty(child::paragraph/heading) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
-				<xsl:text>P1group</xsl:text>
-			</xsl:when>
-			<xsl:when test="parent::hcontainer[@name='schedule'] and exists(child::paragraph) and empty(child::paragraph/heading) and empty(preceding-sibling::hcontainer[@name='crossheading']/paragraph/heading) and empty(following-sibling::hcontainer[@name='crossheading']/paragraph/heading)">
-				<xsl:text>P1group</xsl:text>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:text>Pblock</xsl:text>
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:variable>
-	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" select="$name" />
+	<xsl:call-template name="big-level">
+		<xsl:with-param name="name">
+			<xsl:choose>
+				<!-- LDAPP uses crossheadings for certain schedule paragraphs -->
+				<xsl:when test="false() and local:akn-is-within-schedule(.) and exists(child::paragraph) and empty(child::paragraph/heading) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
+					<xsl:text>P1group</xsl:text>
+				</xsl:when>
+				<xsl:when test="parent::hcontainer[@name='schedule'] and exists(child::paragraph) and empty(child::paragraph/heading) and empty(preceding-sibling::hcontainer[@name='crossheading']/paragraph/heading) and empty(following-sibling::hcontainer[@name='crossheading']/paragraph/heading)">
+					<xsl:text>P1group</xsl:text>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:text>Pblock</xsl:text>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:with-param>
 	</xsl:call-template>
 </xsl:template>
 
 <xsl:template match="hcontainer[@name='subheading']">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="name" as="xs:string">
-		<xsl:choose>
-			<!-- LDAPP uses crossheadings for certain schedule paragraphs -->
-			<xsl:when test="false()">
-				<xsl:text>P1group</xsl:text>
-			</xsl:when>
-			<xsl:when test="parent::hcontainer[@name='crossheading'] and local:akn-is-within-schedule(.) and exists(child::paragraph) and empty(child::paragraph/heading) and empty(preceding-sibling::hcontainer[@name='subheading']/paragraph/heading) and empty(following-sibling::hcontainer[@name='subheading']/paragraph/heading)">
-				<xsl:text>P1group</xsl:text>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:text>PsubBlock</xsl:text>
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:variable>
-	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" select="$name" />
+	<xsl:call-template name="big-level">
+		<xsl:with-param name="name">
+			<xsl:choose>
+				<!-- LDAPP uses crossheadings for certain schedule paragraphs -->
+				<xsl:when test="false()">
+					<xsl:text>P1group</xsl:text>
+				</xsl:when>
+				<xsl:when test="parent::hcontainer[@name='crossheading'] and local:akn-is-within-schedule(.) and exists(child::paragraph) and empty(child::paragraph/heading) and empty(preceding-sibling::hcontainer[@name='subheading']/paragraph/heading) and empty(following-sibling::hcontainer[@name='subheading']/paragraph/heading)">
+					<xsl:text>P1group</xsl:text>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:text>PsubBlock</xsl:text>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:with-param>
 	</xsl:call-template>
 </xsl:template>
 
@@ -285,6 +292,7 @@
 	<xsl:choose>
 		<xsl:when test="exists(heading)">
 			<P1group>
+				<xsl:call-template name="alt-version-refs" />
 				<xsl:apply-templates select="heading | subheading">
 					<xsl:with-param name="context" select="('P1group', $context)" tunnel="yes" />
 				</xsl:apply-templates>
@@ -300,6 +308,7 @@
 		</xsl:when>
 		<xsl:when test="empty(num)">
 			<P>
+				<xsl:call-template name="alt-version-refs" />
 				<xsl:call-template name="small-level-content">
 					<xsl:with-param name="context" select="('P', $context)" tunnel="yes" />
 				</xsl:call-template>
@@ -307,6 +316,7 @@
 		</xsl:when>
 		<xsl:otherwise>
 			<P1>
+				<xsl:call-template name="alt-version-refs" />
 				<xsl:apply-templates select="num">
 					<xsl:with-param name="context" select="('P1', $context)" tunnel="yes" />
 				</xsl:apply-templates>
@@ -324,6 +334,7 @@
 		<xsl:choose>
 			<xsl:when test="exists(heading)">
 				<P2group>
+					<xsl:call-template name="alt-version-refs" />
 					<xsl:apply-templates select="heading | subheading">
 						<xsl:with-param name="context" select="('P2group', $context)" tunnel="yes" />
 					</xsl:apply-templates>
@@ -339,6 +350,7 @@
 			</xsl:when>
 			<xsl:otherwise>
 				<P2>
+					<xsl:call-template name="alt-version-refs" />
 					<xsl:apply-templates select="num">
 						<xsl:with-param name="context" select="('P2', $context)" tunnel="yes" />
 					</xsl:apply-templates>
@@ -399,6 +411,7 @@
 			<xsl:choose>
 				<xsl:when test="exists(heading)">
 					<xsl:element name="{ concat($name, 'group') }">
+						<xsl:call-template name="alt-version-refs" />
 						<xsl:apply-templates select="heading | subheading">
 							<xsl:with-param name="context" select="(concat($name, 'group'), $context)" tunnel="yes" />
 						</xsl:apply-templates>
@@ -414,6 +427,7 @@
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:element name="{ $name2 }">
+						<xsl:call-template name="alt-version-refs" />
 						<xsl:apply-templates select="num | heading | subheading">
 							<xsl:with-param name="context" select="($name2, $context)" tunnel="yes" />
 						</xsl:apply-templates>

@@ -5,20 +5,22 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:math="http://www.w3.org/1998/Math/MathML"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs math local">
+	exclude-result-prefixes="xs ukl math local">
 
 
 <xsl:key name="altimg" match="math:math" use="@altimg" />
 
 <xsl:variable name="versions" as="element()*">
+	<xsl:sequence select="//*[@alternativeTo]" />
 	<xsl:sequence select="//math:math[@altimg]" />
 </xsl:variable>
 
 <xsl:variable name="resources" as="element()*">
 	<xsl:sequence select="//img" />
-	<xsl:sequence select="$versions" />
+	<xsl:sequence select="//math:math[@altimg]" />
 </xsl:variable>
 
 <xsl:function name="local:get-first-index-of-node" as="xs:integer?">
@@ -70,7 +72,7 @@
 <xsl:template match="math:math" mode="version">
 	<Version id="v{format-number(position(),'00000')}">
 		<Figure>
-			<Image ResourceRef="r{format-number(position(),'00000')}" Height="auto" Width="auto" />
+			<Image ResourceRef="{ local:make-resource-id(.) }" Height="auto" Width="auto" />
 		</Figure>
 	</Version>
 </xsl:template>
@@ -80,5 +82,43 @@
 		<ExternalVersion URI="{ @altimg }" />
 	</Resource>
 </xsl:template>
+
+
+<!-- alternative versions -->
+
+<xsl:key name="alternative-to" match="*" use="@alternativeTo" />
+
+<xsl:template name="alt-version-refs">
+	<xsl:if test="exists(@eId)">
+		<xsl:variable name="alternatives" as="element()*" select="key('alternative-to', @eId)" />
+		<xsl:if test="exists($alternatives)">
+			<xsl:attribute name="AltVersionRefs">
+				<xsl:value-of select="string-join($alternatives/local:make-version-id(.), ' ')" />
+			</xsl:attribute>
+		</xsl:if>
+	</xsl:if>
+</xsl:template>
+
+<xsl:template match="*[exists(@alternativeTo)]" priority="100">
+	<xsl:param name="version" as="xs:boolean" select="false()" />
+	<xsl:if test="$version">
+		<Version id="v{format-number(position(),'00000')}">
+			<xsl:if test="exists(@ukl:Description)">
+				<xsl:attribute name="Description">
+					<xsl:value-of select="@ukl:Description" />
+				</xsl:attribute>
+			</xsl:if>
+			<xsl:next-match />
+		</Version>
+	</xsl:if>
+</xsl:template>
+
+<xsl:template match="*[exists(@alternativeTo)]" mode="version">
+	<xsl:param name="version" as="xs:boolean" select="false()" />
+	<xsl:apply-templates select=".">
+		<xsl:with-param name="version" select="true()" />
+	</xsl:apply-templates>
+</xsl:template>
+
 
 </xsl:transform>
