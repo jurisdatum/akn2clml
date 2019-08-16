@@ -226,7 +226,8 @@
 				<xsl:when test="false() and local:akn-is-within-schedule(.) and exists(child::paragraph) and empty(child::paragraph/heading) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
 					<xsl:text>P1group</xsl:text>
 				</xsl:when>
-				<xsl:when test="parent::hcontainer[@name='schedule'] and exists(child::paragraph) and empty(child::paragraph/heading) and empty(preceding-sibling::hcontainer[@name='crossheading']/paragraph/heading) and empty(following-sibling::hcontainer[@name='crossheading']/paragraph/heading)">
+				<xsl:when test="parent::hcontainer[@name='schedule'] and exists(child::paragraph) and empty(child::paragraph/heading) and empty(preceding-sibling::hcontainer[@name='crossheading']/paragraph/heading) and empty(following-sibling::hcontainer[@name='crossheading']/paragraph/heading) and empty(preceding-sibling::paragraph)">
+				<!-- last condition is for asp/2000/5/schedule/5 -->
 					<xsl:text>P1group</xsl:text>
 				</xsl:when>
 				<xsl:otherwise>
