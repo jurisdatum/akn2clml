@@ -37,29 +37,29 @@
 
 <xsl:function name="local:parse-old-eu-uri" as="element()?">
 	<xsl:param name="uri" as="xs:string" />
-	<xsl:analyze-string select="$uri" regex="^https?://www.legislation.gov.uk/(id/)?european/(regulation|decision|directive)/(\d{{4}})/(\d+)(/.+)?$">
+	<xsl:analyze-string select="$uri" regex="^https?://(www.legislation.gov.uk|www.opsi.gov.uk/legislation)/(id/)?european/(regulation|decision|directive)/(\d{{4}})/(\d+)(/.+)?$">
 		<xsl:matching-substring>
 			<components xmlns="">
 				<xsl:attribute name="Class">
 					<xsl:choose>
-						<xsl:when test="regex-group(2) = 'regulation'">
+						<xsl:when test="regex-group(3) = 'regulation'">
 							<xsl:text>EuropeanUnionRegulation</xsl:text>
 						</xsl:when>
-						<xsl:when test="regex-group(2) = 'decision'">
+						<xsl:when test="regex-group(3) = 'decision'">
 							<xsl:text>EuropeanUnionDecision</xsl:text>
 						</xsl:when>
-						<xsl:when test="regex-group(2) = 'directive'">
+						<xsl:when test="regex-group(3) = 'directive'">
 							<xsl:text>EuropeanUnionDirective</xsl:text>
 						</xsl:when>
 					</xsl:choose>
 				</xsl:attribute>
 				<xsl:attribute name="Year">
-					<xsl:value-of select="regex-group(3)" />
-				</xsl:attribute>
-				<xsl:attribute name="Number">
 					<xsl:value-of select="regex-group(4)" />
 				</xsl:attribute>
-				<xsl:if test="normalize-space(regex-group(5))">
+				<xsl:attribute name="Number">
+					<xsl:value-of select="regex-group(5)" />
+				</xsl:attribute>
+				<xsl:if test="normalize-space(regex-group(6))">
 					<xsl:attribute name="Section">
 						<xsl:value-of select="translate(substring(regex-group(5), 2), '/', '-')" />
 					</xsl:attribute>
