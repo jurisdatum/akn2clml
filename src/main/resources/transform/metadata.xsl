@@ -4,8 +4,9 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
+	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs local">
+	exclude-result-prefixes="xs ukl local">
 
 <xsl:variable name="work-date" as="xs:date" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRdate/@date" />
 
@@ -59,5 +60,32 @@
 		<Number Value="{ $doc-number }" />
 	</SecondaryMetadata>
 </xsl:template>
+
+
+<!-- extent -->
+
+<xsl:key name="restriction" match="restriction" use="substring(@href, 2)" />
+
+<xsl:template name="add-restrict-extent-attr">
+	<xsl:param name="from" as="element()" select="." />
+	<xsl:variable name="restriction" as="element(restriction)?">
+		<xsl:choose>
+			<xsl:when test="exists($from/@eId)">
+				<xsl:sequence select="key('restriction', $from/@eId)" />
+			</xsl:when>
+			<xsl:when test="$from/parent::akomaNtoso">
+				<xsl:sequence select="key('restriction', '')" />
+			</xsl:when>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:if test="exists($restriction)">
+		<xsl:variable name="extent-id" as="xs:string" select="substring($restriction/@refersTo, 2)" />
+		<xsl:variable name="extent" as="element(TLCLocation)" select="//TLCLocation[@eId=$extent-id]" />
+		<xsl:attribute name="RestrictExtent">
+			<xsl:value-of select="$extent/@showAs" />
+		</xsl:attribute>
+	</xsl:if>
+</xsl:template>
+
 
 </xsl:transform>

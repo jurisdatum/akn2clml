@@ -190,11 +190,16 @@
 	</xsl:choose>
 </xsl:function>
 
+<xsl:template name="add-structure-attributes">
+	<xsl:call-template name="alt-version-refs" />
+	<xsl:call-template name="add-restrict-extent-attr" />
+</xsl:template>
+
 <xsl:template name="big-level">
 	<xsl:param name="name" as="xs:string" />
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:element name="{ $name }">
-		<xsl:call-template name="alt-version-refs" />
+		<xsl:call-template name="add-structure-attributes" />
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
 		</xsl:apply-templates>
@@ -292,7 +297,7 @@
 	<xsl:choose>
 		<xsl:when test="exists(heading)">
 			<P1group>
-				<xsl:call-template name="alt-version-refs" />
+				<xsl:call-template name="add-structure-attributes" />
 				<xsl:apply-templates select="heading | subheading">
 					<xsl:with-param name="context" select="('P1group', $context)" tunnel="yes" />
 				</xsl:apply-templates>
@@ -308,7 +313,7 @@
 		</xsl:when>
 		<xsl:when test="empty(num)">
 			<P>
-				<xsl:call-template name="alt-version-refs" />
+				<xsl:call-template name="add-structure-attributes" />
 				<xsl:call-template name="small-level-content">
 					<xsl:with-param name="context" select="('P', $context)" tunnel="yes" />
 				</xsl:call-template>
@@ -316,7 +321,7 @@
 		</xsl:when>
 		<xsl:otherwise>
 			<P1>
-				<xsl:call-template name="alt-version-refs" />
+				<xsl:call-template name="add-structure-attributes" />
 				<xsl:apply-templates select="num">
 					<xsl:with-param name="context" select="('P1', $context)" tunnel="yes" />
 				</xsl:apply-templates>
@@ -334,7 +339,7 @@
 		<xsl:choose>
 			<xsl:when test="exists(heading)">
 				<P2group>
-					<xsl:call-template name="alt-version-refs" />
+					<xsl:call-template name="add-structure-attributes" />
 					<xsl:apply-templates select="heading | subheading">
 						<xsl:with-param name="context" select="('P2group', $context)" tunnel="yes" />
 					</xsl:apply-templates>
@@ -350,7 +355,7 @@
 			</xsl:when>
 			<xsl:otherwise>
 				<P2>
-					<xsl:call-template name="alt-version-refs" />
+					<xsl:call-template name="add-structure-attributes" />
 					<xsl:apply-templates select="num">
 						<xsl:with-param name="context" select="('P2', $context)" tunnel="yes" />
 					</xsl:apply-templates>
@@ -411,7 +416,7 @@
 			<xsl:choose>
 				<xsl:when test="exists(heading)">
 					<xsl:element name="{ concat($name, 'group') }">
-						<xsl:call-template name="alt-version-refs" />
+						<xsl:call-template name="add-structure-attributes" />
 						<xsl:apply-templates select="heading | subheading">
 							<xsl:with-param name="context" select="(concat($name, 'group'), $context)" tunnel="yes" />
 						</xsl:apply-templates>
@@ -427,7 +432,7 @@
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:element name="{ $name2 }">
-						<xsl:call-template name="alt-version-refs" />
+						<xsl:call-template name="add-structure-attributes" />
 						<xsl:apply-templates select="num | heading | subheading">
 							<xsl:with-param name="context" select="($name2, $context)" tunnel="yes" />
 						</xsl:apply-templates>
@@ -471,6 +476,7 @@
 <xsl:template match="hcontainer[@name='schedules']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<Schedules>
+		<xsl:call-template name="add-restrict-extent-attr" />
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="('Schedules', $context)" tunnel="yes" />
 		</xsl:apply-templates>
@@ -515,6 +521,7 @@
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="child-context" as="xs:string*" select="('Schedule', $context)" />
 	<Schedule>
+		<xsl:call-template name="add-structure-attributes" />
 		<xsl:apply-templates select="num">
 			<xsl:with-param name="context" select="$child-context" tunnel="yes" />
 		</xsl:apply-templates>
@@ -554,6 +561,7 @@
 <xsl:template match="hcontainer[@name='schedule']/part">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<Part>
+		<xsl:call-template name="add-structure-attributes" />
 		<xsl:apply-templates select="num | heading | subheading">
 			<xsl:with-param name="context" select="('Part', $context)" tunnel="yes" />
 		</xsl:apply-templates>
