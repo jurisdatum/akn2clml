@@ -192,7 +192,7 @@
 
 <xsl:template name="add-structure-attributes">
 	<xsl:call-template name="alt-version-refs" />
-	<xsl:call-template name="add-restrict-extent-attr" />
+	<xsl:call-template name="add-fragment-attributes" />
 </xsl:template>
 
 <xsl:template name="big-level">
@@ -477,7 +477,7 @@
 <xsl:template match="hcontainer[@name='schedules']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<Schedules>
-		<xsl:call-template name="add-restrict-extent-attr" />
+		<xsl:call-template name="add-fragment-attributes" />
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="('Schedules', $context)" tunnel="yes" />
 		</xsl:apply-templates>

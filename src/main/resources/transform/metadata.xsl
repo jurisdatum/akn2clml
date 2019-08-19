@@ -62,29 +62,77 @@
 </xsl:template>
 
 
+<!-- start and end -->
+
+<xsl:key name="temporal-restriction" match="restriction[starts-with(@refersTo, '#period')]" use="substring(@href, 2)" />
+
+<xsl:template name="add-restrict-date-attrs">
+	<xsl:param name="from" as="element()" select="." />
+	<xsl:variable name="restriction" as="element(restriction)?">
+		<xsl:choose>
+			<xsl:when test="exists($from/@eId)">
+				<xsl:sequence select="key('temporal-restriction', $from/@eId)" />
+			</xsl:when>
+			<xsl:when test="$from/parent::akomaNtoso">
+				<xsl:sequence select="key('temporal-restriction', '')" />
+			</xsl:when>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:if test="exists($restriction)">
+		<xsl:variable name="period-id" as="xs:string" select="substring($restriction/@refersTo, 2)" />
+		<xsl:variable name="period" as="element(temporalGroup)" select="key('id', $period-id)" />
+		<xsl:variable name="interval" as="element(timeInterval)" select="$period/timeInterval" />
+		<xsl:if test="exists($interval/@start)">
+			<xsl:attribute name="RestrictStartDate">
+				<xsl:value-of select="substring($interval/@start, 7)" />
+			</xsl:attribute>
+		</xsl:if>
+		<xsl:if test="exists($interval/@end)">
+			<xsl:attribute name="RestrictEndDate">
+				<xsl:value-of select="substring($interval/@end, 7)" />
+			</xsl:attribute>
+		</xsl:if>
+	</xsl:if>
+</xsl:template>
+
+
 <!-- extent -->
 
-<xsl:key name="restriction" match="restriction" use="substring(@href, 2)" />
+<xsl:key name="extent-restriction" match="restriction[starts-with(@refersTo, '#extent')]" use="substring(@href, 2)" />
 
 <xsl:template name="add-restrict-extent-attr">
 	<xsl:param name="from" as="element()" select="." />
 	<xsl:variable name="restriction" as="element(restriction)?">
 		<xsl:choose>
 			<xsl:when test="exists($from/@eId)">
-				<xsl:sequence select="key('restriction', $from/@eId)" />
+				<xsl:sequence select="key('extent-restriction', $from/@eId)" />
 			</xsl:when>
 			<xsl:when test="$from/parent::akomaNtoso">
-				<xsl:sequence select="key('restriction', '')" />
+				<xsl:sequence select="key('extent-restriction', '')" />
 			</xsl:when>
 		</xsl:choose>
 	</xsl:variable>
 	<xsl:if test="exists($restriction)">
 		<xsl:variable name="extent-id" as="xs:string" select="substring($restriction/@refersTo, 2)" />
-		<xsl:variable name="extent" as="element(TLCLocation)" select="//TLCLocation[@eId=$extent-id]" />
+		<xsl:variable name="extent" as="element(TLCLocation)" select="key('id', $extent-id)" />
 		<xsl:attribute name="RestrictExtent">
 			<xsl:value-of select="$extent/@showAs" />
 		</xsl:attribute>
 	</xsl:if>
+</xsl:template>
+
+
+<xsl:template name="add-fragment-attributes">
+	<xsl:param name="from" as="element()" select="." />
+	<xsl:call-template name="add-restrict-extent-attr">
+		<xsl:with-param name="from" select="$from" />
+	</xsl:call-template>
+	<xsl:call-template name="add-restrict-date-attrs">
+		<xsl:with-param name="from" select="$from" />
+	</xsl:call-template>
+<!-- 	<xsl:call-template name="add-status-attribute">
+		<xsl:with-param name="from" select="$from" />
+	</xsl:call-template> -->
 </xsl:template>
 
 

@@ -13,7 +13,7 @@
 	<xsl:variable name="name" as="xs:string" select="concat($context[1], 'Prelims')" />
 	<xsl:variable name="child-context" as="xs:string*" select="($name, $context)" />
 	<xsl:element name="{ $name }">
-		<xsl:call-template name="add-restrict-extent-attr">
+		<xsl:call-template name="add-fragment-attributes">
 			<xsl:with-param name="from" select="preface" />
 		</xsl:call-template>
 		<xsl:apply-templates select="preface/block[@name='title']">

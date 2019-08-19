@@ -36,7 +36,7 @@
 
 <xsl:template match="/akomaNtoso/*">
 	<Legislation SchemaVersion="2.0">
-		<xsl:call-template name="add-restrict-extent-attr" />
+		<xsl:call-template name="add-fragment-attributes" />
 		<xsl:call-template name="metadata" />
 		<xsl:if test="exists(body)">
 			<xsl:call-template name="main" />
@@ -78,7 +78,7 @@
 <xsl:template match="body">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<Body>
-		<xsl:call-template name="add-restrict-extent-attr" />
+		<xsl:call-template name="add-fragment-attributes" />
 		<xsl:apply-templates select="*[not(self::hcontainer[@name='schedules'])]">
 			<xsl:with-param name="context" select="('Body', $context)" tunnel="yes" />
 		</xsl:apply-templates>
