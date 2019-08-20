@@ -71,7 +71,7 @@
 	<xsl:variable name="restriction" as="element(restriction)?">
 		<xsl:choose>
 			<xsl:when test="exists($from/@eId)">
-				<xsl:sequence select="key('temporal-restriction', $from/@eId)" />
+				<xsl:sequence select="key('temporal-restriction', $from/@eId)" /> <!-- add [1] to guard against two elements having the same @id -->
 			</xsl:when>
 			<xsl:when test="$from/parent::akomaNtoso">
 				<xsl:sequence select="key('temporal-restriction', '')" />
