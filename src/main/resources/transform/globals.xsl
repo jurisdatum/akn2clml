@@ -215,4 +215,9 @@
 	<xsl:value-of select="concat('http://www.legislation.gov.uk/', $doc-short-id)" />
 </xsl:variable>
 
+<xsl:variable name="doc-version" as="xs:string">
+	<xsl:variable name="exp-uri" as="xs:string" select="/akomaNtoso/*/meta/identification/FRBRExpression/FRBRthis/@value" />
+	<xsl:value-of select="substring-after($exp-uri, concat($doc-short-id, '/'))" />
+</xsl:variable>
+
 </xsl:transform>

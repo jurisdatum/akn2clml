@@ -14,6 +14,8 @@
 	<Metadata xmlns="http://www.legislation.gov.uk/namespaces/metadata" xmlns:dc="http://purl.org/dc/elements/1.1/">
 		<dc:identifier>
 			<xsl:value-of select="$doc-long-id" />
+			<xsl:text>/</xsl:text>
+			<xsl:value-of select="$doc-version" />
 		</dc:identifier>
 		<dc:title>
 			<xsl:value-of select="$doc-title" />
@@ -40,7 +42,18 @@
 		<DocumentClassification>
 			<DocumentCategory Value="primary" />
 			<DocumentMainType Value="{ $doc-long-type }" />
-			<DocumentStatus Value="final" />
+			<DocumentStatus>
+				<xsl:attribute name="Value">
+					<xsl:choose>
+						<xsl:when test="$doc-version = 'enacted'">
+							<xsl:text>final</xsl:text>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:text>revised</xsl:text>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:attribute>
+			</DocumentStatus>
 		</DocumentClassification>
 		<Year Value="{ $doc-year }" />
 		<Number Value="{ $doc-number }" />
@@ -53,7 +66,18 @@
 		<DocumentClassification>
 			<DocumentCategory Value="secondary" />
 			<DocumentMainType Value="{ $doc-long-type }" />
-			<DocumentStatus Value="final" />
+			<DocumentStatus>
+				<xsl:attribute name="Value">
+					<xsl:choose>
+						<xsl:when test="$doc-version = 'made'">
+							<xsl:text>final</xsl:text>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:text>revised</xsl:text>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:attribute>
+			</DocumentStatus>
 			<DocumentMinorType Value="{ '' }" />
 		</DocumentClassification>
 		<Year Value="{ $doc-year }" />
