@@ -5,8 +5,9 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:uk="https://www.legislation.gov.uk/namespaces/UK-AKN"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs ukl local">
+	exclude-result-prefixes="xs ukl uk local">
 
 <xsl:variable name="work-date" as="xs:date" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRdate/@date" />
 
@@ -146,6 +147,83 @@
 </xsl:template>
 
 
+<!-- status -->
+
+<xsl:key name="status" match="uk:status" use="substring(@href, 2)" />
+
+<xsl:template name="add-status-attribute">
+	<xsl:param name="from" as="element()" select="." />
+	<xsl:variable name="status" as="element(uk:status)?">
+		<xsl:choose>
+			<xsl:when test="exists($from/@eId)">
+				<xsl:sequence select="key('status', $from/@eId)" />
+			</xsl:when>
+			<xsl:when test="$from/parent::akomaNtoso">
+				<xsl:sequence select="key('status', '')" />
+			</xsl:when>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:if test="exists($status)">
+		<xsl:variable name="status-id" as="xs:string" select="substring($status/@refersTo, 2)" />
+		<xsl:variable name="status" as="element(TLCConcept)" select="key('id', $status-id)" />
+		<xsl:attribute name="Status">
+			<xsl:value-of select="$status/@showAs" />
+		</xsl:attribute>
+	</xsl:if>
+</xsl:template>
+
+
+<!-- confers power -->
+
+<xsl:key name="confers-power" match="uk:confersPower" use="substring(@href, 2)" />
+
+<xsl:template name="add-confers-power-attribute">
+	<xsl:param name="from" as="element()" select="." />
+	<xsl:variable name="confers-power" as="element(uk:confersPower)?">
+		<xsl:choose>
+			<xsl:when test="exists($from/@eId)">
+				<xsl:sequence select="key('confers-power', $from/@eId)" />
+			</xsl:when>
+			<xsl:when test="$from/parent::akomaNtoso">
+				<xsl:sequence select="key('confers-power', '')" />
+			</xsl:when>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:if test="exists($confers-power)">
+		<xsl:attribute name="ConfersPower">
+			<xsl:value-of select="$confers-power/@value" />
+		</xsl:attribute>
+	</xsl:if>
+</xsl:template>
+
+
+<!-- match -->
+
+<xsl:key name="match" match="uk:match" use="substring(@href, 2)" />
+
+<xsl:template name="add-match-attribute">
+	<xsl:param name="from" as="element()" select="." />
+	<xsl:variable name="match" as="element(uk:match)?">
+		<xsl:choose>
+			<xsl:when test="exists($from/@eId)">
+				<xsl:sequence select="key('match', $from/@eId)" />
+			</xsl:when>
+			<xsl:when test="$from/parent::akomaNtoso">
+				<xsl:sequence select="key('match', '')" />
+			</xsl:when>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:if test="exists($match)">
+		<xsl:attribute name="Match">
+			<xsl:value-of select="$match/@value" />
+		</xsl:attribute>
+	</xsl:if>
+</xsl:template>
+
+
+
+<!--  -->
+
 <xsl:template name="add-fragment-attributes">
 	<xsl:param name="from" as="element()" select="." />
 	<xsl:call-template name="add-restrict-extent-attr">
@@ -154,9 +232,15 @@
 	<xsl:call-template name="add-restrict-date-attrs">
 		<xsl:with-param name="from" select="$from" />
 	</xsl:call-template>
-<!-- 	<xsl:call-template name="add-status-attribute">
+	<xsl:call-template name="add-status-attribute">
 		<xsl:with-param name="from" select="$from" />
-	</xsl:call-template> -->
+	</xsl:call-template>
+	<xsl:call-template name="add-confers-power-attribute">
+		<xsl:with-param name="from" select="$from" />
+	</xsl:call-template>
+	<xsl:call-template name="add-match-attribute">
+		<xsl:with-param name="from" select="$from" />
+	</xsl:call-template>
 </xsl:template>
 
 
