@@ -52,18 +52,19 @@
 </xsl:function>
 
 <xsl:function name="local:get-structure-format" as="xs:string">
-	<xsl:param name="s" as="element()" /> <!-- quotedStructure or embeddedStructure -->
+	<xsl:param name="lead-in" as="element()" />
+	<xsl:param name="source" as="element()" /> <!-- quotedStructure or embeddedStructure -->
 	<xsl:choose>
-		<xsl:when test="$s/@startQuote='“' and $s/@endQuote='”'">
+		<xsl:when test="$lead-in/@startQuote='“' and $source/@endQuote='”'">
 			<xsl:text>double</xsl:text>
 		</xsl:when>
-		<xsl:when test="$s/@startQuote='‘' and $s/@endQuote='’'">
+		<xsl:when test="$lead-in/@startQuote='‘' and $source/@endQuote='’'">
 			<xsl:text>single</xsl:text>
 		</xsl:when>
-		<xsl:when test="empty($s/@startQuote) and empty($s/@endQuote)">
+		<xsl:when test="empty($lead-in/@startQuote) and empty($source/@endQuote)">
 			<xsl:text>none</xsl:text>
 		</xsl:when>
-		<xsl:when test="$s/@startQuote='' and $s/@endQuote=''">
+		<xsl:when test="$lead-in/@startQuote='' and $source/@endQuote=''">
 			<xsl:text>none</xsl:text>
 		</xsl:when>
 		<xsl:otherwise>
@@ -72,11 +73,22 @@
 	</xsl:choose>
 </xsl:function>
 
+<xsl:function name="local:get-structure-format" as="xs:string">
+	<xsl:param name="source" as="element()" /> <!-- quotedStructure or embeddedStructure -->
+	<xsl:sequence select="local:get-structure-format($source, $source)" />
+</xsl:function>
+
+
 <xsl:template name="block-with-mod">
-	<xsl:if test="exists(node()[not(self::mod) and not(self::text()[not(normalize-space())]) and not(self::inline/@name='AppendText')])">
-		<xsl:message terminate="yes" />
+	<xsl:variable name="mod" as="element(mod)" select="mod" />
+	<xsl:variable name="before" as="node()*" select="$mod/preceding-sibling::node()" />
+	<xsl:if test="exists($before[normalize-space(.)])">
+		<Text>
+			<xsl:apply-templates select="$before" />
+		</Text>
 	</xsl:if>
-	<xsl:apply-templates />
+	<xsl:apply-templates select="$mod" />
+	<xsl:apply-templates select="$mod/following-sibling::node()" />
 </xsl:template>
 
 <xsl:template match="mod">
@@ -85,6 +97,40 @@
 			<Text>
 				<xsl:apply-templates />
 			</Text>
+		</xsl:when>
+		<xsl:when test="exists(quotedText) and quotedText/following-sibling::node()[1][self::quotedStructure]">
+			<!-- lead in  -->
+			<xsl:if test="count(quotedText) ne 1 or count(quotedStructure) ne 1 or empty(quotedText/following-sibling::quotedStructure)">
+				<xsl:message terminate="yes">
+					<xsl:sequence select="." />
+				</xsl:message>
+			</xsl:if>
+			<xsl:variable name="before" as="node()*" select="quotedText/preceding-sibling::node()" />
+			<xsl:if test="exists($before) and not(every $n in $before satisfies ($n/self::text() and not(normalize-space($n))))">
+				<Text>
+					<xsl:apply-templates select="$before" />
+				</Text>
+			</xsl:if>
+			<xsl:call-template name="block-amendment">
+				<xsl:with-param name="lead-in" select="quotedText" />
+				<xsl:with-param name="source" select="quotedStructure" />
+			</xsl:call-template>
+			<xsl:apply-templates select="quotedStructure/following-sibling::node()" />
+		</xsl:when>
+		<xsl:when test="exists(quotedText)">
+			<!-- text in between -->
+			<xsl:if test="count(quotedText) ne 1 or count(quotedStructure) ne 1 or empty(quotedText/following-sibling::quotedStructure)">
+				<xsl:message terminate="yes">
+					<xsl:sequence select="." />
+				</xsl:message>
+			</xsl:if>
+			<Text>
+				<xsl:apply-templates select="quotedStructure/preceding-sibling::node()" />
+			</Text>
+			<xsl:call-template name="block-amendment">
+				<xsl:with-param name="source" select="quotedStructure" />
+			</xsl:call-template>
+			<xsl:apply-templates select="quotedStructure/following-sibling::node()" />
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:if test="count(quotedStructure) gt 1">
@@ -102,6 +148,65 @@
 			<xsl:apply-templates select="quotedStructure/following-sibling::node()" />
 		</xsl:otherwise>
 	</xsl:choose>
+</xsl:template>
+
+<xsl:template name="block-amendment">
+	<xsl:param name="lead-in" as="element(quotedText)?" />
+	<xsl:param name="source" as="element(quotedStructure)" select="." />
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<BlockAmendment>
+		<xsl:attribute name="TargetClass">
+			<xsl:value-of select="local:get-target-class($source)" />
+		</xsl:attribute>
+		<xsl:attribute name="TargetSubClass">
+			<xsl:value-of select="local:get-target-subclass($source)" />
+		</xsl:attribute>
+		<xsl:attribute name="Context">
+			<xsl:choose>
+				<xsl:when test="exists($source/@ukl:Context)">
+					<xsl:value-of select="$source/@ukl:Context" />
+				</xsl:when>
+				<xsl:when test="local:target-is-schedule($source)">
+					<xsl:text>schedule</xsl:text>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:text>main</xsl:text>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:attribute>
+		<xsl:attribute name="Format">
+			<xsl:choose>
+				<xsl:when test="exists($lead-in)">
+					<xsl:value-of select="local:get-structure-format($lead-in, $source)" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="local:get-structure-format($source)" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:attribute>
+		<xsl:if test="exists($lead-in)">
+			<Text>
+				<xsl:apply-templates select="$lead-in/node()" />
+			</Text>
+		</xsl:if>
+		<xsl:choose>
+			<xsl:when test="exists($source/*) and (every $child in $source/* satisfies $child/self::hcontainer[@name='definition'])">
+				<xsl:call-template name="definition-list">
+					<xsl:with-param name="definitions" select="$source/*" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:when test="exists($source/hcontainer[@name='definition']) and (every $child in $source/* satisfies ($child/self::p or $child/self::hcontainer[@name='definition']))">
+				<xsl:call-template name="group-definitions-for-block-amendment">
+					<xsl:with-param name="elements" select="$source/*" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates select="$source/*">
+					<xsl:with-param name="context" select="('BlockAmendment', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:otherwise>
+		</xsl:choose>
+	</BlockAmendment>
 </xsl:template>
 
 <xsl:template match="quotedStructure">
