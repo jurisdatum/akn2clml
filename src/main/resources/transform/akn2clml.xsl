@@ -164,7 +164,7 @@
 	</Inferior>
 </xsl:template>
 
-<xsl:template match="docTitle | docNumber | docStage | docDate">
+<xsl:template match="docTitle | shortTitle | docNumber | docStage | docDate">
 	<xsl:apply-templates />
 </xsl:template>
 
