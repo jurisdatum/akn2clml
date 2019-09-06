@@ -13,23 +13,28 @@
 	<xsl:param name="context" as="xs:string+" />
 	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:choose>
-		<xsl:when test="empty($text/parent::num)">
+		<xsl:when test="not($head = 'Pnumber')">
 			<xsl:value-of select="false()" />
 		</xsl:when>
-		<xsl:when test="$head = ('groupOfParts', 'part', 'chapter', 'schedule')">
+		<xsl:when test="not($text/ancestor::num/descendant::text()[normalize-space()][last()] is $text)">
 			<xsl:value-of select="false()" />
 		</xsl:when>
-		<xsl:when test="$head = 'section'">
-			<xsl:value-of select="false()" />
-		</xsl:when>
-		<xsl:when test="$head = 'paragraph' and subsequence($context, 2)[1] = 'schedule'">
-			<xsl:value-of select="false()" />
-		</xsl:when>
-		<xsl:when test="matches(normalize-space($text), '^\(\d+[A-Z]?\)$')">
+		<xsl:otherwise>
 			<xsl:value-of select="true()" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:should-add-punc-before-and-punc-after-attributes" as="xs:boolean">
+	<xsl:param name="num" as="element(num)" />
+	<xsl:param name="context" as="xs:string+" />
+	<xsl:variable name="head" as="xs:string" select="$context[1]" />
+	<xsl:choose>
+		<xsl:when test="$head = 'P1'">
+			<xsl:value-of select="not(matches(normalize-space($num), '^\d+[A-Z]*$'))" />
 		</xsl:when>
-		<xsl:when test="matches(normalize-space($text), '^\([a-z]+\)$')">
-			<xsl:value-of select="true()" />
+		<xsl:when test="$head = ('P2', 'P3' ,'P4', 'P5', 'P6', 'P7')">
+			<xsl:value-of select="not(matches(normalize-space($num), '^\([a-zA-Z\d]+\)$'))" />
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:value-of select="false()" />
@@ -37,11 +42,52 @@
 	</xsl:choose>
 </xsl:function>
 
+<xsl:template name="add-punc-before-and-punc-after-attributes">
+	<xsl:param name="num" as="element(num)" select="." />
+	<xsl:param name="context" as="xs:string+" tunnel="yes" />
+	<xsl:variable name="num" as="xs:string" select="normalize-space($num)" />
+	<xsl:if test="($context[1] = 'P1') and $num and (not(matches($num, '^[a-zA-Z\d]')) or not(matches($num, '[a-zA-Z\d]$')))">
+		<xsl:attribute name="PuncBefore">
+			<xsl:analyze-string select="$num" regex="^([^a-zA-Z\d]+)">
+				<xsl:matching-substring>
+					<xsl:value-of select="regex-group(1)" />
+				</xsl:matching-substring>
+			</xsl:analyze-string>
+		</xsl:attribute>
+		<xsl:attribute name="PuncAfter">
+			<xsl:analyze-string select="$num" regex="[a-zA-Z\d]([^a-zA-Z\d]+)$">
+				<xsl:matching-substring>
+					<xsl:value-of select="regex-group(1)" />
+				</xsl:matching-substring>
+			</xsl:analyze-string>
+		</xsl:attribute>
+	</xsl:if>
+	<xsl:if test="not($context[1] = 'P1') and $num and (not(matches($num, '^\([a-zA-Z\d]')) or not(matches($num, '[a-zA-Z\d]$')))">
+		<xsl:attribute name="PuncBefore">
+			<xsl:analyze-string select="$num" regex="^([^a-zA-Z\d]*)[a-zA-Z\d]">
+				<xsl:matching-substring>
+					<xsl:value-of select="regex-group(1)" />
+				</xsl:matching-substring>
+			</xsl:analyze-string>
+		</xsl:attribute>
+		<xsl:attribute name="PuncAfter">
+			<xsl:analyze-string select="$num" regex="[a-zA-Z\d]([^a-zA-Z\d]+)$">
+				<xsl:matching-substring>
+					<xsl:value-of select="regex-group(1)" />
+				</xsl:matching-substring>
+			</xsl:analyze-string>
+		</xsl:attribute>
+	</xsl:if>
+</xsl:template>
+
 <xsl:template name="strip-punctuation-from-number">
 	<xsl:if test="starts-with(., ' ')">
 		<xsl:text> </xsl:text>
 	</xsl:if>
-	<xsl:value-of select="replace(normalize-space(.), '^\(([\dA-Za-z]+)\)$', '$1')" />
+	<xsl:variable name="pattern" as="xs:string">
+		<xsl:text> ()[].“”‘’"'</xsl:text>
+	</xsl:variable>
+	<xsl:value-of select="translate(., $pattern, '')" />
 	<xsl:if test="ends-with(., ' ')">
 		<xsl:text> </xsl:text>
 	</xsl:if>

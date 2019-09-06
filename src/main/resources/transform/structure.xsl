@@ -609,6 +609,9 @@
 		<xsl:when test="exists(@ukl:Context)">
 			<FragmentNumber Context="{ @ukl:Context }">
 				<xsl:element name="{ $name }">
+					<xsl:if test="($name = 'Pnumber') and local:should-add-punc-before-and-punc-after-attributes(., $context)">
+						<xsl:call-template name="add-punc-before-and-punc-after-attributes" />
+					</xsl:if>
 					<xsl:apply-templates>
 						<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
 					</xsl:apply-templates>
@@ -617,6 +620,9 @@
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:element name="{ $name }">
+				<xsl:if test="($name = 'Pnumber') and local:should-add-punc-before-and-punc-after-attributes(., $context)">
+					<xsl:call-template name="add-punc-before-and-punc-after-attributes" />
+				</xsl:if>
 				<xsl:apply-templates>
 					<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
 				</xsl:apply-templates>
