@@ -100,19 +100,21 @@
 		</xsl:when>
 		<xsl:when test="exists(quotedText) and quotedText/following-sibling::node()[1][self::quotedStructure]">
 			<!-- lead in  -->
-			<xsl:if test="count(quotedText) ne 1 or count(quotedStructure) ne 1 or empty(quotedText/following-sibling::quotedStructure)">
+			<!-- there can be two quotedTexts before the quotedStructure, only the first of which is a lead-in, e.g., asp/2003/1/2003-02-11 -->
+			<xsl:if test="count(quotedStructure) ne 1 or exists(quotedStructure/following-sibling::quotedText)">
 				<xsl:message terminate="yes">
 					<xsl:sequence select="." />
 				</xsl:message>
 			</xsl:if>
-			<xsl:variable name="before" as="node()*" select="quotedText/preceding-sibling::node()" />
+			<xsl:variable name="lead-in" as="element(quotedText)" select="quotedStructure/preceding-sibling::quotedText[1]" />
+			<xsl:variable name="before" as="node()*" select="$lead-in/preceding-sibling::node()" />
 			<xsl:if test="exists($before) and not(every $n in $before satisfies ($n/self::text() and not(normalize-space($n))))">
 				<Text>
 					<xsl:apply-templates select="$before" />
 				</Text>
 			</xsl:if>
 			<xsl:call-template name="block-amendment">
-				<xsl:with-param name="lead-in" select="quotedText" />
+				<xsl:with-param name="lead-in" select="$lead-in" />
 				<xsl:with-param name="source" select="quotedStructure" />
 			</xsl:call-template>
 			<xsl:apply-templates select="quotedStructure/following-sibling::node()" />
