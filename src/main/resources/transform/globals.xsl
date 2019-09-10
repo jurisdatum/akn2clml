@@ -186,9 +186,14 @@
 	</xsl:choose>
 </xsl:variable>
 
-<xsl:variable name="doc-title" as="xs:string">
-	<xsl:variable name="dc-title" as="element()" select="/akomaNtoso/*/meta/proprietary/dc:title[1]" />
+<xsl:variable name="doc-title" as="xs:string?">
+	<xsl:variable name="short-title" as="element(shortTitle)?" select="(//shortTitle)[1]" />
+	<xsl:variable name="dc-title" as="element()?" select="/akomaNtoso/*/meta/proprietary/dc:title[1]" />
+	<xsl:variable name="tlc" as="element()?" select="key('tlc', 'varActTitle')" />
 	<xsl:choose>
+		<xsl:when test="exists($short-title)">
+			<xsl:value-of select="string($short-title)" />
+		</xsl:when>
 		<xsl:when test="exists($dc-title)">
 			<xsl:choose>
 				<xsl:when test="$dc-title/ref[@class='placeholder']">
@@ -200,10 +205,9 @@
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:when>
-		<xsl:otherwise>
-			<xsl:variable name="tlc" as="element()" select="key('tlc', 'varActTitle')" />
+		<xsl:when test="exists($tlc)">
 			<xsl:value-of select="local:resolve-tlc-show-as($tlc/@showAs)" />
-		</xsl:otherwise>
+		</xsl:when>
 	</xsl:choose>
 </xsl:variable>
 
