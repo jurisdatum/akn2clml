@@ -25,6 +25,9 @@
 <xsl:include href="amendments.xsl" />
 <xsl:include href="citations.xsl" />
 <xsl:include href="forms.xsl" />
+<xsl:include href="footnotes.xsl" />
+<xsl:include href="signatures.xsl" />
+<xsl:include href="explanatory.xsl" />
 <xsl:include href="changes.xsl" />
 <xsl:include href="math.xsl" />
 <xsl:include href="resources.xsl" />
@@ -65,8 +68,11 @@
 		<xsl:apply-templates select="body">
 			<xsl:with-param name="context" select="$name" tunnel="yes" />
 		</xsl:apply-templates>
+		<xsl:apply-templates select="conclusions">
+			<xsl:with-param name="context" select="$name" tunnel="yes" />
+		</xsl:apply-templates>
 	</xsl:element>
-	<xsl:if test="exists(*[not(self::meta) and not(self::coverPage) and not(self::preface) and not(self::preamble) and not(self::body)])">
+	<xsl:if test="exists(*[not(self::meta) and not(self::coverPage) and not(self::preface) and not(self::preamble) and not(self::body) and not(self::conclusions)])">
 		<xsl:message terminate="yes">
 		</xsl:message>
 	</xsl:if>
@@ -192,6 +198,12 @@
 	</Term>
 </xsl:template>
 
+<xsl:template match="span">
+	<Span>
+		<xsl:apply-templates />
+	</Span>
+</xsl:template>
+
 <xsl:template match="span[@ukl:Name]">
 	<Character Name="{ @ukl:Name }" />
 </xsl:template>
@@ -224,34 +236,6 @@
 	<xsl:message terminate="yes">
 		<xsl:sequence select="." />
 	</xsl:message>
-</xsl:template>
-
-
-<!-- footnotes -->
-
-<xsl:key name="footnote" match="note[@class='footnote']" use="@eId" />
-
-<xsl:template match="noteRef[@class='footnote']">
-	<FootnoteRef Ref="{ substring(@href, 2) }" />
-</xsl:template>
-
-<xsl:template name="footnotes">
-	<xsl:variable name="footnotes" as="element()*" select="/akomaNtoso/*/meta/notes/note[@class='footnote']" />
-	<xsl:if test="exists($footnotes)">
-		<Footnotes>
-			<xsl:apply-templates select="$footnotes" />
-		</Footnotes>
-	</xsl:if>
-</xsl:template>
-
-<xsl:template match="note[@class='footnote']">
-	<Footnote id="{ @eId }">
-		<FootnoteText>
-			<xsl:apply-templates>
-				<xsl:with-param name="context" select="('FootnoteText', 'Footnote')" tunnel="yes" />
-			</xsl:apply-templates>
-		</FootnoteText>
-	</Footnote>
 </xsl:template>
 
 </xsl:transform>

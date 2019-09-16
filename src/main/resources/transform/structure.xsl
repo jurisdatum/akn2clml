@@ -296,7 +296,7 @@
 <xsl:template match="section | article | rule | hcontainer[@name='regulation']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:choose>
-		<xsl:when test="exists(heading)">
+		<xsl:when test="exists(heading) and exists(num)">
 			<P1group>
 				<xsl:call-template name="add-structure-attributes" />
 				<xsl:apply-templates select="heading | subheading">
@@ -312,15 +312,7 @@
 				</P1>
 			</P1group>
 		</xsl:when>
-		<xsl:when test="empty(num)">
-			<P>
-				<xsl:call-template name="add-structure-attributes" />
-				<xsl:call-template name="small-level-content">
-					<xsl:with-param name="context" select="('P', $context)" tunnel="yes" />
-				</xsl:call-template>
-			</P>
-		</xsl:when>
-		<xsl:otherwise>
+		<xsl:when test="exists(num)">
 			<P1>
 				<xsl:call-template name="add-structure-attributes" />
 				<xsl:apply-templates select="num">
@@ -330,6 +322,27 @@
 					<xsl:with-param name="context" select="('P1', $context)" tunnel="yes" />
 				</xsl:call-template>
 			</P1>
+		</xsl:when>
+		<xsl:when test="exists(heading)">
+			<P1group>
+				<xsl:call-template name="add-structure-attributes" />
+				<xsl:apply-templates select="heading | subheading">
+					<xsl:with-param name="context" select="('P1group', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+				<P>
+					<xsl:call-template name="small-level-content">
+						<xsl:with-param name="context" select="('P', 'P1group', $context)" tunnel="yes" />
+					</xsl:call-template>
+				</P>
+			</P1group>
+		</xsl:when>
+		<xsl:otherwise>
+			<P>
+				<xsl:call-template name="add-structure-attributes" />
+				<xsl:call-template name="small-level-content">
+					<xsl:with-param name="context" select="('P', $context)" tunnel="yes" />
+				</xsl:call-template>
+			</P>
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
@@ -408,7 +421,7 @@
 	</xsl:choose>
 </xsl:function>
 
-<xsl:template match="paragraph | subparagraph | clause | hcontainer[@name=('subsubparagraph','step')]">
+<xsl:template match="paragraph | subparagraph | clause | subclause | hcontainer[@name=('subsubparagraph','step')]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string" select="local:get-structure-name(., $context)" />
 	<xsl:variable name="name2" as="xs:string" select="if (exists(num)) then $name else 'P'" />
@@ -566,11 +579,17 @@
 		<xsl:apply-templates select="num | heading | subheading">
 			<xsl:with-param name="context" select="('Part', $context)" tunnel="yes" />
 		</xsl:apply-templates>
+		<xsl:apply-templates select="num/authorialNote[@class='referenceNote']" mode="reference">
+			<xsl:with-param name="context" select="('Part', $context)" tunnel="yes" />
+		</xsl:apply-templates>
 		<xsl:call-template name="schedule-body">
 			<xsl:with-param name="context" select="('Part', $context)" tunnel="yes" />
 		</xsl:call-template>
 	</Part>
 </xsl:template>
+
+<xsl:template match="hcontainer[@name='schedule']/part/num/authorialNote[@class='referenceNote']" />
+
 
 
 <!-- numbers and headings -->
@@ -589,7 +608,7 @@
 			<xsl:when test="$head = 'Schedule'">
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
-			<xsl:when test="$head = ('Tabular', 'Form')">
+			<xsl:when test="$head = ('Tabular', 'Form', 'Footnote')">
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
 			<xsl:when test="@ukl:Context = ('Part', 'Chapter', 'Pblock')"> <!-- see asp/2000/5 FragmentNumber -->
@@ -597,6 +616,10 @@
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:message>
+					<xsl:text>can't find context for num</xsl:text>
+				</xsl:message>
+				<xsl:message>
+					<xsl:text>context = </xsl:text>
 					<xsl:sequence select="$context" />
 				</xsl:message>
 				<xsl:message terminate="yes">

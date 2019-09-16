@@ -5,9 +5,10 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"
 	xmlns:uk="https://www.legislation.gov.uk/namespaces/UK-AKN"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs ukl uk local">
+	exclude-result-prefixes="xs ukl ukm uk local">
 
 <xsl:variable name="work-date" as="xs:date" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRdate/@date" />
 
@@ -59,6 +60,9 @@
 		<Year Value="{ $doc-year }" />
 		<Number Value="{ $doc-number }" />
 		<EnactmentDate Date="{ $work-date }"/>
+		<xsl:for-each select="/akomaNtoso/*/meta/proprietary/ukm:ISBN">
+			<ISBN Value="{ @Value }" />
+		</xsl:for-each>
 	</PrimaryMetadata>
 </xsl:template>
 
@@ -79,10 +83,25 @@
 					</xsl:choose>
 				</xsl:attribute>
 			</DocumentStatus>
-			<DocumentMinorType Value="{ '' }" />
+			<DocumentMinorType Value="{ $doc-subtype }" />
 		</DocumentClassification>
 		<Year Value="{ $doc-year }" />
 		<Number Value="{ $doc-number }" />
+		<Made Date="{ $work-date }"/>
+		<xsl:for-each select="/akomaNtoso/*/meta/lifecycle/eventRef[starts-with(@eId, 'date-laid')]">
+			<Laid Date="{ @date }" Class="{ key('id', substring(@source, 2))/@showAs }" />
+		</xsl:for-each>
+		<xsl:variable name="cif-dates" as="element(eventRef)*" select="/akomaNtoso/*/meta/lifecycle/eventRef[starts-with(@eId, 'date-cif')]" />
+		<xsl:if test="exists($cif-dates)">
+			<ComingIntoForce>
+				<xsl:for-each select="$cif-dates">
+					<DateTime Date="{ @date }" />
+				</xsl:for-each>
+			</ComingIntoForce>
+		</xsl:if>
+		<xsl:for-each select="/akomaNtoso/*/meta/proprietary/ukm:ISBN">
+			<ISBN Value="{ @Value }" />
+		</xsl:for-each>
 	</SecondaryMetadata>
 </xsl:template>
 

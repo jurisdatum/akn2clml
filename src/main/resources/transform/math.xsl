@@ -30,6 +30,17 @@
 	</equationNumber>
 </xsl:template>
 
+<xsl:template match="subFlow[@name='inlineMathWrapper']">
+	<Span>
+		<xsl:if test="*[1][self::foreign]/*[1][self::math:math/@altimg]">
+			<xsl:attribute name="AltVersionRefs">
+				<xsl:value-of select="local:make-version-id(*[1]/*[1])" />
+			</xsl:attribute>
+		</xsl:if>
+		<xsl:apply-templates />
+	</Span>
+</xsl:template>
+
 <xsl:template match="math:*">
 	<xsl:element name="{ local-name() }" namespace="http://www.w3.org/1998/Math/MathML">
 		<xsl:copy-of select="@*"/>

@@ -269,4 +269,13 @@
 	</CitationSubRef>
 </xsl:template>
 
+<xsl:template match="a[not(starts-with(@href, '#'))]">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<ExternalLink URI="{ @href }">
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('ExternalLink', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</ExternalLink>
+</xsl:template>
+
 </xsl:transform>

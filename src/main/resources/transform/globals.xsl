@@ -157,9 +157,10 @@
 <xsl:variable name="doc-subtype" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRsubtype/@value" />
 
 <xsl:variable name="doc-year" as="xs:integer">
+	<xsl:variable name="ukm-year" as="element()?" select="/akomaNtoso/*/meta/proprietary/ukm:Year" />
 	<xsl:choose>
-		<xsl:when test="exists(/akomaNtoso/*/meta/proprietary/ukm:Year)">
-			<xsl:value-of select="xs:integer(/akomaNtoso/*/meta/proprietary/ukm:Year/@Value)" />
+		<xsl:when test="exists($ukm-year)">
+			<xsl:value-of select="xs:integer($ukm-year/@Value)" />
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:value-of select="xs:integer(key('tlc', 'varActYear')/@showAs)" />
