@@ -189,7 +189,19 @@
 	<xsl:choose>
 		<xsl:when test="$context1 = 'PrimaryPrelims'">
 			<PrimaryPreamble>
-				<xsl:apply-templates>
+				<xsl:variable name="enacting-text" as="element()" select="formula" />
+				<xsl:variable name="intro" as="element()*" select="$enacting-text/preceding-sibling::*" />
+				<xsl:if test="exists($intro)">
+					<IntroductoryText>
+						<xsl:apply-templates select="$intro">
+							<xsl:with-param name="context" select="('IntroductoryText', 'PrimaryPreamble', $context)" tunnel="yes" />
+						</xsl:apply-templates>
+					</IntroductoryText>
+				</xsl:if>
+				<xsl:apply-templates select="$enacting-text">
+					<xsl:with-param name="context" select="('PrimaryPreamble', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+				<xsl:apply-templates select="$enacting-text/following-sibling::*">
 					<xsl:with-param name="context" select="('PrimaryPreamble', $context)" tunnel="yes" />
 				</xsl:apply-templates>
 			</PrimaryPreamble>
@@ -207,6 +219,9 @@
 					</IntroductoryText>
 				</xsl:if>
 				<xsl:apply-templates select="$enacting-text">
+					<xsl:with-param name="context" select="('SecondaryPreamble', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+				<xsl:apply-templates select="$enacting-text/following-sibling::*">
 					<xsl:with-param name="context" select="('SecondaryPreamble', $context)" tunnel="yes" />
 				</xsl:apply-templates>
 			</SecondaryPreamble>
