@@ -671,4 +671,10 @@
 	</xsl:choose>
 </xsl:template>
 
+<xsl:template match="subheading">
+	<Subtitle>
+		<xsl:apply-templates />
+	</Subtitle>
+</xsl:template>
+
 </xsl:transform>
