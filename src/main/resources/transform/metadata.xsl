@@ -87,6 +87,10 @@
 		</DocumentClassification>
 		<Year Value="{ $doc-year }" />
 		<Number Value="{ $doc-number }" />
+		<xsl:variable name="sifted" as="element(eventRef)?" select="/akomaNtoso/*/meta/lifecycle/eventRef[@eId = 'date-sifted']" />
+		<xsl:if test="exists($sifted)">
+			<Sifted Date="{ $sifted/@date }" />
+		</xsl:if>
 		<Made Date="{ $work-date }"/>
 		<xsl:for-each select="/akomaNtoso/*/meta/lifecycle/eventRef[starts-with(@eId, 'date-laid')]">
 			<Laid Date="{ @date }" Class="{ key('id', substring(@source, 2))/@showAs }" />

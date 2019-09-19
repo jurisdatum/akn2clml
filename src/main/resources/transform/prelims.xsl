@@ -140,6 +140,12 @@
 	</Title>
 </xsl:template>
 
+<xsl:template match="container[@name='subject']/block[@name='subtitle']">
+	<Subtitle>
+		<xsl:apply-templates />
+	</Subtitle>
+</xsl:template>
+
 <xsl:template match="block[@name='approved']">
 	<Approved>
 		<xsl:apply-templates />
@@ -148,6 +154,12 @@
 
 <xsl:template match="concept">
 	<xsl:apply-templates />
+</xsl:template>
+
+<xsl:template match="block[@name='siftedDate']">
+	<SiftedDate>
+		<xsl:apply-templates />
+	</SiftedDate>
 </xsl:template>
 
 <xsl:template match="block[@name='madeDate']">
@@ -168,13 +180,13 @@
 	</ComingIntoForce>
 </xsl:template>
 
-<xsl:template match="block[@name=('madeDate','laidDate','comingIntoForce')]/span">
+<xsl:template match="block[@name=('siftedDate','madeDate','laidDate','comingIntoForce')]/span">
 	<Text>
 		<xsl:apply-templates />
 	</Text>
 </xsl:template>
 
-<xsl:template match="block[@name=('madeDate','laidDate','comingIntoForce')]/docDate">
+<xsl:template match="block[@name=('siftedDate','madeDate','laidDate','comingIntoForce')]/docDate">
 	<DateText>
 		<xsl:apply-templates />
 	</DateText>
