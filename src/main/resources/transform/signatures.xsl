@@ -5,15 +5,14 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
-	exclude-result-prefixes="xs">
+	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
+	exclude-result-prefixes="xs local">
 
 <xsl:template match="hcontainer[@name='signatures']">
 	<SignedSection>
 		<xsl:choose>
 			<xsl:when test="empty(hcontainer[@name='signatureGroup'])">
-				<Signatory>
-					<xsl:apply-templates />
-				</Signatory>
+				<xsl:call-template name="signatory" />
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:apply-templates />
@@ -22,21 +21,21 @@
 	</SignedSection>
 </xsl:template>
 
-<xsl:template match="hcontainer[@name='signatureGroup']">
+<xsl:template match="hcontainer[@name='signatureGroup']" name="signatory">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<Signatory>
-		<xsl:apply-templates />
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('Signatory', $context)" tunnel="yes" />
+		</xsl:apply-templates>
 	</Signatory>
 </xsl:template>
 
-<xsl:template match="hcontainer[@name='signatureGroup']/intro">
-	<Para>
-		<xsl:apply-templates />
-	</Para>
-</xsl:template>
-
 <xsl:template match="hcontainer[@name='signature']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<Signee>
-		<xsl:apply-templates />
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('Signee', $context)" tunnel="yes" />
+		</xsl:apply-templates>
 	</Signee>
 </xsl:template>
 
@@ -94,9 +93,14 @@
 
 <!-- seal -->
 
+<xsl:template match="p[img[@class='seal']] | p[date[@class='seal']] | p[inline[@name='seal']] | p[marker[@name='seal']]">
+	<xsl:apply-templates />
+</xsl:template>
+
 <xsl:template match="img[@class='seal']">
 	<LSseal>
 		<xsl:attribute name="ResourceRef">
+			<xsl:value-of select="local:make-resource-id(.)" />
 		</xsl:attribute>
 	</LSseal>
 </xsl:template>
