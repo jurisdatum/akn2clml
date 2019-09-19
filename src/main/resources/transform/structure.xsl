@@ -222,6 +222,9 @@
 	<xsl:call-template name="big-level">
 		<xsl:with-param name="name">
 			<xsl:choose>
+				<xsl:when test="exists(@ukl:Name)">
+					<xsl:value-of select="@ukl:Name" />
+				</xsl:when>
 				<!-- LDAPP uses crossheadings for certain schedule paragraphs -->
 				<xsl:when test="false() and local:akn-is-within-schedule(.) and exists(child::paragraph) and empty(child::paragraph/heading) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
 					<xsl:text>P1group</xsl:text>
@@ -242,6 +245,9 @@
 	<xsl:call-template name="big-level">
 		<xsl:with-param name="name">
 			<xsl:choose>
+				<xsl:when test="exists(@ukl:Name)">
+					<xsl:value-of select="@ukl:Name" />
+				</xsl:when>
 				<!-- LDAPP uses crossheadings for certain schedule paragraphs -->
 				<xsl:when test="false()">
 					<xsl:text>P1group</xsl:text>
