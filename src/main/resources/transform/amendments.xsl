@@ -272,37 +272,43 @@
 
 <xsl:template match="embeddedStructure">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<BlockExtract>
-		<xsl:attribute name="SourceClass">
-			<xsl:value-of select="if (exists(@ukl:SourceClass)) then @ukl:SourceClass else 'unknown'" />
-		</xsl:attribute>
-		<xsl:attribute name="SourceSubClass">
-			<xsl:value-of select="if (exists(@ukl:SourceSubClass)) then @ukl:SourceSubClass else 'unknown'" />
-		</xsl:attribute>
-		<xsl:attribute name="Context">
-			<xsl:value-of select="if (exists(@ukl:Context)) then @ukl:Context else 'unknown'" />
-		</xsl:attribute>
-		<xsl:attribute name="Format">
-			<xsl:value-of select="local:get-structure-format(.)" />
-		</xsl:attribute>
-		<xsl:choose>
-			<xsl:when test="exists(*) and (every $child in * satisfies $child/self::hcontainer[@name='definition'])">
-				<xsl:call-template name="definition-list">
-					<xsl:with-param name="definitions" select="*" />
-				</xsl:call-template>
-			</xsl:when>
-			<xsl:when test="exists(hcontainer[@name='definition']) and (every $child in * satisfies ($child/self::p or $child/self::hcontainer[@name='definition']))">
-				<xsl:call-template name="group-definitions-for-block-amendment">
-					<xsl:with-param name="elements" select="*" />
-				</xsl:call-template>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:apply-templates>
-					<xsl:with-param name="context" select="('BlockExtract', $context)" tunnel="yes" />
-				</xsl:apply-templates>
-			</xsl:otherwise>
-		</xsl:choose>
-	</BlockExtract>
+	<xsl:variable name="clml" as="element()">
+		<BlockExtract>
+			<xsl:attribute name="SourceClass">
+				<xsl:value-of select="if (exists(@ukl:SourceClass)) then @ukl:SourceClass else 'unknown'" />
+			</xsl:attribute>
+			<xsl:attribute name="SourceSubClass">
+				<xsl:value-of select="if (exists(@ukl:SourceSubClass)) then @ukl:SourceSubClass else 'unknown'" />
+			</xsl:attribute>
+			<xsl:attribute name="Context">
+				<xsl:value-of select="if (exists(@ukl:Context)) then @ukl:Context else 'unknown'" />
+			</xsl:attribute>
+			<xsl:attribute name="Format">
+				<xsl:value-of select="local:get-structure-format(.)" />
+			</xsl:attribute>
+			<xsl:choose>
+				<xsl:when test="exists(*) and (every $child in * satisfies $child/self::hcontainer[@name='definition'])">
+					<xsl:call-template name="definition-list">
+						<xsl:with-param name="definitions" select="*" />
+					</xsl:call-template>
+				</xsl:when>
+				<xsl:when test="exists(hcontainer[@name='definition']) and (every $child in * satisfies ($child/self::p or $child/self::hcontainer[@name='definition']))">
+					<xsl:call-template name="group-definitions-for-block-amendment">
+						<xsl:with-param name="elements" select="*" />
+					</xsl:call-template>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:apply-templates>
+						<xsl:with-param name="context" select="('BlockExtract', $context)" tunnel="yes" />
+					</xsl:apply-templates>
+				</xsl:otherwise>
+			</xsl:choose>
+		</BlockExtract>
+	</xsl:variable>
+	<xsl:call-template name="wrap-as-necessary">
+		<xsl:with-param name="clml" select="$clml" />
+		<xsl:with-param name="context" select="$context" />
+	</xsl:call-template>
 </xsl:template>
 
 </xsl:transform>
