@@ -14,8 +14,11 @@
 </xsl:template>
 
 <xsl:template match="blockContainer[@class='explanatoryNotes']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<ExplanatoryNotes>
-		<xsl:apply-templates />
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('ExplanatoryNotes', $context)" tunnel="yes" />
+		</xsl:apply-templates>
 	</ExplanatoryNotes>
 </xsl:template>
 
@@ -27,12 +30,6 @@
 			</Text>
 		</Para>
 	</Comment>
-</xsl:template>
-
-<xsl:template match="blockContainer[@class='explanatoryNotes']/p">
-	<P>
-		<xsl:next-match />
-	</P>
 </xsl:template>
 
 <xsl:template match="blockList[@class='definition']">
@@ -48,15 +45,12 @@
 <!-- earlier orders -->
 
 <xsl:template match="blockContainer[@class='earlierOrders']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<EarlierOrders>
-		<xsl:apply-templates />
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('EarlierOrders', $context)" tunnel="yes" />
+		</xsl:apply-templates>
 	</EarlierOrders>
-</xsl:template>
-
-<xsl:template match="blockContainer[@class='earlierOrders']/p">
-	<P>
-		<xsl:next-match />
-	</P>
 </xsl:template>
 
 
