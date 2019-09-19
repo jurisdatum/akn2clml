@@ -189,21 +189,33 @@
 	<xsl:choose>
 		<xsl:when test="$context1 = 'PrimaryPrelims'">
 			<PrimaryPreamble>
-				<xsl:variable name="enacting-text" as="element()" select="formula" />
-				<xsl:variable name="intro" as="element()*" select="$enacting-text/preceding-sibling::*" />
-				<xsl:if test="exists($intro)">
-					<IntroductoryText>
-						<xsl:apply-templates select="$intro">
-							<xsl:with-param name="context" select="('IntroductoryText', 'PrimaryPreamble', $context)" tunnel="yes" />
+				<xsl:variable name="enacting-text" as="element()?" select="formula" />
+				<xsl:choose>
+					<xsl:when test="exists($enacting-text)">
+						<xsl:variable name="intro" as="element()*" select="if (exists($enacting-text)) then $enacting-text/preceding-sibling::* else *" />
+						<xsl:if test="exists($intro)">
+							<IntroductoryText>
+								<xsl:apply-templates select="$intro">
+									<xsl:with-param name="context" select="('IntroductoryText', 'PrimaryPreamble', $context)" tunnel="yes" />
+								</xsl:apply-templates>
+							</IntroductoryText>
+						</xsl:if>
+						<xsl:apply-templates select="$enacting-text">
+							<xsl:with-param name="context" select="('PrimaryPreamble', $context)" tunnel="yes" />
 						</xsl:apply-templates>
-					</IntroductoryText>
-				</xsl:if>
-				<xsl:apply-templates select="$enacting-text">
-					<xsl:with-param name="context" select="('PrimaryPreamble', $context)" tunnel="yes" />
-				</xsl:apply-templates>
-				<xsl:apply-templates select="$enacting-text/following-sibling::*">
-					<xsl:with-param name="context" select="('PrimaryPreamble', $context)" tunnel="yes" />
-				</xsl:apply-templates>
+						<xsl:apply-templates select="$enacting-text/following-sibling::*">
+							<xsl:with-param name="context" select="('PrimaryPreamble', $context)" tunnel="yes" />
+						</xsl:apply-templates>
+					</xsl:when>
+					<xsl:otherwise>
+						<IntroductoryText>
+							<xsl:apply-templates>
+								<xsl:with-param name="context" select="('IntroductoryText', 'PrimaryPreamble', $context)" tunnel="yes" />
+							</xsl:apply-templates>
+						</IntroductoryText>
+						<EnactingTextOmitted />
+					</xsl:otherwise>
+				</xsl:choose>
 			</PrimaryPreamble>
 		</xsl:when>
 		<xsl:when test="$context1 = 'SecondaryPrelims'">
