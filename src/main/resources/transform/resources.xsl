@@ -13,13 +13,17 @@
 
 <xsl:key name="altimg" match="math:math" use="@altimg" />
 
+<xsl:key name="imgsrc" match="img" use="@src" />
+
 <xsl:variable name="versions" as="element()*">
 	<xsl:sequence select="//*[@alternativeTo]" />
 	<xsl:sequence select="//math:math[@altimg]" />
 </xsl:variable>
 
 <xsl:variable name="resources" as="element()*">
-	<xsl:sequence select="//img" />
+	<xsl:for-each-group select="//img" group-by="@src">
+		<xsl:sequence select="." />
+	</xsl:for-each-group>
 	<xsl:sequence select="//math:math[@altimg]" />
 </xsl:variable>
 
@@ -45,6 +49,7 @@
 
 <xsl:function name="local:make-resource-id">
 	<xsl:param name="e" as="element()" />
+	<xsl:variable name="e" as="element()" select="if ($e/self::img) then key('imgsrc', $e/@src, root($e))[1] else $e" />
 	<xsl:variable name="index" as="xs:integer?" select="local:get-first-index-of-node($e, $resources)" />
 	<xsl:variable name="num" as="xs:integer" select="if (exists($index)) then $index else 0" />
 	<xsl:value-of select="concat('r', format-number($num,'00000'))" />
