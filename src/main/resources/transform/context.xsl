@@ -74,6 +74,9 @@
 		<xsl:when test="$head = ('Part', 'Chapter')">
 			<xsl:text>P</xsl:text>
 		</xsl:when>
+		<xsl:when test="$head = 'P1group'">
+			<xsl:text>P</xsl:text>
+		</xsl:when>
 		<xsl:when test="$head = 'P1'">
 			<xsl:text>P1para</xsl:text>
 		</xsl:when>

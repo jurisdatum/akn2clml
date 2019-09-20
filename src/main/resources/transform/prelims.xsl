@@ -300,15 +300,6 @@
 	</xsl:element>
 </xsl:template>
 
-<xsl:template match="blockContainer[@class=('P1group')]/p">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<P>
-		<xsl:next-match>
-			<xsl:with-param name="context" select="('Pnumber', $context)" tunnel="yes" />
-		</xsl:next-match>
-	</P>
-</xsl:template>
-
 <xsl:template match="blockContainer[@class=('P3')]/num">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<Pnumber>
