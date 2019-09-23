@@ -272,15 +272,6 @@
 	</RoyalPresence>
 </xsl:template>
 
-<xsl:template match="preamble/p">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<P>
-		<xsl:next-match>
-			<xsl:with-param name="context" select="('P', $context)" tunnel="yes" />
-		</xsl:next-match>
-	</P>
-</xsl:template>
-
 <xsl:template match="preamble/blockContainer[not(@class=('P3'))]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<P>
@@ -288,25 +279,6 @@
 			<xsl:with-param name="context" select="('P', $context)" tunnel="yes" />
 		</xsl:apply-templates>
 	</P>
-</xsl:template>
-
-<xsl:template match="blockContainer[@class=('P1group', 'P3', 'P')]">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="name" as="xs:string" select="@class" />
-	<xsl:element name="{ $name }">
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</xsl:element>
-</xsl:template>
-
-<xsl:template match="blockContainer[@class=('P3')]/num">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<Pnumber>
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="('Pnumber', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</Pnumber>
 </xsl:template>
 
 <xsl:template match="formula[@name=('enactingText','EnactingText')]">

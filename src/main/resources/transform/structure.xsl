@@ -597,6 +597,33 @@
 <xsl:template match="hcontainer[@name='schedule']/part/num/authorialNote[@class='referenceNote']" />
 
 
+<!-- structure in prelims, explanatory notes, earlier orders, etc. -->
+
+<xsl:template match="blockContainer[@class=('P1group', 'P3', 'P4', 'P')]">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="name" as="xs:string" select="@class" />
+	<xsl:variable name="clml" as="element()">
+		<xsl:element name="{ $name }">
+			<xsl:apply-templates>
+				<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+			</xsl:apply-templates>
+		</xsl:element>
+	</xsl:variable>
+	<xsl:call-template name="wrap-as-necessary">
+		<xsl:with-param name="clml" select="$clml" />
+		<xsl:with-param name="context" select="$context" />
+	</xsl:call-template>
+</xsl:template>
+
+<xsl:template match="blockContainer[@class=('P3', 'P4')]/num">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<Pnumber>
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('Pnumber', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</Pnumber>
+</xsl:template>
+
 
 <!-- numbers and headings -->
 
