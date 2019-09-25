@@ -5,26 +5,45 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs local">
+	exclude-result-prefixes="xs ukl local">
 
 
 <xsl:template match="ins">
-	<Addition ChangeId="{ tokenize(@class, ' ')[1] }">
+	<Addition>
+		<xsl:attribute name="ChangeId">
+			<xsl:value-of select="if (exists(@ukl:ChangeId)) then @ukl:ChangeId else generate-id(.)" />
+		</xsl:attribute>
+		<xsl:apply-templates select="@ukl:CommentaryRef" />
 		<xsl:apply-templates />
 	</Addition>
 </xsl:template>
 
 <xsl:template match="ins[starts-with(@class, 'substitution')]">
-	<Substitution ChangeId="{ tokenize(@class, ' ')[2] }">
+	<Substitution>
+		<xsl:attribute name="ChangeId">
+			<xsl:value-of select="if (exists(@ukl:ChangeId)) then @ukl:ChangeId else generate-id(.)" />
+		</xsl:attribute>
+		<xsl:apply-templates select="@ukl:CommentaryRef" />
 		<xsl:apply-templates />
 	</Substitution>
 </xsl:template>
 
 <xsl:template match="del">
-	<Repeal ChangeId="{ tokenize(@class, ' ')[1] }">
+	<Repeal>
+		<xsl:attribute name="ChangeId">
+			<xsl:value-of select="if (exists(@ukl:ChangeId)) then @ukl:ChangeId else generate-id(.)" />
+		</xsl:attribute>
+		<xsl:apply-templates select="@ukl:CommentaryRef" />
 		<xsl:apply-templates />
 	</Repeal>
+</xsl:template>
+
+<xsl:template match="@ukl:CommentaryRef">
+	<xsl:attribute name="CommentaryRef">
+		<xsl:value-of select="." />
+	</xsl:attribute>
 </xsl:template>
 
 <xsl:template match="noteRef[starts-with(@class, 'commentary')]">
