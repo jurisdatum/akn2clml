@@ -13,6 +13,7 @@
 
 <xsl:strip-space elements="*" />
 
+<xsl:include href="ldapp.xsl" />
 <xsl:include href="globals.xsl" />
 <xsl:include href="metadata.xsl" />
 <xsl:include href="context.xsl" />

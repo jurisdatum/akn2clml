@@ -10,9 +10,9 @@
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
 	exclude-result-prefixes="xs ukl html local">
 
-<xsl:template match="tblock[@class='tabular']">
+<xsl:template match="tblock[@class='tabular'] | tblock[foreign/html:table]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<Tabular Orientation="{ @ukl:Orientation }">
+	<Tabular Orientation="{ if (exists(@ukl:Orientation)) then @ukl:Orientation else 'portrait' }">
 		<xsl:variable name="table-text" as="element(p)*" select="if (exists(*[not(self::p)])) then *[not(self::p)]/preceding-sibling::p else *" />
 		<xsl:if test="exists($table-text)">
 			<TableText>

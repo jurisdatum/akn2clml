@@ -123,24 +123,6 @@
 	</xsl:choose>
 </xsl:function>
 
-<xsl:function name="local:resolve-tlc-show-as" as="xs:string">
-	<xsl:param name="showAs" as="attribute()" />
-	<xsl:variable name="components" as="xs:string*">
-		<xsl:for-each select="tokenize(normalize-space($showAs), ' ')">
-			<xsl:choose>
-				<xsl:when test="starts-with(., '#')">
-					<xsl:variable name="tlc" as="element()" select="key('tlc', substring(., 2), root($showAs))" />
-					<xsl:sequence select="local:resolve-tlc-show-as($tlc/@showAs)" />
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:sequence select="." />
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:for-each>
-	</xsl:variable>
-	<xsl:value-of select="string-join($components, ' ')" />
-</xsl:function>
-
 
 <!-- variables -->
 
@@ -154,7 +136,17 @@
 	<xsl:value-of select="local:category-from-short-type($doc-short-type)" />
 </xsl:variable>
 
-<xsl:variable name="doc-subtype" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRsubtype/@value" />
+<xsl:variable name="doc-subtype" as="xs:string?">
+	<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRsubtype/@value" />
+	<xsl:choose>
+		<xsl:when test="$frbr = ()">
+			<xsl:value-of select="$frbr" />
+		</xsl:when>
+		<xsl:when test="exists($ldapp-doc-subtype)">
+			<xsl:value-of select="$ldapp-doc-subtype" />
+		</xsl:when>
+	</xsl:choose>
+</xsl:variable>
 
 <xsl:variable name="doc-year" as="xs:integer">
 	<xsl:variable name="ukm-year" as="element()?" select="/akomaNtoso/*/meta/proprietary/ukm:Year" />
@@ -162,8 +154,11 @@
 		<xsl:when test="exists($ukm-year)">
 			<xsl:value-of select="xs:integer($ukm-year/@Value)" />
 		</xsl:when>
+		<xsl:when test="exists($ldapp-doc-year)">
+			<xsl:value-of select="$ldapp-doc-year" />
+		</xsl:when>
 		<xsl:otherwise>
-			<xsl:value-of select="xs:integer(key('tlc', 'varActYear')/@showAs)" />
+			<xsl:value-of select="xs:integer(substring(/akomaNtoso/*/meta/identification/FRBRWork/FRBRdate/@date, 1, 4))" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:variable>
@@ -171,43 +166,26 @@
 <xsl:variable name="doc-number" as="xs:string">
 	<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value" />
 	<xsl:choose>
-		<xsl:when test="exists($frbr)">
-			<xsl:choose>
-				<xsl:when test="$frbr = '#varProjectId'">
-					<xsl:value-of select="key('tlc', 'varProjectId')/@showAs" />
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select="$frbr" />
-				</xsl:otherwise>
-			</xsl:choose>
+		<xsl:when test="$frbr castable as xs:integer">
+			<xsl:value-of select="$frbr" />
+		</xsl:when>
+		<xsl:when test="exists($ldapp-doc-number)">
+			<xsl:value-of select="$ldapp-doc-number" />
 		</xsl:when>
 		<xsl:otherwise>
-			<xsl:value-of select="key('tlc', 'varActNo')/@showAs" />
+			<xsl:message terminate="yes">no document number</xsl:message>
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:variable>
 
 <xsl:variable name="doc-title" as="xs:string?">
 	<xsl:variable name="short-title" as="element(shortTitle)?" select="(//shortTitle)[1]" />
-	<xsl:variable name="dc-title" as="element()?" select="/akomaNtoso/*/meta/proprietary/dc:title[1]" />
-	<xsl:variable name="tlc" as="element()?" select="key('tlc', 'varActTitle')" />
 	<xsl:choose>
-		<xsl:when test="exists($short-title)">
+		<xsl:when test="normalize-space($short-title)">
 			<xsl:value-of select="string($short-title)" />
 		</xsl:when>
-		<xsl:when test="exists($dc-title)">
-			<xsl:choose>
-				<xsl:when test="$dc-title/ref[@class='placeholder']">
-					<xsl:variable name="ref" as="xs:string" select="$dc-title/ref[@class='placeholder']/@href" />
-					<xsl:value-of select="key('tlc', substring($ref, 2))/@showAs" />
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select="$dc-title" />
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="exists($tlc)">
-			<xsl:value-of select="local:resolve-tlc-show-as($tlc/@showAs)" />
+		<xsl:when test="exists($ldapp-doc-title)">
+			<xsl:value-of select="$ldapp-doc-title" />
 		</xsl:when>
 	</xsl:choose>
 </xsl:variable>
@@ -222,7 +200,24 @@
 
 <xsl:variable name="doc-version" as="xs:string">
 	<xsl:variable name="exp-uri" as="xs:string" select="/akomaNtoso/*/meta/identification/FRBRExpression/FRBRthis/@value" />
-	<xsl:value-of select="substring-after($exp-uri, concat($doc-short-id, '/'))" />
+	<xsl:variable name="version" as="xs:string" select="substring-after($exp-uri, concat($doc-short-id, '/'))" />
+	<xsl:choose>
+		<xsl:when test="$version = ('enacted', 'made', 'adopted')">
+			<xsl:value-of select="$version" />
+		</xsl:when>
+		<xsl:when test="$version castable as xs:date">
+			<xsl:value-of select="$version" />
+		</xsl:when>
+		<xsl:when test="$doc-category = 'primary'">
+			<xsl:text>enacted</xsl:text>
+		</xsl:when>
+		<xsl:when test="$doc-category = 'secondary'">
+			<xsl:text>made</xsl:text>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:message>no document version</xsl:message>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:variable>
 
 </xsl:transform>

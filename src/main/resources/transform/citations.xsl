@@ -86,11 +86,6 @@
 	</xsl:if>
 </xsl:function>
 
-<xsl:template match="ref[@class='placeholder']">
-	<xsl:variable name="tlc" as="element()" select="key('tlc', substring(@href, 2))" />
-	<xsl:value-of select="local:resolve-tlc-show-as($tlc/@showAs)" />
-</xsl:template>
-
 <xsl:template match="ref">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="components" as="element()?" select="local:parse-uri(@href)" />
