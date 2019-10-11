@@ -86,6 +86,19 @@
 	</xsl:if>
 </xsl:function>
 
+<xsl:function name="local:make-internal-id-for-ref" as="xs:string?">
+	<xsl:param name="ref" as="element(ref)" />
+	<xsl:variable name="id" as="xs:string?" select="local:make-internal-id-for-href($ref/@href)" />
+	<xsl:choose>
+		<xsl:when test="exists($id)">
+			<xsl:sequence select="$id" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="local:make-internal-id-for-ldapp-ref($ref)" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
 <xsl:template match="ref">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="components" as="element()?" select="local:parse-uri(@href)" />
@@ -141,7 +154,10 @@
 			</Citation>
 		</xsl:when>
 		<xsl:when test="starts-with(@href, '#')">
-			<InternalLink Ref="{ substring(@href, 2) }">
+			<InternalLink>
+				<xsl:attribute name="Ref">
+					<xsl:sequence select="local:make-internal-id-for-ref(.)" />
+				</xsl:attribute>
 				<xsl:apply-templates />
 			</InternalLink>
 		</xsl:when>
@@ -216,6 +232,11 @@
 			</Citation>
 		</xsl:when>
 		<xsl:when test="exists(ref[@href=current()/@from]) and exists(ref[@href=current()/@upTo])">
+			<Span>
+				<xsl:apply-templates />
+			</Span>
+		</xsl:when>
+		<xsl:when test="starts-with(@from, '#') and exists(ref)">
 			<Span>
 				<xsl:apply-templates />
 			</Span>

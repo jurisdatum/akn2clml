@@ -14,6 +14,8 @@
 
 <xsl:key name="id" match="*" use="@eId" />
 
+<xsl:key name="guid" match="*" use="@GUID" />
+
 <xsl:key name="tlc" match="TLCConcept | TLCProcess" use="@eId" />
 
 
