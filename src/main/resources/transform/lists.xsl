@@ -14,44 +14,51 @@
 	<xsl:sequence select="every $item in $list/* satisfies $item/num" />
 </xsl:function>
 
-<xsl:function name="local:get-decoration" as="xs:string">
-	<xsl:param name="list" as="element(blockList)" />
-	<xsl:param name="ordered" as="xs:boolean" />
+<xsl:function name="local:get-decoration-from-numbered-things" as="xs:string">
+	<xsl:param name="items" as="element()+" />
+	<xsl:variable name="nums" as="xs:string+" select="$items/num/normalize-space(.)" />
 	<xsl:choose>
-		<xsl:when test="$ordered">
-			<xsl:choose>
-				<xsl:when test="every $num in $list/item/num satisfies (starts-with($num, '(') and ends-with($num, ')'))">
-					<xsl:text>parens</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies ends-with($num, ')')">
-					<xsl:text>parenRight</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies (starts-with($num, '[') and ends-with($num, ']'))">
-					<xsl:text>brackets</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies ends-with($num, ']')">
-					<xsl:text>bracketRight</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies ends-with($num, '.')">
-					<xsl:text>period</xsl:text>
-				</xsl:when>
-				<xsl:when test="every $num in $list/item/num satisfies ends-with($num, ':')">
-					<xsl:text>colon</xsl:text>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:text>none</xsl:text>
-				</xsl:otherwise>
-			</xsl:choose>
+		<xsl:when test="every $num in $nums satisfies (starts-with($num, '(') and ends-with($num, ')'))">
+			<xsl:text>parens</xsl:text>
+		</xsl:when>
+		<xsl:when test="every $num in $nums satisfies ends-with($num, ')')">
+			<xsl:text>parenRight</xsl:text>
+		</xsl:when>
+		<xsl:when test="every $num in $nums satisfies (starts-with($num, '[') and ends-with($num, ']'))">
+			<xsl:text>brackets</xsl:text>
+		</xsl:when>
+		<xsl:when test="every $num in $nums satisfies ends-with($num, ']')">
+			<xsl:text>bracketRight</xsl:text>
+		</xsl:when>
+		<xsl:when test="every $num in $nums satisfies ends-with($num, '.')">
+			<xsl:text>period</xsl:text>
+		</xsl:when>
+		<xsl:when test="every $num in $nums satisfies ends-with($num, ':')">
+			<xsl:text>colon</xsl:text>
 		</xsl:when>
 		<xsl:otherwise>
-			<xsl:text>none</xsl:text>
+			<xsl:sequence select="'none'" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:function>
 
-<xsl:function name="local:get-type-of-ordered-list" as="xs:string?">
+<xsl:function name="local:get-decoration-from-list" as="xs:string">
 	<xsl:param name="list" as="element(blockList)" />
+	<xsl:param name="ordered" as="xs:boolean" />
+	<xsl:choose>
+		<xsl:when test="$ordered">
+			<xsl:sequence select="local:get-decoration-from-numbered-things($list/item)" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="'none'" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:get-ordered-list-type-from-numbered-things" as="xs:string?">
+	<xsl:param name="items" as="element()+" />
 	<xsl:param name="decor" as="xs:string" />
+	<xsl:variable name="nums" as="xs:string+" select="$items/num/translate(., ' ', '')" /><!-- some have spaces within: ukpga/2017/3/enacted -->
 	<xsl:variable name="begin-end" as="xs:string+">
 		<xsl:choose>
 			<xsl:when test="$decor = 'none'">
@@ -90,35 +97,41 @@
 		<xsl:value-of select="concat($begin-end[1], '[IVX]+', $begin-end[2])" />
 	</xsl:variable>
 	<xsl:variable name="alpha-pattern" as="xs:string">
-		<xsl:value-of select="concat($begin-end[1], '[a-z]+', $begin-end[2])" />
+		<xsl:value-of select="concat($begin-end[1], '[a-z]+\d*', $begin-end[2])" />
 	</xsl:variable>
 	<xsl:variable name="alpha-upper-pattern" as="xs:string">
-		<xsl:value-of select="concat($begin-end[1], '[A-Z]+', $begin-end[2])" />
+		<xsl:value-of select="concat($begin-end[1], '[A-Z]+\d*', $begin-end[2])" />
 	</xsl:variable>
 	<xsl:choose>
-		<xsl:when test="every $num in $list/item/num satisfies matches($num, $arabic-pattern)">
+		<xsl:when test="every $num in $nums satisfies matches($num, $arabic-pattern)">
 			<xsl:text>arabic</xsl:text>
 		</xsl:when>
-		<xsl:when test="every $num in $list/item/num satisfies matches($num, $roman-pattern)">
+		<xsl:when test="every $num in $nums satisfies matches($num, $roman-pattern)">
 			<xsl:text>roman</xsl:text>
 		</xsl:when>
-		<xsl:when test="every $num in $list/item/num satisfies matches($num, $roman-upper-pattern)">
+		<xsl:when test="every $num in $nums satisfies matches($num, $roman-upper-pattern)">
 			<xsl:text>romanUpper</xsl:text>
 		</xsl:when>
-		<xsl:when test="every $num in $list/item/num satisfies matches($num, $alpha-pattern)">
+		<xsl:when test="every $num in $nums satisfies matches($num, $alpha-pattern)">
 			<xsl:text>alpha</xsl:text>
 		</xsl:when>
-		<xsl:when test="every $num in $list/item/num satisfies matches($num, $alpha-upper-pattern)">
+		<xsl:when test="every $num in $nums satisfies matches($num, $alpha-upper-pattern)">
 			<xsl:text>alphaUpper</xsl:text>
 		</xsl:when>
 	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:get-type-of-ordered-list" as="xs:string?">
+	<xsl:param name="list" as="element(blockList)" />
+	<xsl:param name="decor" as="xs:string" />
+	<xsl:sequence select="local:get-ordered-list-type-from-numbered-things($list/item, $decor)" />
 </xsl:function>
 
 <xsl:template match="blockList">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="ordered" as="xs:boolean" select="local:is-ordered(.)" />
 	<xsl:variable name="name" as="xs:string" select="if ($ordered) then 'OrderedList' else 'UnorderedList'" />
-	<xsl:variable name="decor" as="xs:string" select="local:get-decoration(., $ordered)" />
+	<xsl:variable name="decor" as="xs:string" select="local:get-decoration-from-list(., $ordered)" />
 	<xsl:call-template name="wrap-as-necessary">
 		<xsl:with-param name="clml" as="element()">
 			<xsl:element name="{ $name }">
@@ -233,7 +246,7 @@
 	</xsl:if>
 </xsl:template>
 
-<xsl:template match="hcontainer[@name='definition'] | tblock[@class='definition']">
+<xsl:template match="hcontainer[@name='definition'][exists(content)] | tblock[@class='definition']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<ListItem>
 		<xsl:apply-templates>
@@ -242,5 +255,69 @@
 	</ListItem>
 </xsl:template>
 
+<xsl:template match="hcontainer[@name='definition'][empty(content)]">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<ListItem>
+		<xsl:apply-templates select="num | heading | subheading | intro">
+			<xsl:with-param name="context" select="('ListItem', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+		<xsl:variable name="children" as="element()+" select="* except (num | heading | subheading | intro | wrapUp)" />
+		<OrderedList>
+			<xsl:variable name="decor" as="xs:string" select="local:get-decoration-from-numbered-things($children)" />
+			<xsl:variable name="type" as="xs:string" select="local:get-ordered-list-type-from-numbered-things($children, $decor)" />
+			<xsl:attribute name="Type">
+				<xsl:value-of select="$type" />
+			</xsl:attribute>
+			<xsl:attribute name="Decoration">
+				<xsl:value-of select="$decor" />
+			</xsl:attribute>
+			<xsl:apply-templates select="$children" mode="list">
+				<xsl:with-param name="context" select="('OrderedList', 'ListItem', $context)" tunnel="yes" />
+			</xsl:apply-templates>
+		</OrderedList>
+		<xsl:apply-templates select="wrapUp">
+			<xsl:with-param name="context" select="('ListItem', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</ListItem>
+</xsl:template>
+
+<xsl:template match="paragraph[exists(content)] | subparagraph[exists(content)]" mode="list">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<ListItem>
+		<xsl:apply-templates select="*[not(self::num)]" mode="list">
+			<xsl:with-param name="context" select="('ListItem', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</ListItem>
+</xsl:template>
+
+<xsl:template match="paragraph[empty(content)] | subparagraph[empty(content)]" mode="list"><!-- similar to above but skips <num> -->
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<ListItem>
+		<xsl:apply-templates select="heading | subheading | intro">
+			<xsl:with-param name="context" select="('ListItem', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+		<xsl:variable name="children" as="element()+" select="* except (num | heading | subheading | intro | wrapUp)" />
+		<OrderedList>
+			<xsl:variable name="decor" as="xs:string" select="local:get-decoration-from-numbered-things($children)" />
+			<xsl:variable name="type" as="xs:string" select="local:get-ordered-list-type-from-numbered-things($children, $decor)" />
+			<xsl:attribute name="Type">
+				<xsl:value-of select="$type" />
+			</xsl:attribute>
+			<xsl:attribute name="Decoration">
+				<xsl:value-of select="$decor" />
+			</xsl:attribute>
+			<xsl:apply-templates select="$children" mode="list">
+				<xsl:with-param name="context" select="('OrderedList', 'ListItem', $context)" tunnel="yes" />
+			</xsl:apply-templates>
+		</OrderedList>
+		<xsl:apply-templates select="wrapUp">
+			<xsl:with-param name="context" select="('ListItem', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</ListItem>
+</xsl:template>
+
+<xsl:template match="*" mode="list">
+	<xsl:apply-templates select="." />
+</xsl:template>
 
 </xsl:transform>

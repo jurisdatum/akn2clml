@@ -80,6 +80,14 @@
 	</xsl:if>
 </xsl:template>
 
+<xsl:function name="local:strip-punctuation-from-number" as="xs:string">
+	<xsl:param name="num" as="xs:string" />
+	<xsl:variable name="pattern" as="xs:string">
+		<xsl:text> ()[].“”‘’"'</xsl:text>
+	</xsl:variable>
+	<xsl:sequence select="translate($num, $pattern, '')" />
+</xsl:function>
+
 <xsl:template name="strip-punctuation-from-number">
 	<xsl:if test="starts-with(., ' ')">
 		<xsl:text> </xsl:text>

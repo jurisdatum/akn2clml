@@ -33,7 +33,7 @@
 </xsl:template>
 
 <xsl:template match="blockList[@class='definition']">
-	<xsl:variable name="decor" as="xs:string" select="local:get-decoration(., false())" />
+	<xsl:variable name="decor" as="xs:string" select="local:get-decoration-from-list(., false())" />
 	<UnorderedList Decoration="{ $decor }" Class="Definition">
 		<xsl:apply-templates>
 			<xsl:with-param name="decor" select="$decor" />
