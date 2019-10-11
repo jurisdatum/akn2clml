@@ -5,11 +5,11 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
-	xmlns:ukakn="https://www.legislation.gov.uk/namespaces/UK-AKN"
+	xmlns:uk="https://www.legislation.gov.uk/namespaces/UK-AKN"
 	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:ukl2="http://legislation.gov.uk/namespaces/legis"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs ukakn ukl ukl2 local">
+	exclude-result-prefixes="xs uk ukl ukl2 local">
 
 
 <xsl:function name="local:get-target-class" as="xs:string?">
@@ -17,6 +17,9 @@
 	<xsl:choose>
 		<xsl:when test="exists($qs/@ukl:TargetClass)">
 			<xsl:value-of select="$qs/@ukl:TargetClass" />
+		</xsl:when>
+		<xsl:when test="exists($qs/@uk:docName)">
+			<xsl:value-of select="local:category-from-short-type($qs/@uk:docName)" />
 		</xsl:when>
 		<xsl:when test="exists($qs/@ukl2:docName)">
 			<xsl:value-of select="local:category-from-short-type($qs/@ukl2:docName)" />

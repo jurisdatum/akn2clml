@@ -5,8 +5,9 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:uk="https://www.legislation.gov.uk/namespaces/UK-AKN"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs local">
+	exclude-result-prefixes="xs uk local">
 
 <xsl:function name="local:resolve-tlc-show-as" as="xs:string">
 	<xsl:param name="showAs" as="attribute()" />
@@ -81,18 +82,18 @@
 </xsl:variable>
 
 <xsl:variable name="ldapp-doc-title" as="xs:string?">	<xsl:variable name="var-act-no" as="xs:string?" select="key('tlc', 'varActNo')/@showAs" />
-	<xsl:variable name="var-act-title" as="xs:string?" select="key('tlc', 'varActTitle')/@showAs" />
+	<xsl:variable name="var-act-title" as="attribute()?" select="key('tlc', 'varActTitle')/@showAs" />
 	<xsl:variable name="doc-title" as="element(docTitle)?" select="(//docTitle)[1]" />
-	<xsl:variable name="var-bill-title" as="xs:string?" select="key('tlc', 'varBillTitle')/@showAs" />
+	<xsl:variable name="var-bill-title" as="attribute()?" select="key('tlc', 'varBillTitle')/@showAs" />
 	<xsl:choose>
 		<xsl:when test="normalize-space($var-act-title)">
-			<xsl:value-of select="$var-act-title" />
+			<xsl:value-of select="local:resolve-tlc-show-as($var-act-title)" />
 		</xsl:when>
 		<xsl:when test="normalize-space($doc-title)">
 			<xsl:value-of select="$doc-title" />
 		</xsl:when>
 		<xsl:when test="normalize-space($var-bill-title)">
-			<xsl:value-of select="$var-bill-title" />
+			<xsl:value-of select="local:resolve-tlc-show-as($var-bill-title)" />
 		</xsl:when>
 	</xsl:choose>
 </xsl:variable>
@@ -110,5 +111,32 @@
 
 <xsl:template match="conclusions[@eId='backCover']" />
 <xsl:template match="conclusions[@eId='backCover']/*" />
+
+
+<!-- GUIDs -->
+
+<xsl:function name="local:make-internal-id-for-target-guid" as="xs:string?">
+	<xsl:param name="guid" as="attribute(uk:targetGuid)" />
+	<xsl:variable name="e" as="element()?" select="key('guid', string($guid), root($guid))[1]" />
+	<xsl:if test="exists($e)">
+		<xsl:sequence select="local:make-internal-id($e)" />
+	</xsl:if>
+</xsl:function>
+
+<xsl:function name="local:make-internal-id-for-ldapp-ref" as="xs:string?">
+	<xsl:param name="ref" as="element(ref)" />
+	<xsl:if test="exists($ref/@uk:targetGuid)">
+		<xsl:sequence select="local:make-internal-id-for-target-guid($ref/@uk:targetGuid)" />
+	</xsl:if>
+</xsl:function>
+
+<xsl:function name="local:make-internal-ids-for-ldapp-rref" as="xs:string*">
+	<xsl:param name="ref" as="element(rref)" />
+	<xsl:variable name="from" as="element()?" select="if (exists($ref/@uk:fromGuid)) then key('guid', string($ref/@uk:fromGuid), root($ref))[1] else ()" />
+	<xsl:variable name="up-to" as="element()?" select="if (exists($ref/@uk:upToGuid)) then key('guid', string($ref/@uk:upToGuid), root($ref))[1] else ()" />
+	<xsl:if test="exists($from) and exists($up-to)">
+		<xsl:sequence select="(local:make-internal-id($from), local:make-internal-id($up-to))" />
+	</xsl:if>
+</xsl:function>
 
 </xsl:transform>
