@@ -632,7 +632,7 @@
 	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:variable name="name" as="xs:string">
 		<xsl:choose>
-			<xsl:when test="$head = ('Part', 'Chapter', 'Pblock')">
+			<xsl:when test="$head = ('Part', 'Chapter', 'Pblock', 'PsubBlock')">
 				<xsl:text>Number</xsl:text>
 			</xsl:when>
 			<xsl:when test="$head = ('P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7')">
