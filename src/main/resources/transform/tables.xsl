@@ -88,6 +88,13 @@
 	</xsl:if>
 </xsl:template>
 
+
+<!-- attributes -->
+
+<xsl:template match="html:*/@class" priority="1" /> <!-- "HTML" elements in CLML can't have a @class attribute -->
+
+<xsl:template match="html:*/@eId | html:*/@GUID" priority="1" /> <!-- LDAPP uses these -->
+
 <xsl:template match="html:th/@width | html:th/@height | html:td/@width | html:td/@height" priority="1">
 	<xsl:attribute name="{ name() }">
 		<xsl:choose>
