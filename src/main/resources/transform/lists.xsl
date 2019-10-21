@@ -15,9 +15,12 @@
 </xsl:function>
 
 <xsl:function name="local:get-decoration-from-numbered-things" as="xs:string">
-	<xsl:param name="items" as="element()+" />
-	<xsl:variable name="nums" as="xs:string+" select="$items/num/normalize-space(.)" />
+	<xsl:param name="items" as="element()*" />
+	<xsl:variable name="nums" as="xs:string*" select="$items/num/normalize-space(.)" />
 	<xsl:choose>
+		<xsl:when test="empty($nums)">
+			<xsl:sequence select="'none'" />
+		</xsl:when>
 		<xsl:when test="every $num in $nums satisfies (starts-with($num, '(') and ends-with($num, ')'))">
 			<xsl:text>parens</xsl:text>
 		</xsl:when>
@@ -297,19 +300,39 @@
 			<xsl:with-param name="context" select="('ListItem', $context)" tunnel="yes" />
 		</xsl:apply-templates>
 		<xsl:variable name="children" as="element()+" select="* except (num | heading | subheading | intro | wrapUp)" />
-		<OrderedList>
-			<xsl:variable name="decor" as="xs:string" select="local:get-decoration-from-numbered-things($children)" />
-			<xsl:variable name="type" as="xs:string" select="local:get-ordered-list-type-from-numbered-things($children, $decor)" />
-			<xsl:attribute name="Type">
-				<xsl:value-of select="$type" />
-			</xsl:attribute>
-			<xsl:attribute name="Decoration">
-				<xsl:value-of select="$decor" />
-			</xsl:attribute>
-			<xsl:apply-templates select="$children" mode="list">
-				<xsl:with-param name="context" select="('OrderedList', 'ListItem', $context)" tunnel="yes" />
-			</xsl:apply-templates>
-		</OrderedList>
+		<xsl:choose>
+			<xsl:when test="exists($children/num)">
+				<OrderedList>
+					<xsl:variable name="decor" as="xs:string" select="local:get-decoration-from-numbered-things($children)" />
+					<xsl:variable name="type" as="xs:string" select="local:get-ordered-list-type-from-numbered-things($children, $decor)" />
+					<xsl:attribute name="Type">
+						<xsl:value-of select="$type" />
+					</xsl:attribute>
+					<xsl:attribute name="Decoration">
+						<xsl:value-of select="$decor" />
+					</xsl:attribute>
+					<xsl:apply-templates select="$children" mode="list">
+						<xsl:with-param name="context" select="('OrderedList', 'ListItem', $context)" tunnel="yes" />
+					</xsl:apply-templates>
+				</OrderedList>
+			</xsl:when>
+			<xsl:otherwise>
+				<UnorderedList>
+					<xsl:if test="exists($children/@name='definition')">
+						<xsl:attribute name="Class">
+							<xsl:text>Definition</xsl:text>
+						</xsl:attribute>
+					</xsl:if>
+					<xsl:variable name="decor" as="xs:string" select="local:get-decoration-from-numbered-things($children)" />
+					<xsl:attribute name="Decoration">
+						<xsl:value-of select="$decor" />
+					</xsl:attribute>
+					<xsl:apply-templates select="$children" mode="list">
+						<xsl:with-param name="context" select="('UnorderedList', 'ListItem', $context)" tunnel="yes" />
+					</xsl:apply-templates>
+				</UnorderedList>
+			</xsl:otherwise>
+		</xsl:choose>
 		<xsl:apply-templates select="wrapUp">
 			<xsl:with-param name="context" select="('ListItem', $context)" tunnel="yes" />
 		</xsl:apply-templates>
