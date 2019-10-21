@@ -110,7 +110,7 @@
 		<xsl:when test="$head = 'BlockExtract'">
 			<xsl:text>P</xsl:text>
 		</xsl:when>
-		<xsl:when test="$head = ('Signatory')">
+		<xsl:when test="$head = ('SignedSection', 'Signatory')">
 			<xsl:text>Para</xsl:text>
 		</xsl:when>
 		<xsl:when test="$head = 'ScheduleBody'">

@@ -9,13 +9,23 @@
 	exclude-result-prefixes="xs local">
 
 <xsl:template match="hcontainer[@name='signatures']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<SignedSection>
 		<xsl:choose>
+			<xsl:when test="empty(hcontainer[@name='signatureGroup']) and empty(hcontainer[@name='signature'])">
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="('SignedSection', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:when>
 			<xsl:when test="empty(hcontainer[@name='signatureGroup'])">
-				<xsl:call-template name="signatory" />
+				<xsl:call-template name="signatory">
+					<xsl:with-param name="context" select="('SignedSection', $context)" tunnel="yes" />
+				</xsl:call-template>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:apply-templates />
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="('SignedSection', $context)" tunnel="yes" />
+				</xsl:apply-templates>
 			</xsl:otherwise>
 		</xsl:choose>
 	</SignedSection>
