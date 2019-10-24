@@ -12,19 +12,32 @@
 
 <xsl:template match="tblock[@class='tabular'] | tblock[foreign/html:table]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<Tabular Orientation="{ if (exists(@ukl:Orientation)) then @ukl:Orientation else 'portrait' }">
-		<xsl:variable name="table-text" as="element(p)*" select="if (exists(*[not(self::p)])) then *[not(self::p)]/preceding-sibling::p else *" />
-		<xsl:if test="exists($table-text)">
-			<TableText>
-				<xsl:apply-templates select="$table-text">
-					<xsl:with-param name="context" select="('TableText', 'Tabular', $context)" tunnel="yes" />
-				</xsl:apply-templates>
-			</TableText>
-		</xsl:if>
-		<xsl:apply-templates select="* except $table-text">
-			<xsl:with-param name="context" select="('Tabular', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</Tabular>
+	<xsl:variable name="wrapper" as="xs:string?" select="local:get-wrapper('Tabular', $context)" />
+	<xsl:variable name="clml" as="element()">
+		<Tabular Orientation="{ if (exists(@ukl:Orientation)) then @ukl:Orientation else 'portrait' }">
+			<xsl:variable name="table-text" as="element(p)*" select="if (exists(*[not(self::p)])) then *[not(self::p)]/preceding-sibling::p else *" />
+			<xsl:if test="exists($table-text)">
+				<TableText>
+					<xsl:apply-templates select="$table-text">
+						<xsl:with-param name="context" select="('TableText', 'Tabular', $wrapper, $context)" tunnel="yes" />
+					</xsl:apply-templates>
+				</TableText>
+			</xsl:if>
+			<xsl:apply-templates select="* except $table-text">
+				<xsl:with-param name="context" select="('Tabular', $wrapper, $context)" tunnel="yes" />
+			</xsl:apply-templates>
+		</Tabular>
+	</xsl:variable>
+	<xsl:choose>
+		<xsl:when test="exists($wrapper)">
+			<xsl:element name="{ $wrapper }">
+				<xsl:copy-of select="$clml" />
+			</xsl:element>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:copy-of select="$clml" />
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="foreign">
