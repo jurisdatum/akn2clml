@@ -48,8 +48,8 @@
 			</rule>
 		</secondary>
 		<schedule>
-			<paragraph clml="P1" />
-			<subparagraph clml="P2" />
+			<paragraph class="schProv1" clml="P1" />
+			<subparagraph class="schProv2" clml="P2" />
 			<paragraph class="para1" clml="P3" />
 			<subparagraph class="para2" clml="P4" />
 			<clause clml="P5" />
@@ -70,23 +70,30 @@
 	<xsl:variable name="doc-subclass" as="xs:string" select="if ($doc-subclass = 'unknown') then 'order' else $doc-subclass" />
 	<xsl:choose>
 		<xsl:when test="$schedule">
-			<xsl:variable name="match" as="element()?" select="$mapping/*:schedule/*[local-name()=$akn-element-name][exists(@class)][@class = $akn-element-class]" />
 			<xsl:choose>
-				<xsl:when test="exists($akn-element-class) and exists($match)">
-					<xsl:value-of select="$match/@clml" />
+				<xsl:when test="exists($akn-element-class)">
+					<xsl:variable name="match" as="element()?" select="$mapping/*:schedule/*[local-name()=$akn-element-name][@class=$akn-element-class]" />
+					<xsl:choose>
+						<xsl:when test="exists($match)">
+							<xsl:sequence select="$match/@clml/string()" />
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:sequence select="$mapping/*:schedule/*[local-name()=$akn-element-name][1]/@clml/string()" />
+						</xsl:otherwise>
+					</xsl:choose>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:value-of select="$mapping/*:schedule/*[local-name()=$akn-element-name][1]/@clml" />
+					<xsl:sequence select="$mapping/*:schedule/*[local-name()=$akn-element-name][1]/@clml/string()" />
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:when>
 		<xsl:when test="$doc-class = 'secondary'">
-			<xsl:value-of select="$mapping/*:secondary/*[local-name()=$doc-subclass]/*[local-name()=$akn-element-name]/@clml" />
+			<xsl:sequence select="$mapping/*:secondary/*[local-name()=$doc-subclass]/*[local-name()=$akn-element-name]/@clml/string()" />
 		</xsl:when>
 		<xsl:when test="$doc-class = 'euretained'">
 		</xsl:when>
 		<xsl:otherwise>
-			<xsl:value-of select="$mapping/*:primary/*[local-name()=$akn-element-name]/@clml" />
+			<xsl:sequence select="$mapping/*:primary/*[local-name()=$akn-element-name]/@clml/string()" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:function>
