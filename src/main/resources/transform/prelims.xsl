@@ -168,6 +168,12 @@
 	</MadeDate>
 </xsl:template>
 
+<xsl:template match="block[@name='laidDraft']">
+	<LaidDraft>
+		<xsl:apply-templates />
+	</LaidDraft>
+</xsl:template>
+
 <xsl:template match="block[@name='laidDate']">
 	<LaidDate>
 		<xsl:apply-templates />
@@ -180,7 +186,7 @@
 	</ComingIntoForce>
 </xsl:template>
 
-<xsl:template match="block[@name=('siftedDate','madeDate','laidDate','comingIntoForce')]/span">
+<xsl:template match="block[@name=('siftedDate','madeDate','laidDraft','laidDate','comingIntoForce')]/span">
 	<Text>
 		<xsl:apply-templates />
 	</Text>
