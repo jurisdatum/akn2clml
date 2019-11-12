@@ -111,15 +111,24 @@
 			</xsl:if>
 			<xsl:variable name="lead-in" as="element(quotedText)" select="quotedStructure/preceding-sibling::quotedText[1]" />
 			<xsl:variable name="before" as="node()*" select="$lead-in/preceding-sibling::node()" />
-			<xsl:if test="exists($before) and not(every $n in $before satisfies ($n/self::text() and not(normalize-space($n))))">
-				<Text>
-					<xsl:apply-templates select="$before" />
-				</Text>
-			</xsl:if>
-			<xsl:call-template name="block-amendment">
-				<xsl:with-param name="lead-in" select="$lead-in" />
-				<xsl:with-param name="source" select="quotedStructure" />
-			</xsl:call-template>
+			<xsl:choose>
+				<xsl:when test="exists($before) and not(every $n in $before satisfies ($n/self::text() and not(normalize-space($n))))">
+					<Text>
+						<xsl:apply-templates select="$before" />
+						<xsl:apply-templates select="$lead-in" />
+					</Text>
+					<xsl:call-template name="block-amendment">
+						<xsl:with-param name="lead-in" select="()" />
+						<xsl:with-param name="source" select="quotedStructure" />
+					</xsl:call-template>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:call-template name="block-amendment">
+						<xsl:with-param name="lead-in" select="$lead-in" />
+						<xsl:with-param name="source" select="quotedStructure" />
+					</xsl:call-template>
+				</xsl:otherwise>
+			</xsl:choose>
 			<xsl:apply-templates select="quotedStructure/following-sibling::node()" />
 		</xsl:when>
 		<xsl:when test="exists(quotedText)">
