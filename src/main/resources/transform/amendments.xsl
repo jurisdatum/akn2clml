@@ -268,7 +268,7 @@
 	</BlockAmendment>
 </xsl:template>
 
-<xsl:template match="inline[@name='AppendText']">
+<xsl:template match="inline[@name=('appendText','AppendText')]">
 	<AppendText>
 		<xsl:apply-templates />
 	</AppendText>
