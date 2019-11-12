@@ -2,6 +2,7 @@ package com.jurisdatum.tna.akn2clml;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -37,9 +38,12 @@ public class Lambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGa
 				.withHeaders(Collections.singletonMap("Content-Type", "text/plain"))
 				.withBody(e.getLocalizedMessage());
 		}
+		Map<String, String> headers = new LinkedHashMap<>();
+		headers.put("Content-Type", "application/xml");
+		headers.put("Access-Control-Allow-Origin", "*");
 		return new APIGatewayProxyResponseEvent()
 			.withStatusCode(200)
-			.withHeaders(Collections.singletonMap("Content-Type", "application/xml"))
+			.withHeaders(headers)
 			.withBody(clml);
 	}
 
