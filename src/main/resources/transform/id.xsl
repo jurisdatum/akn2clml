@@ -5,14 +5,18 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:uk="https://www.legislation.gov.uk/namespaces/UK-AKN"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs local">
+	exclude-result-prefixes="xs uk local">
 
 <xsl:key name="internal-refs" match="ref[starts-with(@href,'#')]" use="substring(@href, 2)" />
+<xsl:key name="internal-refs-by-guid" match="ref[exists(@uk:targetGuid)]" use="@uk:targetGuid" />
 
 <xsl:function name="local:element-id-is-necessary" as="xs:boolean">
 	<xsl:param name="e" as="element()" />
-	<xsl:sequence select="exists($e/@eId) and exists(key('internal-refs', $e/@eId, root($e)))" />
+	<xsl:variable name="ref-to-id-exists" as="xs:boolean" select="exists($e/@eId) and exists(key('internal-refs', $e/@eId, root($e)))" />
+	<xsl:variable name="ref-to-guid-exists" as="xs:boolean" select="exists($e/@GUID) and exists(key('internal-refs-by-guid', $e/@GUID, root($e)))" />
+	<xsl:sequence select="$ref-to-id-exists or $ref-to-guid-exists" />
 </xsl:function>
 
 <xsl:template match="authorialNote[@class='referenceNote']" mode="remove-schedule-reference" />
