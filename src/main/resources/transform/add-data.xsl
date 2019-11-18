@@ -9,11 +9,25 @@
 	xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"
 	xmlns:dc="http://purl.org/dc/elements/1.1/"
 	xmlns:local="http://www.jurisdatum.com/tna/clml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	exclude-result-prefixes="xs ukl ukm dc local">
 
 
 <xsl:param name="isbn" as="xs:string?" select="()" />
 <xsl:param name="default-publisher" as="xs:boolean" select="false()" />
+<xsl:param name="schemaLocation" as="xs:string?" select="()" />
+
+
+<!-- add schemaLocation for eContent -->
+
+<xsl:template match="ukl:Legislation">
+	<xsl:copy>
+		<xsl:if test="exists($schemaLocation)">
+			<xsl:attribute name="xsi:schemaLocation"><xsl:text>http://www.legislation.gov.uk/namespaces/legislation </xsl:text><xsl:value-of select="$schemaLocation"/></xsl:attribute>
+		</xsl:if>
+		<xsl:apply-templates select="@*[local-name() != 'schemaLocation'] | node()"/>
+	</xsl:copy>
+</xsl:template>
 
 
 <!-- add ISBN -->
