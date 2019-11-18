@@ -220,11 +220,11 @@
 			<xsl:call-template name="strip-punctuation-from-number" />
 		</xsl:when>
 		<xsl:otherwise>
-			<xsl:if test="starts-with(., ' ')">
+			<xsl:if test="matches(., '^\s')">
 				<xsl:text> </xsl:text>
 			</xsl:if>
 			<xsl:value-of select="normalize-space(.)" />
-			<xsl:if test="ends-with(., ' ')">
+			<xsl:if test="matches(., '\s$')">
 				<xsl:text> </xsl:text>
 			</xsl:if>
 		</xsl:otherwise>
