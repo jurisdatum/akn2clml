@@ -5,9 +5,10 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:uk="https://www.legislation.gov.uk/namespaces/UK-AKN"
 	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs ukl local">
+	exclude-result-prefixes="xs uk ukl local">
 
 <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes" xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation" />
 
@@ -190,7 +191,9 @@
 
 <xsl:template match="def">
 	<Definition>
+		<xsl:value-of select="@uk:startQuote" />
 		<xsl:apply-templates />
+		<xsl:value-of select="@uk:endQuote" />
 	</Definition>
 </xsl:template>
 
@@ -234,7 +237,7 @@
 
 <!-- default -->
 
-<xsl:template match="*">
+<xsl:template match="*" priority="-100">
 	<xsl:message terminate="yes">
 		<xsl:sequence select="." />
 	</xsl:message>
