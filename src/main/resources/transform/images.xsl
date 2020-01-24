@@ -10,7 +10,7 @@
 	exclude-result-prefixes="xs ukl local">
 
 
-<xsl:template match="tblock[starts-with(@class, 'figure')]">
+<xsl:template match="tblock[tokenize(@class,' ')=('figure','image')]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:call-template name="wrap-as-necessary">
 		<xsl:with-param name="clml" as="element()">
@@ -33,7 +33,7 @@
 	</xsl:call-template>
 </xsl:template>
 
-<xsl:template match="tblock[starts-with(@class, 'figure')]/p[exists(img) and count(node()) eq 1]">
+<xsl:template match="tblock[tokenize(@class,' ')=('figure','image')]/p[exists(img) and count(node()) eq 1]">
 	<xsl:apply-templates />
 </xsl:template>
 
@@ -47,6 +47,7 @@
 				</xsl:when>
 				<xsl:when test="exists(@width)">
 					<xsl:value-of select="@width" />
+					<xsl:text>pt</xsl:text>
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:text>auto</xsl:text>
@@ -60,6 +61,7 @@
 				</xsl:when>
 				<xsl:when test="exists(@height)">
 					<xsl:value-of select="@height" />
+					<xsl:text>pt</xsl:text>
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:text>auto</xsl:text>

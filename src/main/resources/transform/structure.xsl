@@ -22,7 +22,15 @@
 			<subsubparagraph clml="P5" />
 		</primary>
 		<secondary>
-			<order>
+			<article clml="P1" />
+			<regulation clml="P1" />
+			<rule clml="P1" />
+			<SIParagraph clml="P2" />
+			<paragraph clml="P3" />
+			<subparagraph clml="P4" />
+			<subsubparagraph clml="P5" />
+			<subsubsubparagraph clml="P6" />
+<!-- 			<order>
 				<article clml="P1" />
 				<paragraph clml="P2" />
 				<subparagraph clml="P3" />
@@ -45,18 +53,25 @@
 				<clause clml="P4" />
 				<subclause clml="P5" />
 				<point clml="P6" />
-			</rule>
+			</rule> -->
 		</secondary>
 		<schedule>
+			<scheduleParagraph clml="P1" />
+			<scheduleSubparagraph clml="P2" />
+			<paragraph clml="P3" />
+			<subparagraph clml="P4" />
+<!-- 			<clause clml="P5" />
+			<subclause clml="P6" /> -->
+			<subsubparagraph clml="P5" />
+			<subsubsubparagraph clml="P6" />
+			<!-- these should come after those with same name and no @class -->
 			<paragraph class="schProv1" clml="P1" />
 			<subparagraph class="schProv2" clml="P2" />
-			<paragraph class="para1" clml="P3" />
-			<subparagraph class="para2" clml="P4" />
-			<clause clml="P5" />
-			<subclause clml="P6" />
-			<subsubparagraph clml="P5" />
 		</schedule>
 		<euretained>
+			<article clml="P1" />
+			<paragraph clml="P2" />
+			<point clml="P3" />
 		</euretained>
 	</akn>
 </xsl:variable>
@@ -88,9 +103,10 @@
 			</xsl:choose>
 		</xsl:when>
 		<xsl:when test="$doc-class = 'secondary'">
-			<xsl:sequence select="$mapping/*:secondary/*[local-name()=$doc-subclass]/*[local-name()=$akn-element-name]/@clml/string()" />
+			<xsl:sequence select="$mapping/*:secondary/*[local-name()=$akn-element-name]/@clml/string()" />
 		</xsl:when>
 		<xsl:when test="$doc-class = 'euretained'">
+			<xsl:sequence select="$mapping/*:euretained/*[local-name()=$akn-element-name]/@clml/string()" />
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:sequence select="$mapping/*:primary/*[local-name()=$akn-element-name]/@clml/string()" />
@@ -119,11 +135,25 @@
 	</xsl:choose>
 </xsl:function>
 
-<xsl:function name="local:get-structure-name" as="xs:string?">
+<xsl:function name="local:get-applicable-doc-class" as="xs:string">
+	<xsl:param name="e" as="element()" />
+	<xsl:variable name="qs" as="element()?" select="$e/ancestor::quotedStructure[1]" />
+	<xsl:choose>
+		<xsl:when test="exists($qs)">
+			<xsl:sequence select="local:get-target-class($qs)" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="$doc-category" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:get-structure-name" as="xs:string">
 	<xsl:param name="akn" as="element()" />
 	<xsl:param name="context" as="xs:string*" />
 	<xsl:variable name="qs" as="element()?" select="$akn/ancestor::quotedStructure[1]" />
 	<xsl:variable name="doc-class" as="xs:string">
+		<!-- use local:get-applicable-doc-class -->
 		<xsl:choose>
 			<xsl:when test="exists($qs)">
 				<xsl:value-of select="local:get-target-class($qs)" />
@@ -156,6 +186,7 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:variable>
+	<xsl:variable name="akn-element-name" as="xs:string" select="if ($akn/self::hcontainer) then $akn/@name else local-name($akn)" />
 	<xsl:variable name="akn-class" as="xs:string?">
 		<xsl:choose>
 			<xsl:when test="exists($akn/@class)">
@@ -185,16 +216,47 @@
 			</xsl:when>
 		</xsl:choose>
 	</xsl:variable>
-	<xsl:variable name="akn-element-name" as="xs:string" select="if ($akn/self::hcontainer) then $akn/@name else local-name($akn)" />
-	<xsl:variable name="name" select="local:get-structure-name($doc-class, $doc-subclass, $within-schedule, $akn-element-name, $akn-class)" />
-	<xsl:choose>
-		<xsl:when test="$akn/ancestor-or-self::hcontainer[@name='step']">
-			<xsl:value-of select="local:one-more-than-context($context)" />
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:value-of select="$name" />
-		</xsl:otherwise>
-	</xsl:choose>
+	<xsl:variable name="name" as="xs:string?">
+		<xsl:choose>
+			<xsl:when test="$akn/self::hcontainer[@name='subsubparagraph']">
+				<xsl:sequence select="local:one-more-than-context($context)" />
+			</xsl:when>
+			<xsl:when test="$akn/ancestor-or-self::hcontainer[@name='step']">
+				<xsl:sequence select="local:one-more-than-context($context)" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:sequence select="local:get-structure-name($doc-class, $doc-subclass, $within-schedule, $akn-element-name, $akn-class)" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:if test="empty($name)">
+		<xsl:message>
+			<xsl:sequence select="$akn" />
+		</xsl:message>
+		<xsl:message>
+			<xsl:text>doc-class </xsl:text>
+			<xsl:sequence select="$doc-class" />
+		</xsl:message>
+		<xsl:message>
+			<xsl:text>doc-subclass </xsl:text>
+			<xsl:sequence select="$doc-subclass" />
+		</xsl:message>
+		<xsl:message>
+			<xsl:text>within-schedule </xsl:text>
+			<xsl:sequence select="$within-schedule" />
+		</xsl:message>
+		<xsl:message>
+			<xsl:text>akn-element-name </xsl:text>
+			<xsl:sequence select="$akn-element-name" />
+		</xsl:message>
+		<xsl:message>
+			<xsl:text>akn-class </xsl:text>
+			<xsl:sequence select="$akn-class" />
+		</xsl:message>
+		<xsl:message terminate="yes">
+		</xsl:message>
+	</xsl:if>
+	<xsl:sequence select="$name" />
 </xsl:function>
 
 <xsl:template name="add-structure-attributes">
@@ -222,6 +284,18 @@
 <xsl:template match="chapter">
 	<xsl:call-template name="big-level">
 		<xsl:with-param name="name" select="'Chapter'" />
+	</xsl:call-template>
+</xsl:template>
+
+<xsl:template match="section[local:get-applicable-doc-class(.)='secondary']">
+	<xsl:call-template name="big-level">
+		<xsl:with-param name="name" select="'Pblock'" />
+	</xsl:call-template>
+</xsl:template>
+
+<xsl:template match="subsection[local:get-applicable-doc-class(.)='secondary']">
+	<xsl:call-template name="big-level">
+		<xsl:with-param name="name" select="'PsubBlock'" />
 	</xsl:call-template>
 </xsl:template>
 
@@ -306,7 +380,7 @@
 	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="section | article | rule | hcontainer[@name='regulation']">
+<xsl:template match="section | article | rule | hcontainer[@name='regulation'] | hcontainer[@name='scheduleParagraph'] | hcontainer[@name='direction']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:choose>
 		<xsl:when test="exists(heading) and exists(num)">
@@ -360,7 +434,7 @@
 	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="subsection">
+<xsl:template match="subsection | hcontainer[@name='SIParagraph']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="clml" as="element()">
 		<xsl:choose>
@@ -434,9 +508,14 @@
 	</xsl:choose>
 </xsl:function>
 
-<xsl:template match="paragraph | subparagraph | clause | subclause | hcontainer[@name=('subsubparagraph','step')]">
+<xsl:template match="paragraph | subparagraph | clause | subclause | hcontainer[@name=('subsubparagraph','step')] | point">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string" select="local:get-structure-name(., $context)" />
+	<xsl:if test="$name = ''">
+		<xsl:message>
+			<xsl:sequence select="." />
+		</xsl:message>
+	</xsl:if>
 	<xsl:variable name="name2" as="xs:string" select="if (exists(num)) then $name else 'P'" />
 	<xsl:call-template name="wrap-as-necessary">
 		<xsl:with-param name="clml" as="element()">

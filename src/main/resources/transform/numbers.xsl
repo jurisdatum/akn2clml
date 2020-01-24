@@ -30,11 +30,31 @@
 	<xsl:param name="context" as="xs:string+" />
 	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:choose>
-		<xsl:when test="$head = 'P1'">
-			<xsl:value-of select="not(matches(normalize-space($num), '^\d+[A-Z]*$'))" />
+		<xsl:when test="$doc-category = 'primary'">
+			<xsl:choose>
+				<xsl:when test="$head = 'P1'">
+					<xsl:value-of select="not(matches(normalize-space($num), '^\d+[A-Z]*$'))" />
+				</xsl:when>
+				<xsl:when test="$head = ('P2', 'P3' ,'P4', 'P5', 'P6', 'P7')">
+					<xsl:value-of select="not(matches(normalize-space($num), '^\([a-zA-Z\d]+\)$'))" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="false()" />
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:when>
-		<xsl:when test="$head = ('P2', 'P3' ,'P4', 'P5', 'P6', 'P7')">
-			<xsl:value-of select="not(matches(normalize-space($num), '^\([a-zA-Z\d]+\)$'))" />
+		<xsl:when test="$doc-category = 'secondary'">
+			<xsl:choose>
+				<xsl:when test="$head = 'P1'">
+					<xsl:value-of select="not(matches(normalize-space($num), '^\d+[A-Z]*\.$'))" />
+				</xsl:when>
+				<xsl:when test="$head = ('P2', 'P3' ,'P4', 'P5', 'P6', 'P7')">
+					<xsl:value-of select="not(matches(normalize-space($num), '^\([a-zA-Z\d]+\)$'))" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="false()" />
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:value-of select="false()" />
@@ -83,9 +103,9 @@
 <xsl:function name="local:strip-punctuation-from-number" as="xs:string">
 	<xsl:param name="num" as="xs:string" />
 	<xsl:variable name="pattern" as="xs:string">
-		<xsl:text> ()[].“”‘’"'</xsl:text>
+		<xsl:text>()[].“”‘’"'</xsl:text>
 	</xsl:variable>
-	<xsl:sequence select="translate($num, $pattern, '')" />
+	<xsl:sequence select="translate(normalize-space($num), $pattern, '')" />
 </xsl:function>
 
 <xsl:template name="strip-punctuation-from-number">
@@ -93,9 +113,9 @@
 		<xsl:text> </xsl:text>
 	</xsl:if>
 	<xsl:variable name="pattern" as="xs:string">
-		<xsl:text> ()[].“”‘’"'</xsl:text>
+		<xsl:text>()[].“”‘’"'</xsl:text>
 	</xsl:variable>
-	<xsl:value-of select="translate(., $pattern, '')" />
+	<xsl:value-of select="translate(normalize-space(.), $pattern, '')" />
 	<xsl:if test="ends-with(., ' ')">
 		<xsl:text> </xsl:text>
 	</xsl:if>

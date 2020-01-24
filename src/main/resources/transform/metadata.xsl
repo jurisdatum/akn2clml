@@ -59,7 +59,7 @@
 		</DocumentClassification>
 		<Year Value="{ $doc-year }" />
 		<Number Value="{ $doc-number }" />
-		<EnactmentDate Date="{ $work-date }"/>
+		<EnactmentDate Date="{ $work-date }" />
 		<xsl:for-each select="/akomaNtoso/*/meta/proprietary/ukm:ISBN">
 			<ISBN Value="{ @Value }" />
 		</xsl:for-each>
@@ -87,14 +87,53 @@
 		</DocumentClassification>
 		<Year Value="{ $doc-year }" />
 		<Number Value="{ $doc-number }" />
+		
+		<xsl:variable name="alternative-numbers" as="xs:string*">
+			<xsl:sequence select="$ldapp-doc-subsid-numbers" />
+		</xsl:variable>
+		<xsl:if test="exists($alternative-numbers)">
+			<xsl:for-each select="$alternative-numbers">
+				<xsl:variable name="parts" as="xs:string*" select="tokenize(., ' ')" />
+				<AlternativeNumber Category="{ $parts[1] }" Value="{ $parts[2] }" />
+			</xsl:for-each>
+		</xsl:if>
+		
 		<xsl:variable name="sifted" as="element(eventRef)?" select="/akomaNtoso/*/meta/lifecycle/eventRef[@eId = 'date-sifted']" />
 		<xsl:if test="exists($sifted)">
 			<Sifted Date="{ $sifted/@date }" />
 		</xsl:if>
-		<Made Date="{ $work-date }"/>
-		<xsl:for-each select="/akomaNtoso/*/meta/lifecycle/eventRef[starts-with(@eId, 'date-laid')]">
-			<Laid Date="{ @date }" Class="{ key('id', substring(@source, 2))/@showAs }" />
+		<Made>
+			<xsl:attribute name="Date">
+				<xsl:choose>
+					<xsl:when test="exists($ldapp-made-date)">
+						<xsl:sequence select="$ldapp-made-date" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:sequence select="$work-date" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:attribute>
+		</Made>
+		<xsl:for-each select="/akomaNtoso/*/preface/container[@name='dates']/block[@name='laidDate'][docDate]">
+			<Laid>
+				<xsl:attribute name="Date">
+					<xsl:value-of select="substring(docDate/@date, 1, 10)" />
+				</xsl:attribute>
+				<xsl:attribute name="Class">
+					<xsl:choose>
+						<xsl:when test="$doc-short-type = ('uksi', 'ukdsi')">
+							<xsl:text>UnitedKingdomParliament</xsl:text>
+						</xsl:when>
+						<xsl:when test="$doc-short-type = ('ssi', 'sdsi')">
+							<xsl:text>ScottishParliament</xsl:text>
+						</xsl:when>
+					</xsl:choose>
+				</xsl:attribute>
+			</Laid>
 		</xsl:for-each>
+<!-- 		<xsl:for-each select="/akomaNtoso/*/meta/lifecycle/eventRef[starts-with(@eId, 'date-laid')]">
+			<Laid Date="{ @date }" Class="{ key('id', substring(@source, 2))/@showAs }" />
+		</xsl:for-each> -->
 		<xsl:variable name="cif-dates" as="element(eventRef)*" select="/akomaNtoso/*/meta/lifecycle/eventRef[starts-with(@eId, 'date-cif')]" />
 		<xsl:if test="exists($cif-dates)">
 			<ComingIntoForce>

@@ -10,7 +10,7 @@
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
 	exclude-result-prefixes="xs ukl html local">
 
-<xsl:template match="tblock[@class='tabular'] | tblock[foreign/html:table]">
+<xsl:template match="tblock[@class=('table','tabular')] | tblock[foreign/html:table]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="wrapper" as="xs:string?" select="local:get-wrapper('Tabular', $context)" />
 	<xsl:variable name="clml" as="element()">
@@ -46,7 +46,7 @@
 
 <xsl:template match="html:*">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:copy>
+	<xsl:copy copy-namespaces="no">
 		<xsl:apply-templates select="@*" />
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="(local-name(.), $context)" tunnel="yes" />
@@ -59,7 +59,7 @@
 	<xsl:call-template name="table-footnotes">
 		<xsl:with-param name="table" select="ancestor::html:table" />
 	</xsl:call-template>
-	<xsl:copy>
+	<xsl:copy copy-namespaces="no">
 		<xsl:apply-templates select="@*" />
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="(local-name(.), $context)" tunnel="yes" />
@@ -102,11 +102,28 @@
 </xsl:template>
 
 
+<!--  -->
+
+<xsl:template match="html:p">
+	<Para>
+		<Text>
+			<xsl:apply-templates />
+		</Text>
+	</Para>
+</xsl:template>
+
+<xsl:template match="html:i">
+	<Emphasis>
+		<xsl:apply-templates />
+	</Emphasis>
+</xsl:template>
+
+
 <!-- attributes -->
 
 <xsl:template match="html:*/@class" priority="1" /> <!-- "HTML" elements in CLML can't have a @class attribute -->
 
-<xsl:template match="html:*/@eId | html:*/@GUID" priority="1" /> <!-- LDAPP uses these -->
+<xsl:template match="html:*/@*:eId | html:*/@*:GUID" priority="1" /> <!-- LDAPP uses these -->
 
 <xsl:template match="html:th/@width | html:th/@height | html:td/@width | html:td/@height" priority="1">
 	<xsl:attribute name="{ name() }">

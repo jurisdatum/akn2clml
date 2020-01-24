@@ -110,9 +110,19 @@
 
 <xsl:template match="block[@name='banner']" />
 
-<xsl:template match="container[@name='correction']">
+<xsl:template match="container[@name=('correction')]">
 	<Correction>
 		<xsl:call-template name="uncollapse-para" />
+	</Correction>
+</xsl:template>
+
+<xsl:template match="block[@name=('correctionRubric')]">
+	<Correction>
+		<Para>
+			<Text>
+				<xsl:apply-templates />
+			</Text>
+		</Para>
 	</Correction>
 </xsl:template>
 
@@ -134,16 +144,26 @@
 	</Subject>
 </xsl:template>
 
-<xsl:template match="container[@name='subject']/block[@name='title']">
+<xsl:template match="container[@name='subject']/block[@name=('title','subject')] | container[@name='subject']/p">
 	<Title>
 		<xsl:apply-templates />
 	</Title>
 </xsl:template>
 
-<xsl:template match="container[@name='subject']/block[@name='subtitle']">
+<xsl:template match="container[@name='subject']/block[@name=('subtitle','subsubject')]">
 	<Subtitle>
 		<xsl:apply-templates />
 	</Subtitle>
+</xsl:template>
+
+<xsl:template match="block[@name='resolution']">
+	<Resolution>
+		<Para>
+			<Text>
+				<xsl:apply-templates />
+			</Text>
+		</Para>
+	</Resolution>
 </xsl:template>
 
 <xsl:template match="block[@name='approved']">
@@ -153,6 +173,10 @@
 </xsl:template>
 
 <xsl:template match="concept">
+	<xsl:apply-templates />
+</xsl:template>
+
+<xsl:template match="container[@name='dates']">
 	<xsl:apply-templates />
 </xsl:template>
 
@@ -168,9 +192,11 @@
 	</MadeDate>
 </xsl:template>
 
-<xsl:template match="block[@name='laidDraft']">
+<xsl:template match="block[@name=('laidDraft','laidInDraft')]">
 	<LaidDraft>
-		<xsl:apply-templates />
+		<Text>
+			<xsl:apply-templates />
+		</Text>
 	</LaidDraft>
 </xsl:template>
 
@@ -180,19 +206,41 @@
 	</LaidDate>
 </xsl:template>
 
-<xsl:template match="block[@name='comingIntoForce']">
+<xsl:template match="block[@name=('commenceDate')][empty(preceding-sibling::block[@name=('commenceDate')])]">
 	<ComingIntoForce>
-		<xsl:apply-templates />
+		<xsl:choose>
+			<xsl:when test="empty(following-sibling::block[@name=('commenceDate')])">
+				<xsl:apply-templates />
+			</xsl:when>
+			<xsl:when test="exists(docDate)"><!-- and exists(following-sibling::block[@name=('commenceDate')]) -->
+				<Text />
+				<xsl:apply-templates select="." mode="clauses" />
+				<xsl:apply-templates select="following-sibling::block[@name=('commenceDate')]" mode="clauses" />
+			</xsl:when>
+			<xsl:otherwise> <!-- just a heading -->
+				<xsl:apply-templates />
+				<xsl:apply-templates select="following-sibling::block[@name=('commenceDate')]" mode="clauses" />
+			</xsl:otherwise>
+		</xsl:choose>
 	</ComingIntoForce>
 </xsl:template>
 
-<xsl:template match="block[@name=('siftedDate','madeDate','laidDraft','laidDate','comingIntoForce')]/span">
+<xsl:template match="block[@name=('commenceDate')][exists(preceding-sibling::block[@name=('commenceDate')])]">
+</xsl:template>
+
+<xsl:template match="block[@name=('commenceDate')]" mode="clauses">
+	<ComingIntoForceClauses>
+		<xsl:apply-templates />
+	</ComingIntoForceClauses>
+</xsl:template>
+
+<xsl:template match="block[@name=('siftedDate','madeDate','laidDraft','laidInDraft','laidDate','commenceDate')]/span">
 	<Text>
 		<xsl:apply-templates />
 	</Text>
 </xsl:template>
 
-<xsl:template match="block[@name=('siftedDate','madeDate','laidDate','comingIntoForce')]/docDate">
+<xsl:template match="block[@name=('siftedDate','madeDate','laidDate','commenceDate')]/docDate">
 	<DateText>
 		<xsl:apply-templates />
 	</DateText>
@@ -207,7 +255,7 @@
 	<xsl:choose>
 		<xsl:when test="$context1 = 'PrimaryPrelims'">
 			<PrimaryPreamble>
-				<xsl:variable name="enacting-text" as="element()?" select="formula" />
+				<xsl:variable name="enacting-text" as="element()?" select="formula[1]" />
 				<xsl:choose>
 					<xsl:when test="exists($enacting-text)">
 						<xsl:variable name="intro" as="element()*" select="if (exists($enacting-text)) then $enacting-text/preceding-sibling::* else *" />
@@ -238,9 +286,9 @@
 		</xsl:when>
 		<xsl:when test="$context1 = 'SecondaryPrelims'">
 			<SecondaryPreamble>
-				<xsl:apply-templates select="container[@name='royalPresence']" />
-				<xsl:variable name="enacting-text" as="element()" select="formula" />
-				<xsl:variable name="intro" as="element()*" select="$enacting-text/preceding-sibling::*[not(self::container[@name='royalPresence'])]" />
+				<xsl:apply-templates select="container[@name=('royalPresence','royal')]" />
+				<xsl:variable name="enacting-text" as="element()" select="formula[1]" />
+				<xsl:variable name="intro" as="element()*" select="$enacting-text/preceding-sibling::*[not(self::container[@name=('royalPresence','royal')])]" />
 				<xsl:if test="exists($intro)">
 					<IntroductoryText>
 						<xsl:apply-templates select="$intro">
@@ -272,11 +320,32 @@
 	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="container[@name='royalPresence']">
+<xsl:template match="container[@name=('royalPresence','royal')]">
 	<RoyalPresence>
 		<xsl:call-template name="uncollapse-para" />
 	</RoyalPresence>
 </xsl:template>
+
+<xsl:template match="block[@name='proceduralRubric']">
+	<Draft>
+		<Para>
+			<Text>
+				<xsl:apply-templates />
+			</Text>
+		</Para>
+	</Draft>
+</xsl:template>
+
+<xsl:template match="block[@name='approval']">
+	<IntroductoryText>
+		<P>
+			<Text>
+				<xsl:apply-templates />
+			</Text>
+		</P>
+	</IntroductoryText>
+</xsl:template>
+
 
 <xsl:template match="preamble/blockContainer[not(@class=('P3'))]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
@@ -287,7 +356,7 @@
 	</P>
 </xsl:template>
 
-<xsl:template match="formula[@name=('enactingText','EnactingText')]">
+<xsl:template match="formula[@name=('enactingText','EnactingText','enactingWords')]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<EnactingText>
 		<xsl:apply-templates>
@@ -295,6 +364,11 @@
 		</xsl:apply-templates>
 	</EnactingText>
 </xsl:template>
+
+
+<!-- table of contents -->
+
+<xsl:template match="block[@name='ToCHeading']" />
 
 <xsl:template match="toc" />
 

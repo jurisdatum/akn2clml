@@ -13,7 +13,7 @@
 	<xsl:apply-templates />
 </xsl:template>
 
-<xsl:template match="blockContainer[@class='explanatoryNotes']">
+<xsl:template match="blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes')]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<ExplanatoryNotes>
 		<xsl:apply-templates>
@@ -22,7 +22,7 @@
 	</ExplanatoryNotes>
 </xsl:template>
 
-<xsl:template match="block[@name='comment']">
+<xsl:template match="blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes')]/subheading">
 	<Comment>
 		<Para>
 			<Text>

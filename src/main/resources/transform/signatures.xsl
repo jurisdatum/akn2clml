@@ -11,23 +11,9 @@
 <xsl:template match="hcontainer[@name='signatures']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<SignedSection>
-		<xsl:choose>
-			<xsl:when test="empty(hcontainer[@name='signatureGroup']) and empty(hcontainer[@name='signature'])">
-				<xsl:apply-templates>
-					<xsl:with-param name="context" select="('SignedSection', $context)" tunnel="yes" />
-				</xsl:apply-templates>
-			</xsl:when>
-			<xsl:when test="empty(hcontainer[@name='signatureGroup'])">
-				<xsl:call-template name="signatory">
-					<xsl:with-param name="context" select="('SignedSection', $context)" tunnel="yes" />
-				</xsl:call-template>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:apply-templates>
-					<xsl:with-param name="context" select="('SignedSection', $context)" tunnel="yes" />
-				</xsl:apply-templates>
-			</xsl:otherwise>
-		</xsl:choose>
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('SignedSection', $context)" tunnel="yes" />
+		</xsl:apply-templates>
 	</SignedSection>
 </xsl:template>
 
@@ -40,8 +26,18 @@
 	</Signatory>
 </xsl:template>
 
-<xsl:template match="hcontainer[@name='signature']">
+<xsl:template match="hcontainer[@name='signatureBlock'][not(parent::hcontainer[@name='signatureGroup'])]" priority="1">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<Signatory>
+		<xsl:next-match>
+			<xsl:with-param name="context" select="('Signatory', $context)" tunnel="yes" />
+		</xsl:next-match>
+	</Signatory>
+</xsl:template>
+
+<xsl:template match="hcontainer[@name='signatureBlock']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:apply-templates select="content/*[1][self::p]" />
 	<Signee>
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="('Signee', $context)" tunnel="yes" />
@@ -49,19 +45,31 @@
 	</Signee>
 </xsl:template>
 
-<xsl:template match="block[@name='signee']">
+<xsl:template match="hcontainer[@name='signatureBlock']/content">
+	<xsl:apply-templates select="* except *[1][self::p]" />
+</xsl:template>
+
+<xsl:template match="hcontainer[@name='signatureBlock']/content/p">
+	<Para>
+		<Text>
+			<xsl:apply-templates />
+		</Text>
+	</Para>
+</xsl:template>
+
+<xsl:template match="block[@name=('signature','signee')]">
 	<PersonName>
 		<xsl:apply-templates />
 	</PersonName>
 </xsl:template>
 
-<xsl:template match="block[@name='jobTitle']">
+<xsl:template match="block[@name=('role','jobTitle')]">
 	<JobTitle>
 		<xsl:apply-templates />
 	</JobTitle>
 </xsl:template>
 
-<xsl:template match="block[@name='department']">
+<xsl:template match="block[@name=('organization','department')]">
 	<Department>
 		<xsl:apply-templates />
 	</Department>
@@ -79,55 +87,65 @@
 	</AddressLine>
 </xsl:template>
 
-<xsl:template match="hcontainer[@name='signature']/content/block[@name='date']">
+<xsl:template match="block[@name='location']">
+	<Address>
+		<AddressLine>
+			<xsl:apply-templates />
+		</AddressLine>
+	</Address>
+</xsl:template>
+
+<xsl:template match="hcontainer[@name='signatureBlock']/content/block[@name='date'] | hcontainer[@name='signatureBlock']/content/p[date]">
 	<DateSigned>
 		<xsl:if test="*[1]/@date castable as xs:date">
 			<xsl:attribute name="Date">
 				<xsl:value-of select="*[1]/@date" />
 			</xsl:attribute>
 		</xsl:if>
-		<xsl:apply-templates />
+		<DateText>
+			<xsl:apply-templates />
+		</DateText>
 	</DateSigned>
 </xsl:template>
 
-<xsl:template match="hcontainer[@name='signature']/content/block[@name='date']/date">
-	<DateText>
-		<xsl:apply-templates />
-	</DateText>
+<xsl:template match="hcontainer[@name='signatureBlock']/content/block[@name='date']/date | hcontainer[@name='signatureBlock']/content/p/date">
+	<xsl:apply-templates />
 </xsl:template>
 
-<xsl:template match="person | role | organization | location">
+<xsl:template match="date" priority="-1">
+	<xsl:apply-templates />
+</xsl:template>
+
+<xsl:template match="signature | person | role | organization | location">
 	<xsl:apply-templates />
 </xsl:template>
 
 
 <!-- seal -->
 
-<xsl:template match="p[img[@class='seal']] | p[date[@class='seal']] | p[inline[@name='seal']] | p[marker[@name='seal']]">
-	<xsl:apply-templates />
-</xsl:template>
-
-<xsl:template match="img[@class='seal']">
-	<LSseal>
-		<xsl:attribute name="ResourceRef">
-			<xsl:value-of select="local:make-resource-id(.)" />
-		</xsl:attribute>
-	</LSseal>
-</xsl:template>
-<xsl:template match="date[@class='seal']">
-	<LSseal>
-		<xsl:attribute name="Date">
-			<xsl:value-of select="@Date" />
-		</xsl:attribute>
-	</LSseal>
-</xsl:template>
-<xsl:template match="inline[@name='seal']">
+<xsl:template match="block[@name='seal'] | p[img[@class='seal']] | p[date[@class='seal']] | p[inline[@name='seal']] | p[marker[@name='seal']]">
 	<LSseal>
 		<xsl:apply-templates />
 	</LSseal>
 </xsl:template>
+
+<xsl:template match="img[@class='seal']">
+	<xsl:attribute name="ResourceRef">
+		<xsl:value-of select="local:make-resource-id(.)" />
+	</xsl:attribute>
+</xsl:template>
+
+<xsl:template match="date[@class='seal']">
+	<xsl:attribute name="Date">
+		<xsl:value-of select="@Date" />
+	</xsl:attribute>
+</xsl:template>
+
+<xsl:template match="inline[@name='seal']">
+	<xsl:apply-templates />
+</xsl:template>
+
 <xsl:template match="marker[@name='seal']">
-	<LSseal />
 </xsl:template>
 
 </xsl:transform>

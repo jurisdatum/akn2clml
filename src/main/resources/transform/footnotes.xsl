@@ -8,22 +8,36 @@
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
 	exclude-result-prefixes="xs local">
 
+<xsl:variable name="all-footnotes" as="element()*">
+	<xsl:sequence select="//authorialNote[tokenize(@class,' ')='footnote']" />
+</xsl:variable>
 
-<xsl:template match="noteRef[@class='footnote']">
-	<FootnoteRef Ref="{ substring(@href, 2) }" />
+<xsl:function name="local:make-footnote-id" as="xs:string">
+	<xsl:param name="e" as="element()" />
+	<xsl:variable name="index" as="xs:integer?" select="local:get-first-index-of-node($e, $all-footnotes)" />
+	<xsl:variable name="num" as="xs:integer" select="if (exists($index)) then $index else 0" />
+	<xsl:sequence select="concat('f', format-number($num,'00000'))" />
+</xsl:function>
+
+<xsl:template match="authorialNote[tokenize(@class,' ')='footnote']">
+	<FootnoteRef Ref="{ local:make-footnote-id(.) }" />
+</xsl:template>
+
+<xsl:template match="noteRef">
+	<xsl:message terminate="yes" />
 </xsl:template>
 
 <xsl:template name="footnotes">
-	<xsl:variable name="footnotes" as="element()*" select="/akomaNtoso/*/meta/notes/note[tokenize(@class,' ')='footnote'][not(tokenize(@class,' ')='table')]" />
-	<xsl:if test="exists($footnotes)">
+	<xsl:variable name="bottom-footnotes" as="element()*" select="//authorialNote[tokenize(@class,' ')='footnote'][not(tokenize(@class,' ')='table')]" />
+	<xsl:if test="exists($bottom-footnotes)">
 		<Footnotes>
-			<xsl:apply-templates select="$footnotes" />
+			<xsl:apply-templates select="$bottom-footnotes" mode="footnote" />
 		</Footnotes>
 	</xsl:if>
 </xsl:template>
 
-<xsl:template match="note[tokenize(@class,' ')='footnote']">
-	<Footnote id="{ @eId }">
+<xsl:template match="authorialNote[tokenize(@class,' ')='footnote']" mode="footnote">
+	<Footnote id="{ local:make-footnote-id(.) }">
 		<xsl:apply-templates select="num">
 			<xsl:with-param name="context" select="('Footnote')" tunnel="yes" />
 		</xsl:apply-templates>
