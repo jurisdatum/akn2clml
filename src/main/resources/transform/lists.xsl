@@ -173,6 +173,25 @@
 
 <!-- definition lists -->
 
+<xsl:function name="local:should-merge-intro-and-definitions">
+	<xsl:param name="parent" as="element()" />
+	<xsl:sequence select="exists($parent/intro) and exists($parent/hcontainer[@name='definition']) and exists($parent/intro/p) and (count($parent/intro/*) eq 1) and (every $child in $parent/* satisfies ($child/self::num or $child/self::heading or $child/self::subheading or $child/self::intro or $child/self::hcontainer[@name='definition'] or $child/self::wrapUp))" />
+</xsl:function>
+
+<xsl:template name="merge-intro-and-definitions">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="wrapper" as="xs:string?" select="local:get-block-wrapper($context)" />
+	<xsl:element name="{ $wrapper }">
+		<xsl:apply-templates select="intro/*">
+			<xsl:with-param name="context" select="($wrapper, $context)" tunnel="yes" />
+		</xsl:apply-templates>
+		<xsl:call-template name="definition-list">
+			<xsl:with-param name="definitions" select="hcontainer[@name='definition']" />
+			<xsl:with-param name="context" select="($wrapper, $context)" tunnel="yes" />
+		</xsl:call-template>
+	</xsl:element>
+</xsl:template>
+
 <xsl:template name="definition-list">
 	<xsl:param name="definitions" as="element()+" />
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
@@ -261,23 +280,42 @@
 <xsl:template match="hcontainer[@name='definition'][empty(content)]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<ListItem>
-		<xsl:apply-templates select="num | heading | subheading | intro">
+		<xsl:apply-templates select="num | heading | subheading">
 			<xsl:with-param name="context" select="('ListItem', $context)" tunnel="yes" />
 		</xsl:apply-templates>
 		<xsl:variable name="children" as="element()+" select="* except (num | heading | subheading | intro | wrapUp)" />
-		<OrderedList>
-			<xsl:variable name="decor" as="xs:string" select="local:get-decoration-from-numbered-things($children)" />
-			<xsl:variable name="type" as="xs:string" select="local:get-ordered-list-type-from-numbered-things($children, $decor)" />
-			<xsl:attribute name="Type">
-				<xsl:value-of select="$type" />
-			</xsl:attribute>
-			<xsl:attribute name="Decoration">
-				<xsl:value-of select="$decor" />
-			</xsl:attribute>
-			<xsl:apply-templates select="$children" mode="list">
-				<xsl:with-param name="context" select="('OrderedList', 'ListItem', $context)" tunnel="yes" />
-			</xsl:apply-templates>
-		</OrderedList>
+		<xsl:variable name="sublist" as="element()">
+			<OrderedList>
+				<xsl:variable name="decor" as="xs:string" select="local:get-decoration-from-numbered-things($children)" />
+				<xsl:variable name="type" as="xs:string" select="local:get-ordered-list-type-from-numbered-things($children, $decor)" />
+				<xsl:attribute name="Type">
+					<xsl:value-of select="$type" />
+				</xsl:attribute>
+				<xsl:attribute name="Decoration">
+					<xsl:value-of select="$decor" />
+				</xsl:attribute>
+				<xsl:apply-templates select="$children" mode="list">
+					<xsl:with-param name="context" select="('OrderedList', 'ListItem', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</OrderedList>
+		</xsl:variable>
+		<xsl:choose>
+			<xsl:when test="exists(intro/p) and (count(intro/*) eq 1)">
+				<xsl:variable name="wrapper" as="xs:string?" select="local:get-block-wrapper(('ListItem', $context))" />
+				<xsl:element name="{ $wrapper }">
+					<xsl:apply-templates select="intro/*">
+						<xsl:with-param name="context" select="($wrapper, 'ListItem', $context)" tunnel="yes" />
+					</xsl:apply-templates>
+					<xsl:copy-of select="$sublist" />
+				</xsl:element>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates select="intro">
+					<xsl:with-param name="context" select="('ListItem', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+				<xsl:copy-of select="$sublist" />
+			</xsl:otherwise>
+		</xsl:choose>
 		<xsl:apply-templates select="wrapUp">
 			<xsl:with-param name="context" select="('ListItem', $context)" tunnel="yes" />
 		</xsl:apply-templates>

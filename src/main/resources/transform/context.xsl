@@ -144,7 +144,10 @@
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:message terminate="yes">
-				<xsl:sequence select="$clml" />
+				<xsl:text>local:get-wrapper: </xsl:text>
+				<xsl:value-of select="$clml" />
+				<xsl:text> </xsl:text>
+				<xsl:value-of select="$context" />
 			</xsl:message>
 		</xsl:otherwise>
 	</xsl:choose>

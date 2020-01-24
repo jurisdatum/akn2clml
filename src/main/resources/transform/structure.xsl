@@ -352,6 +352,10 @@
 	<xsl:variable name="content" as="element()*" select="*[not(self::num) and not(self::heading) and not(self::subheading)]" />
 	<xsl:variable name="children" as="element()*" select="$content[not(self::intro) and not(self::content) and not(self::wrapUp)]" />
 	<xsl:choose>
+		<xsl:when test="local:should-merge-intro-and-definitions(.)">
+			<xsl:call-template name="merge-intro-and-definitions" />
+			<xsl:apply-templates select="wrapUp" />
+		</xsl:when>
 		<xsl:when test="exists($children) and (every $child in $children satisfies $child/self::hcontainer[@name='definition'])">
 			<xsl:apply-templates select="intro" />
 			<xsl:call-template name="definition-list">
