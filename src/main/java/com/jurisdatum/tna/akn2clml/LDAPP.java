@@ -30,7 +30,7 @@ public class LDAPP {
 	}
 	
 	private void transform(Source akn, Destination destination, String isbn) {
-		Parameters params = new Parameters().withIsbn(isbn).withDefaultPublisher(true);
+		Parameters params = new Parameters().withIsbn(isbn).withDefaultPublisher(true).withDefaultSchemaLocation();
 		XsltTransformer addData = transform2.load(params);
 		addData.setDestination(destination);
 		transform1.transform(akn, addData);

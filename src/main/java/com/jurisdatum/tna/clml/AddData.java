@@ -23,11 +23,15 @@ import net.sf.saxon.s9api.XsltTransformer;
 
 public class AddData {
 
-	public static class Parameters {
+	private final static String defaultSchemaLocation = "http://www.legislation.gov.uk/schema/legislation.xsd";
 
+	public static class Parameters {
+		
 		private String isbn = null;
 		
 		private boolean defaultPublisher = false;
+		
+		private String schemaLocation = null;
 		
 		public Parameters withIsbn(String isbn) {
 			this.isbn = isbn;
@@ -37,6 +41,13 @@ public class AddData {
 			this.defaultPublisher = defaultPublisher;
 			return this;
 		}
+		public Parameters withSchemaLocation(String schemaLocation) {
+			this.schemaLocation = schemaLocation;
+			return this;
+		}
+		public Parameters withDefaultSchemaLocation() {
+			return withSchemaLocation(defaultSchemaLocation);
+		}
 		
 		private Map<QName, XdmValue> convert() {
 			Map<QName, XdmValue> converted = new LinkedHashMap<>();
@@ -45,6 +56,8 @@ public class AddData {
 			else
 				converted.put(new QName("isbn"), new XdmAtomicValue(isbn));
 			converted.put(new QName("default-publisher"), new XdmAtomicValue(defaultPublisher));
+			XdmValue schemaLocationValue = schemaLocation == null ? XdmEmptySequence.getInstance() : new XdmAtomicValue(schemaLocation);
+			converted.put(new QName("schemaLocation"), schemaLocationValue);
 			return converted;
 		}
 	}
