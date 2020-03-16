@@ -22,7 +22,7 @@
 	</ExplanatoryNotes>
 </xsl:template>
 
-<xsl:template match="blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes')]/subheading">
+<xsl:template match="blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes')]/subheading" name="en-comment">
 	<Comment>
 		<Para>
 			<Text>
@@ -31,6 +31,47 @@
 		</Para>
 	</Comment>
 </xsl:template>
+
+<xsl:template match="blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes','earlierOrders','commencementHistory')]//tblock | blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes','earlierOrders','commencementHistory')]//blockContainer" priority="1">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="class" as="xs:string" select="normalize-space(@class)" />
+	<xsl:variable name="classes" as="xs:string*" select="tokenize($class, ' ')" />
+	<xsl:choose>
+		<xsl:when test="$class = '' or $classes = ('para1','para2','para3','para4','group1')">
+			<xsl:variable name="name" as="xs:string">
+				<xsl:choose>
+					<xsl:when test="$classes = 'para1'">
+						<xsl:sequence select="'P3'" />
+					</xsl:when>
+					<xsl:when test="$classes = 'para2'">
+						<xsl:sequence select="'P4'" />
+					</xsl:when>
+					<xsl:when test="$classes = 'para3'">
+						<xsl:sequence select="'P5'" />
+					</xsl:when>
+					<xsl:when test="$classes = 'para4'">
+						<xsl:sequence select="'P6'" />
+					</xsl:when>
+					<xsl:when test="$classes = 'group1'">
+						<xsl:sequence select="'P1group'" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:sequence select="'P'" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:element name="{ $name }">
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:element>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:next-match />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
+
 
 <xsl:template match="blockList[@class='definition']">
 	<xsl:variable name="decor" as="xs:string" select="local:get-decoration-from-list(., false())" />
@@ -44,7 +85,7 @@
 
 <!-- earlier orders -->
 
-<xsl:template match="blockContainer[@class='earlierOrders']">
+<xsl:template match="blockContainer[tokenize(@class, ' ')=('earlierOrders','commencementHistory')]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<EarlierOrders>
 		<xsl:apply-templates>
@@ -53,5 +94,8 @@
 	</EarlierOrders>
 </xsl:template>
 
+<xsl:template match="blockContainer[tokenize(@class, ' ')=('earlierOrders','commencementHistory')]/subheading">
+	<xsl:call-template name="en-comment" />
+</xsl:template>
 
 </xsl:transform>

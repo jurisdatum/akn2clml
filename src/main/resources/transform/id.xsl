@@ -64,7 +64,7 @@
 		<xsl:when test="$e/self::hcontainer[@name='scheduleParagraph'] or $e/self::paragraph[@class='schProv1']">
 			<xsl:sequence select="concat(local:make-internal-id($e/ancestor::hcontainer[@name='schedule']), '-paragraph-', local:strip-punctuation-from-number(string($e/num)))" />
 		</xsl:when>
-		<xsl:when test="$e/self::subsection or $e/self::hcontainer[@name='SIParagraph'] or $e/self::paragraph or $e/self::subparagraph or $e/self::subsubparagraph or $e/self::subsubsubparagraph or $e/self::clause or $e/self::subclause">
+		<xsl:when test="$e/self::subsection or $e/self::hcontainer[@name='SIParagraph'] or $e/self::paragraph or $e/self::subparagraph or $e/self::level or $e/self::subsubparagraph or $e/self::subsubsubparagraph or $e/self::clause or $e/self::subclause">
 			<xsl:sequence select="concat(local:make-internal-id($e/..), '-', local:strip-punctuation-from-number(string($e/num)))" />
 		</xsl:when>
 		<xsl:when test="$e/self::hcontainer[@name='schedule']">

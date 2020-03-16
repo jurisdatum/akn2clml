@@ -238,6 +238,9 @@
 <!-- default -->
 
 <xsl:template match="*" priority="-100">
+	<xsl:message>
+		<xsl:text>no template match for element</xsl:text>
+	</xsl:message>
 	<xsl:message terminate="yes">
 		<xsl:sequence select="." />
 	</xsl:message>

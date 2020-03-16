@@ -126,11 +126,11 @@
 	</Correction>
 </xsl:template>
 
-<xsl:template match="container[@name='draft']">
+<!-- <xsl:template match="container[@name='draft']">
 	<Draft>
 		<xsl:call-template name="uncollapse-para" />
 	</Draft>
-</xsl:template>
+</xsl:template> -->
 
 <xsl:template match="container[@name='subjects']">
 	<SubjectInformation>
@@ -166,7 +166,7 @@
 	</Resolution>
 </xsl:template>
 
-<xsl:template match="block[@name='approved']">
+<xsl:template match="block[@name=('approved','approval')]">
 	<Approved>
 		<xsl:apply-templates />
 	</Approved>
@@ -334,16 +334,6 @@
 			</Text>
 		</Para>
 	</Draft>
-</xsl:template>
-
-<xsl:template match="block[@name='approval']">
-	<IntroductoryText>
-		<P>
-			<Text>
-				<xsl:apply-templates />
-			</Text>
-		</P>
-	</IntroductoryText>
 </xsl:template>
 
 

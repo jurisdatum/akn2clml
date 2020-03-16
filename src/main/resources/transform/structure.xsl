@@ -15,63 +15,32 @@
 		<primary>
 			<section clml="P1" />
 			<subsection clml="P2" />
+			<!-- legacy -->
 			<paragraph clml="P3" />
 			<subparagraph clml="P4" />
-			<clause clml="P5" />
-			<subclause clml="P6" />
-			<subsubparagraph clml="P5" />
 		</primary>
 		<secondary>
 			<article clml="P1" />
 			<regulation clml="P1" />
 			<rule clml="P1" />
+			<paragraph clml="P2" />
+			<!-- legacy -->
 			<SIParagraph clml="P2" />
-			<paragraph clml="P3" />
-			<subparagraph clml="P4" />
-			<subsubparagraph clml="P5" />
-			<subsubsubparagraph clml="P6" />
-<!-- 			<order>
-				<article clml="P1" />
-				<paragraph clml="P2" />
-				<subparagraph clml="P3" />
-				<clause clml="P4" />
-				<subclause clml="P5" />
-				<point clml="P6" />
-			</order>
-			<regulation>
-				<regulation clml="P1" />
-				<paragraph clml="P2" />
-				<subparagraph clml="P3" />
-				<clause clml="P4" />
-				<subclause clml="P5" />
-				<point clml="P6" />
-			</regulation>
-			<rule>
-				<rule clml="P1" />
-				<paragraph clml="P2" />
-				<subparagraph clml="P3" />
-				<clause clml="P4" />
-				<subclause clml="P5" />
-				<point clml="P6" />
-			</rule> -->
+			<paragraph class="para1" clml="P3" />
+			<subparagraph class="para2" clml="P4" />
 		</secondary>
 		<schedule>
+			<paragraph clml="P1" />
+			<subparagraph clml="P2" />
+			<!-- legacy -->
 			<scheduleParagraph clml="P1" />
 			<scheduleSubparagraph clml="P2" />
-			<paragraph clml="P3" />
-			<subparagraph clml="P4" />
-<!-- 			<clause clml="P5" />
-			<subclause clml="P6" /> -->
-			<subsubparagraph clml="P5" />
-			<subsubsubparagraph clml="P6" />
-			<!-- these should come after those with same name and no @class -->
-			<paragraph class="schProv1" clml="P1" />
-			<subparagraph class="schProv2" clml="P2" />
+			<paragraph class="para1" clml="P3" />
+			<subparagraph class="para2" clml="P4" />
 		</schedule>
 		<euretained>
 			<article clml="P1" />
 			<paragraph clml="P2" />
-			<point clml="P3" />
 		</euretained>
 	</akn>
 </xsl:variable>
@@ -103,7 +72,22 @@
 			</xsl:choose>
 		</xsl:when>
 		<xsl:when test="$doc-class = 'secondary'">
-			<xsl:sequence select="$mapping/*:secondary/*[local-name()=$akn-element-name]/@clml/string()" />
+			<xsl:choose>
+				<xsl:when test="exists($akn-element-class)">
+					<xsl:variable name="match" as="element()?" select="$mapping/*:secondary/*[local-name()=$akn-element-name][@class=$akn-element-class]" />
+					<xsl:choose>
+						<xsl:when test="exists($match)">
+							<xsl:sequence select="$match/@clml/string()" />
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:sequence select="$mapping/*:secondary/*[local-name()=$akn-element-name][empty(@class)]/@clml/string()" />
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:sequence select="$mapping/*:secondary/*[local-name()=$akn-element-name][empty(@class)]/@clml/string()" />
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:when>
 		<xsl:when test="$doc-class = 'euretained'">
 			<xsl:sequence select="$mapping/*:euretained/*[local-name()=$akn-element-name]/@clml/string()" />
@@ -218,8 +202,24 @@
 	</xsl:variable>
 	<xsl:variable name="name" as="xs:string?">
 		<xsl:choose>
-			<xsl:when test="$akn/self::hcontainer[@name='subsubparagraph']">
-				<xsl:sequence select="local:one-more-than-context($context)" />
+			<xsl:when test="$akn/self::level or $akn/self::hcontainer[@name='subsubparagraph'] or $akn/self::point">
+				<xsl:choose>
+					<xsl:when test="$akn/@class = 'para1'">
+						<xsl:sequence select="'P3'" />
+					</xsl:when>
+					<xsl:when test="$akn/@class = 'para2'">
+						<xsl:sequence select="'P4'" />
+					</xsl:when>
+					<xsl:when test="$akn/@class = 'para3'">
+						<xsl:sequence select="'P5'" />
+					</xsl:when>
+					<xsl:when test="$akn/@class = 'para4'">
+						<xsl:sequence select="'P6'" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:sequence select="local:one-more-than-context($context)" />
+					</xsl:otherwise>
+				</xsl:choose>
 			</xsl:when>
 			<xsl:when test="$akn/ancestor-or-self::hcontainer[@name='step']">
 				<xsl:sequence select="local:one-more-than-context($context)" />
@@ -512,7 +512,7 @@
 	</xsl:choose>
 </xsl:function>
 
-<xsl:template match="paragraph | subparagraph | clause | subclause | hcontainer[@name=('subsubparagraph','step')] | point">
+<xsl:template match="paragraph | subparagraph | level | hcontainer[@name=('subsubparagraph','step')] | point">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string" select="local:get-structure-name(., $context)" />
 	<xsl:if test="$name = ''">
@@ -556,11 +556,11 @@
 	</xsl:call-template>
 </xsl:template>
 
-<xsl:template match="level">
+<!-- <xsl:template match="level">
 	<xsl:call-template name="create-element-and-wrap-as-necessary">
 		<xsl:with-param name="name" select="'P2group'" />
 	</xsl:call-template>
-</xsl:template>
+</xsl:template> -->
 
 <!-- hcontainer[@name='wrapper1'] maps P?paras where more than one sibling contain structural children -->
 
@@ -577,7 +577,16 @@
 <!-- hcontainer[@name='wrapper2'] wraps groups of numbered paragraphs that are siblings but separated by content -->
 
 <xsl:template match="hcontainer[@name='wrapper2']">
-	<xsl:apply-templates />
+	<xsl:choose>
+		<xsl:when test="exists(child::hcontainer[@name='definition'])"> <!-- uksi/2009/1096/made -->
+			<xsl:call-template name="group-definitions-for-block-amendment">
+				<xsl:with-param name="elements" select="*" />
+			</xsl:call-template>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:apply-templates />
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 
@@ -598,13 +607,6 @@
 	<xsl:variable name="content" as="element()*" select="*[not(self::num or self::heading or self::subheading)]" />
 	<xsl:variable name="children" as="element()*" select="$content[not(self::intro) and not(self::content) and not(self::wrapUp)]" />
 	<xsl:choose>
-		<xsl:when test="exists($children) and (every $child in $children satisfies $child/self::paragraph[@class='para1'])">
-			<P>
-				<xsl:apply-templates select="$content">
-					<xsl:with-param name="context" select="('P', $context)" tunnel="yes" />
-				</xsl:apply-templates>
-			</P>
-		</xsl:when>
 		<xsl:when test="exists($children) and (every $child in $children satisfies $child/self::hcontainer[@name='definition'])">
 			<P>
 				<xsl:apply-templates select="intro">
@@ -619,10 +621,15 @@
 				</xsl:apply-templates>
 			</P>
 		</xsl:when>
+		<xsl:when test="some $child in $children satisfies $child[self::subparagraph or self::level or @class='schProv2' or @class='para1']"> <!-- legacy -->
+			<P>
+				<xsl:apply-templates select="$content">
+					<xsl:with-param name="context" select="('P', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</P>
+		</xsl:when>
 		<xsl:otherwise>
-			<xsl:apply-templates select="$content">
-				<xsl:with-param name="context" select="($context)" tunnel="yes" />
-			</xsl:apply-templates>
+			<xsl:apply-templates select="$content" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
