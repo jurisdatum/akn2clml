@@ -190,11 +190,11 @@
 </xsl:template>
 
 <xsl:template match="def">
-	<Definition>
+	<xsl:element name="{ if (@ukl:name='Definition') then 'Definition' else 'Term' }">
 		<xsl:value-of select="@uk:startQuote" />
 		<xsl:apply-templates />
 		<xsl:value-of select="@uk:endQuote" />
-	</Definition>
+	</xsl:element>
 </xsl:template>
 
 <xsl:template match="term">
