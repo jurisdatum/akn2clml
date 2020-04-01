@@ -566,7 +566,16 @@
 
 <xsl:template match="hcontainer[@name='wrapper1']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="name" as="xs:string" select="concat($context[1], 'para')" />
+	<xsl:variable name="name" as="xs:string">
+		<xsl:choose>
+			<xsl:when test="$context[1] = 'ScheduleBody'"> <!-- uksi/2009/1488/made -->
+				<xsl:sequence select="'P'" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:sequence select="concat($context[1], 'para')" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
 	<xsl:element name="{ $name }">
 		<xsl:apply-templates>
 				<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />

@@ -5,30 +5,37 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:uk="https://www.legislation.gov.uk/namespaces/UK-AKN"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs local">
+	exclude-result-prefixes="xs uk local">
 
 <xsl:variable name="all-footnotes" as="element()*">
 	<xsl:sequence select="//authorialNote[tokenize(@class,' ')='footnote']" />
 </xsl:variable>
 
 <xsl:function name="local:make-footnote-id" as="xs:string">
-	<xsl:param name="e" as="element()" />
+	<xsl:param name="e" as="element(authorialNote)" />
 	<xsl:variable name="index" as="xs:integer?" select="local:get-first-index-of-node($e, $all-footnotes)" />
 	<xsl:variable name="num" as="xs:integer" select="if (exists($index)) then $index else 0" />
 	<xsl:sequence select="concat('f', format-number($num,'00000'))" />
 </xsl:function>
 
-<xsl:template match="authorialNote[tokenize(@class,' ')='footnote']">
+<xsl:function name="local:make-footnote-id-2" as="xs:string">
+	<xsl:param name="ref" as="element(noteRef)" />
+	<xsl:variable name="note" as="element(authorialNote)?" select="key('id', substring($ref/@href, 2), root($ref))" />
+	<xsl:sequence select="local:make-footnote-id($note)" />
+</xsl:function>
+
+<xsl:template match="authorialNote[uk:name='footnote' or tokenize(@class,' ')='footnote']">
 	<FootnoteRef Ref="{ local:make-footnote-id(.) }" />
 </xsl:template>
 
-<xsl:template match="noteRef">
-	<xsl:message terminate="yes" />
+<xsl:template match="noteRef[uk:name='footnote' or tokenize(@class,' ')='footnote']">
+	<FootnoteRef Ref="{ local:make-footnote-id-2(.) }" />
 </xsl:template>
 
 <xsl:template name="footnotes">
-	<xsl:variable name="bottom-footnotes" as="element()*" select="//authorialNote[tokenize(@class,' ')='footnote'][not(tokenize(@class,' ')='table')]" />
+	<xsl:variable name="bottom-footnotes" as="element()*" select="//authorialNote[uk:name='footnote' or tokenize(@class,' ')='footnote'][not(local:footnote-appears-in-table(.))]" />
 	<xsl:if test="exists($bottom-footnotes)">
 		<Footnotes>
 			<xsl:apply-templates select="$bottom-footnotes" mode="footnote" />
@@ -36,7 +43,7 @@
 	</xsl:if>
 </xsl:template>
 
-<xsl:template match="authorialNote[tokenize(@class,' ')='footnote']" mode="footnote">
+<xsl:template match="authorialNote[uk:name='footnote' or tokenize(@class,' ')='footnote']" mode="footnote">
 	<Footnote id="{ local:make-footnote-id(.) }">
 		<xsl:apply-templates select="num">
 			<xsl:with-param name="context" select="('Footnote')" tunnel="yes" />

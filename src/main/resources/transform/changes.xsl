@@ -53,7 +53,7 @@
 </xsl:template>
 
 <xsl:template name="commentaries">
-	<xsl:variable name="commentaries" as="element()*" select="/akomaNtoso/*/meta/notes/note[starts-with(@class, 'commentary')]" />
+	<xsl:variable name="commentaries" as="element()*" select="/akomaNtoso/*/meta/notes/note[@ukl:Name='Commentary' or starts-with(@class,'commentary')]" />
 	<xsl:if test="exists($commentaries)">
 		<Commentaries>
 			<xsl:apply-templates select="$commentaries" />
@@ -61,8 +61,8 @@
 	</xsl:if> 
 </xsl:template>
 
-<xsl:template match="note[starts-with(@class, 'commentary')]">
-	<Commentary id="{ @eId }" Type="{ tokenize(@class, ' ')[2] }">
+<xsl:template match="note[@ukl:Name='Commentary' or starts-with(@class,'commentary')]">
+	<Commentary id="{ @eId }" Type="{ if (exists(@ukl:Type)) then @ukl:Type else tokenize(@class, ' ')[2] }">
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="('Commentary')" tunnel="yes" />
 		</xsl:apply-templates>

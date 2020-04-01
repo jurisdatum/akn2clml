@@ -123,7 +123,7 @@
 
 <!-- seal -->
 
-<xsl:template match="block[@name='seal'] | p[img[@class='seal']] | p[date[@class='seal']] | p[inline[@name='seal']] | p[marker[@name='seal']]">
+<xsl:template match="block[@name='seal'] | p[img[@class='seal']] | p[date[@class='seal']] | p[inline[@name='seal']] | p[marker[@name='seal']]" priority="1">
 	<LSseal>
 		<xsl:apply-templates />
 	</LSseal>
