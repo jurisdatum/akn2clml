@@ -99,6 +99,14 @@
 </xsl:variable>
 
 
+<xsl:variable name="ldapp-assent-date" as="xs:date?" select="key('tlc', 'varAssentDate')/@showAs" />
+
+<xsl:variable name="ldapp-work-date" as="xs:date?">
+	<xsl:sequence select="$ldapp-assent-date" />
+</xsl:variable>
+
+
+
 <!-- placeholders -->
 
 <xsl:template match="ref[@class='placeholder']">

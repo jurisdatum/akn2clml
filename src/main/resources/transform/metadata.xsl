@@ -10,7 +10,18 @@
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
 	exclude-result-prefixes="xs ukl ukm uk local">
 
-<xsl:variable name="work-date" as="xs:date" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRdate/@date" />
+<xsl:variable name="work-date" as="xs:date">
+	<xsl:variable name="frbr" as="xs:date" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRdate/@date" />
+	<xsl:choose>
+		<xsl:when test="starts-with(string($frbr), '9999-') and exists($ldapp-work-date)">
+			<xsl:sequence select="$ldapp-work-date" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="$frbr" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:variable>
+
 
 <xsl:template name="metadata">
 	<Metadata xmlns="http://www.legislation.gov.uk/namespaces/metadata" xmlns:dc="http://purl.org/dc/elements/1.1/">
