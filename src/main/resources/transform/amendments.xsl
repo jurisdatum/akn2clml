@@ -147,19 +147,15 @@
 			<xsl:apply-templates select="quotedStructure/following-sibling::node()" />
 		</xsl:when>
 		<xsl:otherwise>
-			<xsl:if test="count(quotedStructure) gt 1">
-				<xsl:message terminate="yes">
-					<xsl:sequence select="." />
-				</xsl:message>
-			</xsl:if>
-			<xsl:variable name="before" as="node()*" select="quotedStructure/preceding-sibling::node()" />
-			<xsl:if test="exists($before) and not(every $n in $before satisfies ($n/self::text() and not(normalize-space($n))))">
+			<xsl:variable name="qs1" as="element(quotedStructure)" select="quotedStructure[1]" />
+			<xsl:variable name="before" as="node()*" select="$qs1/preceding-sibling::node()" />
+			<xsl:if test="exists($before[not(self::text()[not(normalize-space(.))])])">
 				<Text>
 					<xsl:apply-templates select="$before" />
 				</Text>
 			</xsl:if>
-			<xsl:apply-templates select="quotedStructure" />
-			<xsl:apply-templates select="quotedStructure/following-sibling::node()" />
+			<xsl:apply-templates select="$qs1" />
+			<xsl:apply-templates select="$qs1/following-sibling::node()" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
