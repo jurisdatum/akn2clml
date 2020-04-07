@@ -213,6 +213,11 @@
 	<Character Name="{ @ukl:Name }" />
 </xsl:template>
 
+<!-- there is no analog to an unqualified date -->
+<xsl:template match="date">
+	<xsl:apply-templates />
+</xsl:template>
+
 
 <!-- text -->
 
