@@ -10,7 +10,7 @@
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
 	exclude-result-prefixes="xs ukl html local">
 
-<xsl:template match="tblock[@class='tabular'] | tblock[foreign/html:table]">
+<xsl:template match="tblock[@class=('table','tabular')] | tblock[foreign/html:table]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="wrapper" as="xs:string?" select="local:get-wrapper('Tabular', $context)" />
 	<xsl:variable name="clml" as="element()">
@@ -46,7 +46,7 @@
 
 <xsl:template match="html:*">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:copy>
+	<xsl:copy copy-namespaces="no">
 		<xsl:apply-templates select="@*" />
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="(local-name(.), $context)" tunnel="yes" />
@@ -59,7 +59,7 @@
 	<xsl:call-template name="table-footnotes">
 		<xsl:with-param name="table" select="ancestor::html:table" />
 	</xsl:call-template>
-	<xsl:copy>
+	<xsl:copy copy-namespaces="no">
 		<xsl:apply-templates select="@*" />
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="(local-name(.), $context)" tunnel="yes" />
@@ -67,33 +67,21 @@
 	</xsl:copy>
 </xsl:template>
 
+<xsl:function name="local:footnote-appears-in-table" as="xs:boolean">
+	<xsl:param name="note" as="element(authorialNote)" />
+	<xsl:sequence select="exists($note/ancestor::html:table)" />
+</xsl:function>
+
 <xsl:template name="table-footnotes">
 	<xsl:param name="table" as="element(html:table)" />
-<!-- 	<xsl:variable name="refs-to-table-footnotes" as="element(noteRef)*">
-		<xsl:for-each select="$table/descendant::noteRef[@class='footnote']">
-			<xsl:variable name="id" as="xs:string" select="substring(@href, 2)" />
-			<xsl:variable name="note" as="element()?" select="key('id', $id)" />
-			<xsl:if test="tokenize($note/@class,' ') = 'table'">
-				<xsl:sequence select="." />
-			</xsl:if>
-		</xsl:for-each>
-	</xsl:variable> -->
-	<xsl:variable name="footnotes-in-table" as="element(note)*">
-		<xsl:for-each-group select="$table/descendant::noteRef[@class='footnote']" group-by="@href">
-			<xsl:variable name="id" as="xs:string" select="substring(@href, 2)" />
-			<xsl:variable name="note" as="element(note)?" select="key('id', $id)" />
-			<xsl:if test="tokenize($note/@class,' ') = 'table'">
-				<xsl:sequence select="$note" />
-			</xsl:if>
-		</xsl:for-each-group>
-	</xsl:variable>
-	<xsl:variable name="colspan" as="xs:integer" select="if (exists($table/html:colgroup)) then count($table/html:colgroup/html:col) else max($table/descendant::html:tr/count(html:td))" />
+	<xsl:variable name="footnotes-in-table" as="element(authorialNote)*" select="$table/descendant::authorialNote" />
 	<xsl:if test="exists($footnotes-in-table)">
+		<xsl:variable name="colspan" as="xs:integer" select="if (exists($table/html:colgroup)) then count($table/html:colgroup/html:col) else max($table/descendant::html:tr/count(html:td))" />
 		<tfoot xmlns="http://www.w3.org/1999/xhtml">
 			<xsl:for-each select="$footnotes-in-table" >
 				<tr>
 					<td colspan="{ $colspan }">
-						<xsl:apply-templates select="." />
+						<xsl:apply-templates select="." mode="footnote" />
 					</td>
 				</tr>
 			</xsl:for-each>
@@ -102,11 +90,28 @@
 </xsl:template>
 
 
+<!--  -->
+
+<xsl:template match="html:p">
+	<Para>
+		<Text>
+			<xsl:apply-templates />
+		</Text>
+	</Para>
+</xsl:template>
+
+<xsl:template match="html:i">
+	<Emphasis>
+		<xsl:apply-templates />
+	</Emphasis>
+</xsl:template>
+
+
 <!-- attributes -->
 
 <xsl:template match="html:*/@class" priority="1" /> <!-- "HTML" elements in CLML can't have a @class attribute -->
 
-<xsl:template match="html:*/@eId | html:*/@GUID" priority="1" /> <!-- LDAPP uses these -->
+<xsl:template match="html:*/@*:eId | html:*/@*:GUID" priority="1" /> <!-- LDAPP uses these -->
 
 <xsl:template match="html:th/@width | html:th/@height | html:td/@width | html:td/@height" priority="1">
 	<xsl:attribute name="{ name() }">

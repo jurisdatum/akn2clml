@@ -140,13 +140,36 @@
 
 <xsl:variable name="doc-subtype" as="xs:string?">
 	<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRsubtype/@value" />
+	<xsl:variable name="value" as="xs:string?">
+		<xsl:choose>
+			<xsl:when test="$frbr = ()">
+				<xsl:value-of select="$frbr" />
+			</xsl:when>
+			<xsl:when test="exists($ldapp-doc-subtype)">
+				<xsl:value-of select="$ldapp-doc-subtype" />
+			</xsl:when>
+		</xsl:choose>
+	</xsl:variable>
+	<!-- order, regulation, rule, scheme, resolution, unknown -->
 	<xsl:choose>
-		<xsl:when test="$frbr = ()">
-			<xsl:value-of select="$frbr" />
+		<xsl:when test="$value = ('order')">
+			<xsl:sequence select="'order'" />
 		</xsl:when>
-		<xsl:when test="exists($ldapp-doc-subtype)">
-			<xsl:value-of select="$ldapp-doc-subtype" />
+		<xsl:when test="$value = ('regulation', 'Regulations')">
+			<xsl:sequence select="'regulation'" />
 		</xsl:when>
+		<xsl:when test="$value = ('rule')">
+			<xsl:sequence select="'rule'" />
+		</xsl:when>
+		<xsl:when test="$value = ('scheme')">
+			<xsl:sequence select="'scheme'" />
+		</xsl:when>
+		<xsl:when test="$value = ('resolution')">
+			<xsl:sequence select="'resolution'" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="'unknown'" />
+		</xsl:otherwise>
 	</xsl:choose>
 </xsl:variable>
 
@@ -169,13 +192,13 @@
 	<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value" />
 	<xsl:choose>
 		<xsl:when test="$frbr castable as xs:integer">
-			<xsl:value-of select="$frbr" />
+			<xsl:sequence select="$frbr" />
 		</xsl:when>
 		<xsl:when test="exists($ldapp-doc-number)">
-			<xsl:value-of select="$ldapp-doc-number" />
+			<xsl:sequence select="$ldapp-doc-number" />
 		</xsl:when>
 		<xsl:otherwise>
-			<xsl:message terminate="yes">no document number</xsl:message>
+			<xsl:sequence select="'0'" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:variable>

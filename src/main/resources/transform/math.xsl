@@ -30,7 +30,7 @@
 	</equationNumber>
 </xsl:template>
 
-<xsl:template match="subFlow[@name='inlineMathWrapper']">
+<xsl:template match="subFlow[@name='formula']">
 	<Span>
 		<xsl:if test="*[1][self::foreign]/*[1][self::math:math/@altimg]">
 			<xsl:attribute name="AltVersionRefs">

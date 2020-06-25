@@ -186,6 +186,9 @@
 		</xsl:attribute>
 		<xsl:attribute name="Format">
 			<xsl:choose>
+				<xsl:when test="exists($source/@ukl:Format)">
+					<xsl:value-of select="$source/@ukl:Format" />
+				</xsl:when>
 				<xsl:when test="exists($lead-in)">
 					<xsl:value-of select="local:get-structure-format($lead-in, $source)" />
 				</xsl:when>
@@ -242,7 +245,14 @@
 			</xsl:choose>
 		</xsl:attribute>
 		<xsl:attribute name="Format">
-			<xsl:value-of select="local:get-structure-format(.)" />
+			<xsl:choose>
+				<xsl:when test="exists(@ukl:Format)">
+					<xsl:value-of select="@ukl:Format" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="local:get-structure-format(.)" />
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:attribute>
 		<xsl:choose>
 			<xsl:when test="exists(*) and (every $child in * satisfies $child/self::hcontainer[@name='definition'])">

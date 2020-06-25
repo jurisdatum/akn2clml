@@ -11,7 +11,21 @@
 
 <xsl:function name="local:is-ordered" as="xs:boolean">
 	<xsl:param name="list" as="element(blockList)" />
-	<xsl:sequence select="every $item in $list/* satisfies $item/num" />
+	<xsl:variable name="items" as="element()*" select="$list/*" />
+	<xsl:choose>
+		<xsl:when test="some $item in $items satisfies empty($item/num)">
+			<xsl:sequence select="false()" />
+		</xsl:when>
+		<xsl:when test="every $item in $items satisfies matches($item/num, '•')">
+			<xsl:sequence select="false()" />
+		</xsl:when>
+		<xsl:when test="every $item in $items satisfies matches($item/num, '—')">
+			<xsl:sequence select="false()" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="true()" />
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:function>
 
 <xsl:function name="local:get-decoration-from-numbered-things" as="xs:string">
@@ -39,6 +53,12 @@
 		<xsl:when test="every $num in $nums satisfies ends-with($num, ':')">
 			<xsl:text>colon</xsl:text>
 		</xsl:when>
+		<xsl:when test="every $num in $nums satisfies $num = '•'">
+			<xsl:sequence select="'bullet'" />
+		</xsl:when>
+		<xsl:when test="every $num in $nums satisfies $num = '—'">
+			<xsl:sequence select="'dash'" />
+		</xsl:when>
 		<xsl:otherwise>
 			<xsl:sequence select="'none'" />
 		</xsl:otherwise>
@@ -48,14 +68,7 @@
 <xsl:function name="local:get-decoration-from-list" as="xs:string">
 	<xsl:param name="list" as="element(blockList)" />
 	<xsl:param name="ordered" as="xs:boolean" />
-	<xsl:choose>
-		<xsl:when test="$ordered">
-			<xsl:sequence select="local:get-decoration-from-numbered-things($list/item)" />
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:sequence select="'none'" />
-		</xsl:otherwise>
-	</xsl:choose>
+	<xsl:sequence select="local:get-decoration-from-numbered-things($list/item)" />
 </xsl:function>
 
 <xsl:function name="local:get-ordered-list-type-from-numbered-things" as="xs:string?">
@@ -256,12 +269,14 @@
 				</xsl:call-template>
 				<xsl:call-template name="group-definitions-for-block-amendment">
 					<xsl:with-param name="elements" select="local:get-elements-following-contiguous-definitions($elements)" />
+					<xsl:with-param name="decoration" select="$decoration" />
 				</xsl:call-template>
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:apply-templates select="$first" />
 				<xsl:call-template name="group-definitions-for-block-amendment">
 					<xsl:with-param name="elements" select="subsequence($elements, 2)" />
+					<xsl:with-param name="decoration" select="$decoration" />
 				</xsl:call-template>
 			</xsl:otherwise>
 		</xsl:choose>
@@ -322,7 +337,7 @@
 	</ListItem>
 </xsl:template>
 
-<xsl:template match="paragraph[exists(content)] | subparagraph[exists(content)]" mode="list">
+<xsl:template match="level[exists(content)] | paragraph[exists(content)] | subparagraph[exists(content)]" mode="list">	<!-- paragraph and subparagraph are legacy -->
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<ListItem>
 		<xsl:apply-templates select="*[not(self::num)]" mode="list">
@@ -331,7 +346,7 @@
 	</ListItem>
 </xsl:template>
 
-<xsl:template match="paragraph[empty(content)] | subparagraph[empty(content)]" mode="list"><!-- similar to above but skips <num> -->
+<xsl:template match="level[empty(content)] | paragraph[empty(content)] | subparagraph[empty(content)]" mode="list"><!-- similar to above but skips <num> -->	<!-- paragraph and subparagraph are legacy -->
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<ListItem>
 		<xsl:apply-templates select="heading | subheading | intro">

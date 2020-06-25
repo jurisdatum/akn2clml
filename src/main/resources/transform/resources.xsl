@@ -33,11 +33,11 @@
 	<xsl:variable name="index" as="xs:integer*">
 		<xsl:for-each select="$nodes">
 			<xsl:if test=". is $n">
-				<xsl:value-of select="position()" />
+				<xsl:sequence select="position()" />
 			</xsl:if>
 		</xsl:for-each> 
 	</xsl:variable>
-	<xsl:value-of select="$index[1]" />
+	<xsl:sequence select="$index[1]" />
 </xsl:function>
 
 <xsl:function name="local:make-version-id">

@@ -19,6 +19,15 @@
 	<xsl:sequence select="$ref-to-id-exists or $ref-to-guid-exists" />
 </xsl:function>
 
+<xsl:variable name="elements-whose-ids-are-necessary" as="element()*" select="//*[local:element-id-is-necessary(.)]" />
+
+<xsl:function name="local:make-necessary-id" as="xs:string">
+	<xsl:param name="e" as="element()" />
+	<xsl:variable name="index" as="xs:integer?" select="local:get-first-index-of-node($e, $elements-whose-ids-are-necessary)" />
+	<xsl:variable name="num" as="xs:integer" select="if (exists($index)) then $index else 0" />
+	<xsl:sequence select="concat('p', format-number($num,'00000'))" />
+</xsl:function>
+
 <xsl:template match="authorialNote[@class='referenceNote']" mode="remove-schedule-reference" />
 <xsl:template match="@*|*|processing-instruction()|comment()" mode="remove-schedule-reference">
 	<xsl:copy>
@@ -44,7 +53,7 @@
 	<xsl:param name="e" as="element()" />
 	<xsl:choose>
 		<xsl:when test="exists($e/ancestor::quotedStructure)">
-			<xsl:sequence select="generate-id($e)" />
+			<xsl:sequence select="local:make-necessary-id($e)" />
 		</xsl:when>
 		<xsl:when test="$e/self::part">
 			<xsl:sequence select="local:make-id-from-number-1($e/num)" />
@@ -61,11 +70,21 @@
 		<xsl:when test="$e/self::hcontainer[@name='regulation']">
 			<xsl:sequence select="concat($e/@name, '-', local:strip-punctuation-from-number(string($e/num)))" />
 		</xsl:when>
-		<xsl:when test="$e/self::paragraph and exists($e/ancestor::hcontainer[@name='schedule']) and empty($e/ancestor::paragraph)">
+		<xsl:when test="$e/self::hcontainer[@name='scheduleParagraph'] or $e/self::paragraph[@class='schProv1']">
 			<xsl:sequence select="concat(local:make-internal-id($e/ancestor::hcontainer[@name='schedule']), '-paragraph-', local:strip-punctuation-from-number(string($e/num)))" />
 		</xsl:when>
-		<xsl:when test="$e/self::subsection or $e/self::paragraph or $e/self::subparagraph or $e/self::clause or $e/self::subclause">
-			<xsl:sequence select="concat(local:make-internal-id($e/..), '-', local:strip-punctuation-from-number(string($e/num)))" />
+		<xsl:when test="$e/self::subsection or $e/self::hcontainer[@name='SIParagraph'] or $e/self::paragraph or $e/self::subparagraph or $e/self::level or $e/self::subsubparagraph or $e/self::subsubsubparagraph or $e/self::clause or $e/self::subclause">
+			<xsl:variable name="parent" as="element()">
+				<xsl:choose>
+					<xsl:when test="$e/parent::*/self::hcontainer[@name=('wrapper1', 'wrapper2', 'P2group')]">
+						<xsl:sequence select="$e/parent::*/parent::*" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:sequence select="$e/parent::*" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:sequence select="concat(local:make-internal-id($parent), '-', local:strip-punctuation-from-number(string($e/num)))" />
 		</xsl:when>
 		<xsl:when test="$e/self::hcontainer[@name='schedule']">
 			<xsl:sequence select="local:make-id-from-number-1($e/num)" />

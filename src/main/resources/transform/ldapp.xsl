@@ -7,16 +7,22 @@
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:uk="https://www.legislation.gov.uk/namespaces/UK-AKN"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs uk local">
+	xmlns:ldapp="ldapp"
+	exclude-result-prefixes="xs uk local ldapp">
 
-<xsl:function name="local:resolve-tlc-show-as" as="xs:string">
+<xsl:function name="ldapp:is-ldapp" as="xs:boolean">
+	<xsl:param name="doc" as="document-node()" />
+	<xsl:sequence select="$doc/akomaNtoso/*/meta/identification/@source = '#ldapp'" />
+</xsl:function>
+
+<xsl:function name="ldapp:resolve-tlc-show-as" as="xs:string">
 	<xsl:param name="showAs" as="attribute()" />
 	<xsl:variable name="components" as="xs:string*">
 		<xsl:for-each select="tokenize(normalize-space($showAs), ' ')">
 			<xsl:choose>
 				<xsl:when test="starts-with(., '#')">
 					<xsl:variable name="tlc" as="element()" select="key('tlc', substring(., 2), root($showAs))" />
-					<xsl:sequence select="local:resolve-tlc-show-as($tlc/@showAs)" />
+					<xsl:sequence select="ldapp:resolve-tlc-show-as($tlc/@showAs)" />
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:sequence select="." />
@@ -44,60 +50,113 @@
 </xsl:variable>
 
 <xsl:variable name="ldapp-doc-year" as="xs:integer?">
-	<xsl:variable name="var-act-year" as="xs:string?" select="key('tlc', 'varActYear')/@showAs" />
-	<xsl:variable name="var-passed-date" as="xs:string?" select="key('tlc', 'varPassedDate')/@showAs" />
-	<xsl:variable name="var-assent-date" as="xs:string?" select="key('tlc', 'varAssentDate')/@showAs" />
-	<xsl:variable name="var-bill-year" as="xs:string?" select="key('tlc', 'varBillYear')/@showAs" />
 	<xsl:choose>
-		<xsl:when test="$var-act-year castable as xs:integer">
-			<xsl:value-of select="xs:integer($var-act-year)" />
+		<xsl:when test="$doc-category = 'primary'">
+			<xsl:variable name="var-act-year" as="xs:string?" select="key('tlc', 'varActYear')/@showAs" />
+			<xsl:variable name="var-passed-date" as="xs:string?" select="key('tlc', 'varPassedDate')/@showAs" />
+			<xsl:variable name="var-assent-date" as="xs:string?" select="key('tlc', 'varAssentDate')/@showAs" />
+			<xsl:variable name="var-bill-year" as="xs:string?" select="key('tlc', 'varBillYear')/@showAs" />
+			<xsl:choose>
+				<xsl:when test="$var-act-year castable as xs:integer">
+					<xsl:value-of select="xs:integer($var-act-year)" />
+				</xsl:when>
+				<xsl:when test="$var-passed-date castable as xs:date">
+					<xsl:value-of select="xs:integer(substring($var-passed-date, 1, 4))" />
+				</xsl:when>
+				<xsl:when test="$var-assent-date castable as xs:date">
+					<xsl:value-of select="xs:integer(substring($var-assent-date, 1, 4))" />
+				</xsl:when>
+				<xsl:when test="$var-bill-year castable as xs:integer">
+					<xsl:value-of select="xs:integer($var-bill-year)" />
+				</xsl:when>
+			</xsl:choose>
 		</xsl:when>
-		<xsl:when test="$var-passed-date castable as xs:date">
-			<xsl:value-of select="xs:integer(substring($var-passed-date, 1, 4))" />
-		</xsl:when>
-		<xsl:when test="$var-assent-date castable as xs:date">
-			<xsl:value-of select="xs:integer(substring($var-assent-date, 1, 4))" />
-		</xsl:when>
-		<xsl:when test="$var-bill-year castable as xs:integer">
-			<xsl:value-of select="xs:integer($var-bill-year)" />
+		<xsl:when test="$doc-category = 'secondary'">
+			<xsl:variable name="var-si-year" as="xs:string?" select="key('tlc', 'varSIYear')/@showAs" />
+			<xsl:choose>
+				<xsl:when test="$var-si-year castable as xs:integer">
+					<xsl:value-of select="xs:integer($var-si-year)" />
+				</xsl:when>
+			</xsl:choose>
 		</xsl:when>
 	</xsl:choose>
 </xsl:variable>
 
 <xsl:variable name="ldapp-doc-number" as="xs:string?">
-	<xsl:variable name="var-act-no" as="xs:string?" select="key('tlc', 'varActNo')/@showAs" />
-	<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value" />
-	<xsl:variable name="var-project-id" as="xs:string?" select="key('tlc', 'varProjectId')/@showAs" />
 	<xsl:choose>
-		<xsl:when test="$var-act-no castable as xs:integer">
-			<xsl:value-of select="$var-act-no" />
+		<xsl:when test="$doc-category = 'primary'">
+			<xsl:variable name="var-act-no" as="xs:string?" select="key('tlc', 'varActNo')/@showAs" />
+			<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value" />
+			<xsl:choose>
+				<xsl:when test="$var-act-no castable as xs:integer">
+					<xsl:sequence select="$var-act-no" />
+				</xsl:when>
+				<xsl:when test="$frbr castable as xs:integer">
+					<xsl:sequence select="$frbr" />
+				</xsl:when>
+			</xsl:choose>
 		</xsl:when>
-		<xsl:when test="$frbr castable as xs:integer">
-			<xsl:value-of select="$frbr" />
-		</xsl:when>
-		<xsl:when test="$var-project-id castable as xs:integer">
-			<xsl:value-of select="$var-project-id" />
+		<xsl:when test="$doc-category = 'secondary'">
+			<xsl:variable name="var-si-no-comp" as="xs:string?" select="key('tlc', 'varSINoComp')/@showAs" />
+			<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value" />
+			<xsl:choose>
+				<xsl:when test="$var-si-no-comp castable as xs:integer">
+					<xsl:sequence select="$var-si-no-comp" />
+				</xsl:when>
+				<xsl:when test="$frbr castable as xs:integer">
+					<xsl:sequence select="$frbr" />
+				</xsl:when>
+			</xsl:choose>
 		</xsl:when>
 	</xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="ldapp-doc-subsid-numbers" as="xs:string*">
+	<xsl:variable name="subsid-nos" as="attribute()?" select="key('tlc', 'varSISubsidiaryNos')/@showAs" />
+	<xsl:if test="exists($subsid-nos)">
+		<xsl:analyze-string select="$subsid-nos" regex="\((C|W)\. ?(\d+)\)">
+			<xsl:matching-substring>
+				<xsl:sequence select="concat(regex-group(1), ' ', regex-group(2))" />
+			</xsl:matching-substring>
+		</xsl:analyze-string>
+	</xsl:if>
 </xsl:variable>
 
 <xsl:variable name="ldapp-doc-title" as="xs:string?">	<xsl:variable name="var-act-no" as="xs:string?" select="key('tlc', 'varActNo')/@showAs" />
-	<xsl:variable name="var-act-title" as="attribute()?" select="key('tlc', 'varActTitle')/@showAs" />
-	<xsl:variable name="doc-title" as="element(docTitle)?" select="(//docTitle)[1]" />
-	<xsl:variable name="var-bill-title" as="attribute()?" select="key('tlc', 'varBillTitle')/@showAs" />
 	<xsl:choose>
-		<xsl:when test="normalize-space($var-act-title)">
-			<xsl:value-of select="local:resolve-tlc-show-as($var-act-title)" />
+		<xsl:when test="$doc-category = 'primary'">
+			<xsl:variable name="var-act-title" as="attribute()?" select="key('tlc', 'varActTitle')/@showAs" />
+			<xsl:variable name="doc-title" as="element(docTitle)?" select="(//docTitle)[1]" />
+			<xsl:variable name="var-bill-title" as="attribute()?" select="key('tlc', 'varBillTitle')/@showAs" />
+			<xsl:choose>
+				<xsl:when test="normalize-space($var-act-title)">
+					<xsl:value-of select="ldapp:resolve-tlc-show-as($var-act-title)" />
+				</xsl:when>
+				<xsl:when test="normalize-space($doc-title)">
+					<xsl:value-of select="normalize-space($doc-title)" />
+				</xsl:when>
+				<xsl:when test="normalize-space($var-bill-title)">
+					<xsl:value-of select="ldapp:resolve-tlc-show-as($var-bill-title)" />
+				</xsl:when>
+			</xsl:choose>
 		</xsl:when>
-		<xsl:when test="normalize-space($doc-title)">
-			<xsl:value-of select="$doc-title" />
-		</xsl:when>
-		<xsl:when test="normalize-space($var-bill-title)">
-			<xsl:value-of select="local:resolve-tlc-show-as($var-bill-title)" />
+		<xsl:when test="$doc-category = 'secondary'">
+			<xsl:variable name="var-si-title" as="attribute()?" select="key('tlc', 'varSITitle')/@showAs" />
+			<xsl:variable name="doc-title" as="element(docTitle)?" select="(//docTitle)[1]" />
+			<xsl:choose>
+				<xsl:when test="normalize-space($var-si-title)">
+					<xsl:value-of select="ldapp:resolve-tlc-show-as($var-si-title)" />
+				</xsl:when>
+				<xsl:when test="normalize-space($doc-title)">
+					<xsl:value-of select="normalize-space($doc-title)" />
+				</xsl:when>
+			</xsl:choose>
 		</xsl:when>
 	</xsl:choose>
 </xsl:variable>
 
+
+<!-- dates -->
 
 <xsl:variable name="ldapp-assent-date" as="xs:date?" select="key('tlc', 'varAssentDate')/@showAs" />
 
@@ -105,20 +164,51 @@
 	<xsl:sequence select="$ldapp-assent-date" />
 </xsl:variable>
 
+<xsl:variable name="ldapp-made-date" as="xs:date?">
+	<xsl:variable name="var-made-date" as="attribute()?" select="key('tlc', 'varMadeDate')/@showAs" />
+	<xsl:variable name="substring" as="xs:string" select="substring($var-made-date, 1, 10)" />
+	<xsl:if test="$substring castable as xs:date">
+		<xsl:sequence select="xs:date($substring)" />
+	</xsl:if>
+</xsl:variable>
 
 
 <!-- placeholders -->
 
 <xsl:template match="ref[@class='placeholder']">
 	<xsl:variable name="tlc" as="element()" select="key('tlc', substring(@href, 2))" />
-	<xsl:value-of select="local:resolve-tlc-show-as($tlc/@showAs)" />
+	<xsl:variable name="resolved" as="xs:string" select="ldapp:resolve-tlc-show-as($tlc/@showAs)" />
+	<xsl:choose>
+		<xsl:when test="exists(node())">
+			<xsl:apply-templates />
+		</xsl:when>
+		<xsl:when test="exists(@uk:dateFormat) and $resolved castable as xs:date">
+			<xsl:variable name="date" as="xs:date" select="xs:date($resolved)" />
+			<xsl:choose>
+				<xsl:when test="@uk:dateFormat = 'd''th'' MMMM yyyy'">
+					<xsl:value-of select="format-date($date, '[D1o] [MNn] [Y0001]')" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="$resolved" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="$resolved" />
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 
-<!-- back cover -->
+<!-- images -->
 
-<xsl:template match="conclusions[@eId='backCover']" />
-<xsl:template match="conclusions[@eId='backCover']/*" />
+<xsl:function name="ldapp:scale-image-dimension" as="xs:string">
+	<xsl:param name="dimension" as="attribute()" />
+	<xsl:variable name="font-size-points" as="xs:decimal" select="10.5" />
+	<xsl:variable name="dimension-mm" as="xs:integer" select="xs:integer($dimension)" />
+	<xsl:variable name="dimension-em" as="xs:decimal" select="$dimension-mm * 2.83465 div $font-size-points" />
+	<xsl:sequence select="concat(format-number($dimension-em,'#.###'), 'em')" />
+</xsl:function>
 
 
 <!-- GUIDs -->

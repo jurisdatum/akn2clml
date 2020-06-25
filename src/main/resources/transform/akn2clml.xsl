@@ -128,7 +128,7 @@
 	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="blockContainer">
+<xsl:template match="blockContainer[@ukl:Name='BlockText']" priority="2">
 	<xsl:call-template name="create-element-and-wrap-as-necessary">
 		<xsl:with-param name="name" as="xs:string" select="'BlockText'" />
 	</xsl:call-template>
@@ -243,6 +243,9 @@
 <!-- default -->
 
 <xsl:template match="*" priority="-100">
+	<xsl:message>
+		<xsl:text>no template match for element</xsl:text>
+	</xsl:message>
 	<xsl:message terminate="yes">
 		<xsl:sequence select="." />
 	</xsl:message>
