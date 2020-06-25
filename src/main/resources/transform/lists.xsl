@@ -337,7 +337,7 @@
 	</ListItem>
 </xsl:template>
 
-<xsl:template match="paragraph[exists(content)] | subparagraph[exists(content)]" mode="list">
+<xsl:template match="level[exists(content)] | paragraph[exists(content)] | subparagraph[exists(content)]" mode="list">	<!-- paragraph and subparagraph are legacy -->
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<ListItem>
 		<xsl:apply-templates select="*[not(self::num)]" mode="list">
@@ -346,7 +346,7 @@
 	</ListItem>
 </xsl:template>
 
-<xsl:template match="paragraph[empty(content)] | subparagraph[empty(content)]" mode="list"><!-- similar to above but skips <num> -->
+<xsl:template match="level[empty(content)] | paragraph[empty(content)] | subparagraph[empty(content)]" mode="list"><!-- similar to above but skips <num> -->	<!-- paragraph and subparagraph are legacy -->
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<ListItem>
 		<xsl:apply-templates select="heading | subheading | intro">

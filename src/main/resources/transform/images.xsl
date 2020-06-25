@@ -7,7 +7,8 @@
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs ukl local">
+	xmlns:ldapp="ldapp"
+	exclude-result-prefixes="xs ukl local ldapp">
 
 
 <xsl:template match="tblock[tokenize(@class,' ')=('figure','image')]">
@@ -39,11 +40,24 @@
 
 <xsl:template match="img">
 	<xsl:variable name="res-id" as="xs:string" select="local:make-resource-id(.)" />
+	<xsl:variable name="style" as="attribute()?" select="@style" />
+	<xsl:variable name="style-width" as="xs:string?">
+		<xsl:if test="exists(@style)">
+			<xsl:analyze-string select="$style" regex="width:([0-9\.A-Za-z]+)">
+				<xsl:matching-substring>
+					<xsl:sequence select="regex-group(1)" />
+				</xsl:matching-substring>
+			</xsl:analyze-string>
+		</xsl:if>
+	</xsl:variable>	
 	<Image ResourceRef="{ $res-id }">
 		<xsl:attribute name="Width">
 			<xsl:choose>
 				<xsl:when test="exists(@ukl:Width)">
 					<xsl:value-of select="@ukl:Width" />
+				</xsl:when>
+				<xsl:when test="exists(@width) and exists(@height) and ldapp:is-ldapp(root(.))">
+					<xsl:value-of select="ldapp:scale-image-dimension(@width)" />
 				</xsl:when>
 				<xsl:when test="exists(@width)">
 					<xsl:value-of select="@width" />
@@ -59,6 +73,9 @@
 				<xsl:when test="exists(@ukl:Height)">
 					<xsl:value-of select="@ukl:Height" />
 				</xsl:when>
+				<xsl:when test="exists(@height) and exists(@width) and ldapp:is-ldapp(root(.))">
+					<xsl:value-of select="ldapp:scale-image-dimension(@height)" />
+				</xsl:when>
 				<xsl:when test="exists(@height)">
 					<xsl:value-of select="@height" />
 					<xsl:text>pt</xsl:text>
@@ -68,9 +85,9 @@
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:attribute>
-		<xsl:if test="exists(@title)">
+		<xsl:if test="exists(@alt)">
 			<xsl:attribute name="Description">
-				<xsl:value-of select="@title" />
+				<xsl:value-of select="@alt" />
 			</xsl:attribute>
 		</xsl:if>
 	</Image>

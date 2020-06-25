@@ -33,7 +33,11 @@
 	</Comment>
 </xsl:template>
 
-<xsl:template match="blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes','earlierOrders','commencementHistory')]//blockContainer" priority="1">
+<xsl:template match="blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes','earlierOrders','commencementHistory')]//tblock[not(@class=('table','tabular'))]" priority="1">
+	<xsl:call-template name="en-structure" />
+</xsl:template>
+
+<xsl:template match="blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes','earlierOrders','commencementHistory')]//blockContainer" name="en-structure" priority="1">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string">
 		<xsl:variable name="classes" as="xs:string*" select="tokenize(@class, ' ')" />
@@ -68,9 +72,24 @@
 		</xsl:choose>
 	</xsl:variable>
 	<xsl:element name="{ $name }">
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
-		</xsl:apply-templates>
+		<xsl:choose>
+			<xsl:when test="$name = ('P1','P2','P3','P4','P5','P6') and exists(blockContainer)">
+				<xsl:apply-templates select="num | heading | subheading">
+					<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+				</xsl:apply-templates>
+				<xsl:variable name="para-name" select="concat($name, 'para')" />
+				<xsl:element name="{ $para-name }">
+					<xsl:apply-templates select="* except (num | heading | subheading)">
+						<xsl:with-param name="context" select="($para-name, $name, $context)" tunnel="yes" />
+					</xsl:apply-templates>
+				</xsl:element>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:element>
 </xsl:template>
 

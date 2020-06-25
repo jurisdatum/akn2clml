@@ -10,6 +10,11 @@
 	xmlns:ldapp="ldapp"
 	exclude-result-prefixes="xs uk local ldapp">
 
+<xsl:function name="ldapp:is-ldapp" as="xs:boolean">
+	<xsl:param name="doc" as="document-node()" />
+	<xsl:sequence select="$doc/akomaNtoso/*/meta/identification/@source = '#ldapp'" />
+</xsl:function>
+
 <xsl:function name="ldapp:resolve-tlc-show-as" as="xs:string">
 	<xsl:param name="showAs" as="attribute()" />
 	<xsl:variable name="components" as="xs:string*">
@@ -166,15 +171,38 @@
 
 <xsl:template match="ref[@class='placeholder']">
 	<xsl:variable name="tlc" as="element()" select="key('tlc', substring(@href, 2))" />
+	<xsl:variable name="resolved" as="xs:string" select="ldapp:resolve-tlc-show-as($tlc/@showAs)" />
 	<xsl:choose>
-		<xsl:when test="empty(node())">
-			<xsl:value-of select="ldapp:resolve-tlc-show-as($tlc/@showAs)" />
+		<xsl:when test="exists(node())">
+			<xsl:apply-templates />
+		</xsl:when>
+		<xsl:when test="exists(@uk:dateFormat) and $resolved castable as xs:date">
+			<xsl:variable name="date" as="xs:date" select="xs:date($resolved)" />
+			<xsl:choose>
+				<xsl:when test="@uk:dateFormat = 'd''th'' MMMM yyyy'">
+					<xsl:value-of select="format-date($date, '[D1o] [MNn] [Y0001]')" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="$resolved" />
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:when>
 		<xsl:otherwise>
-			<xsl:apply-templates />
+			<xsl:value-of select="$resolved" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
+
+
+<!-- images -->
+
+<xsl:function name="ldapp:scale-image-dimension" as="xs:string">
+	<xsl:param name="dimension" as="attribute()" />
+	<xsl:variable name="font-size-points" as="xs:decimal" select="10.5" />
+	<xsl:variable name="dimension-mm" as="xs:integer" select="xs:integer($dimension)" />
+	<xsl:variable name="dimension-em" as="xs:decimal" select="$dimension-mm * 2.83465 div $font-size-points" />
+	<xsl:sequence select="concat(format-number($dimension-em,'#.###'), 'em')" />
+</xsl:function>
 
 
 <!-- GUIDs -->

@@ -564,10 +564,13 @@
 
 <!-- hcontainer[@name='wrapper1'] maps P?paras where more than one sibling contain structural children -->
 
-<xsl:template match="hcontainer[@name='wrapper1']">
+<xsl:template match="hcontainer[@name=('wrapper1','P2group')]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string">
 		<xsl:choose>
+			<xsl:when test="@name = 'P2group'">
+				<xsl:sequence select="'P2group'" />
+			</xsl:when>
 			<xsl:when test="$context[1] = 'ScheduleBody'"> <!-- uksi/2009/1488/made -->
 				<xsl:sequence select="'P'" />
 			</xsl:when>
@@ -577,9 +580,19 @@
 		</xsl:choose>
 	</xsl:variable>
 	<xsl:element name="{ $name }">
-		<xsl:apply-templates>
-				<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
-		</xsl:apply-templates>
+		<xsl:choose>
+			<xsl:when test="exists(child::hcontainer[@name='definition'])"> <!-- uksi/2009/1597/made -->
+				<xsl:call-template name="group-definitions-for-block-amendment">
+					<xsl:with-param name="elements" select="*" />
+					<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates>
+						<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:element>
 </xsl:template>
 
@@ -784,6 +797,9 @@
 			<xsl:element name="{ $name }">
 				<xsl:if test="($name = 'Pnumber') and local:should-add-punc-before-and-punc-after-attributes(., $context)">
 					<xsl:call-template name="add-punc-before-and-punc-after-attributes" />
+				</xsl:if>
+				<xsl:if test="$head = ('Part', 'Chapter', 'Pblock', 'PsubBlock', 'P1', 'Schedule')">
+					<xsl:call-template name="add-commentary-refs-to-number" />
 				</xsl:if>
 				<xsl:apply-templates>
 					<xsl:with-param name="context" select="($name, $context)" tunnel="yes" />

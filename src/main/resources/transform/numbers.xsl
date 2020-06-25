@@ -33,26 +33,26 @@
 		<xsl:when test="$doc-category = 'primary'">
 			<xsl:choose>
 				<xsl:when test="$head = 'P1'">
-					<xsl:value-of select="not(matches(normalize-space($num), '^\d+[A-Z]*$'))" />
+					<xsl:sequence select="not(matches(normalize-space($num), '^\d+[A-Z]*$'))" />
 				</xsl:when>
 				<xsl:when test="$head = ('P2', 'P3' ,'P4', 'P5', 'P6', 'P7')">
-					<xsl:value-of select="not(matches(normalize-space($num), '^\([a-zA-Z\d]+\)$'))" />
+					<xsl:sequence select="not(matches(normalize-space($num), '^\([a-zA-Z\d]+\)$'))" />
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:value-of select="false()" />
+					<xsl:sequence select="false()" />
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:when>
 		<xsl:when test="$doc-category = 'secondary'">
 			<xsl:choose>
 				<xsl:when test="$head = 'P1'">
-					<xsl:value-of select="not(matches(normalize-space($num), '^\d+[A-Z]*\.$'))" />
+					<xsl:sequence select="not(matches(normalize-space($num), '^\d+[A-Z]*\.$'))" />
 				</xsl:when>
 				<xsl:when test="$head = ('P2', 'P3' ,'P4', 'P5', 'P6', 'P7')">
-					<xsl:value-of select="not(matches(normalize-space($num), '^\([a-zA-Z\d]+\)$'))" />
+					<xsl:sequence select="not(matches(normalize-space($num), '^\([a-zA-Z\d]+\)$'))" />
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:value-of select="false()" />
+					<xsl:sequence select="false()" />
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:when>
