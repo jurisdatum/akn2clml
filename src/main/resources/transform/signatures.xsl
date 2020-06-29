@@ -36,17 +36,28 @@
 </xsl:template>
 
 <xsl:template match="hcontainer[@name='signatureBlock']">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:apply-templates select="content/*[1][self::p]" />
-	<Signee>
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="('Signee', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</Signee>
+	<xsl:apply-templates />
 </xsl:template>
 
 <xsl:template match="hcontainer[@name='signatureBlock']/content">
-	<xsl:apply-templates select="* except *[1][self::p]" />
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:variable name="seal" as="element(block)?" select="block[@name='seal']" />
+	<xsl:variable name="intro" as="element()*">
+		<xsl:choose>
+			<xsl:when test="exists($seal)">
+				<xsl:sequence select="$seal/preceding-sibling::*" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:sequence select="p[every $sib in preceding-sibling::* satisfies $sib/self::p]" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:apply-templates select="$intro" />
+	<Signee>
+		<xsl:apply-templates select="* except $intro">
+			<xsl:with-param name="context" select="('Signee', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+	</Signee>
 </xsl:template>
 
 <xsl:template match="hcontainer[@name='signatureBlock']/content/p">
