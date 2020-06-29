@@ -113,6 +113,7 @@
 		<xsl:if test="exists($sifted)">
 			<Sifted Date="{ $sifted/@date }" />
 		</xsl:if>
+
 		<Made>
 			<xsl:attribute name="Date">
 				<xsl:choose>
@@ -125,6 +126,7 @@
 				</xsl:choose>
 			</xsl:attribute>
 		</Made>
+
 		<xsl:for-each select="/akomaNtoso/*/preface/container[@name='dates']/block[@name='laidDate'][docDate]">
 			<Laid>
 				<xsl:attribute name="Date">
@@ -138,13 +140,14 @@
 						<xsl:when test="$doc-short-type = ('ssi', 'sdsi')">
 							<xsl:text>ScottishParliament</xsl:text>
 						</xsl:when>
+						<xsl:when test="$doc-short-type = ('wsi', 'wdsi')">
+							<xsl:text>WelshAssembly</xsl:text>
+						</xsl:when>
 					</xsl:choose>
 				</xsl:attribute>
 			</Laid>
 		</xsl:for-each>
-<!-- 		<xsl:for-each select="/akomaNtoso/*/meta/lifecycle/eventRef[starts-with(@eId, 'date-laid')]">
-			<Laid Date="{ @date }" Class="{ key('id', substring(@source, 2))/@showAs }" />
-		</xsl:for-each> -->
+
 		<xsl:variable name="cif-dates" as="element(eventRef)*" select="/akomaNtoso/*/meta/lifecycle/eventRef[starts-with(@eId, 'date-cif')]" />
 		<xsl:if test="exists($cif-dates)">
 			<ComingIntoForce>
