@@ -26,6 +26,7 @@
 		ukpga = "UnitedKingdomPublicGeneralAct"
 		ukla = "UnitedKingdomLocalAct"
 		asp = "ScottishAct"
+		asc = "WelshParliamentAct"
 		anaw = "WelshNationalAssemblyAct"
 		mwa = "WelshAssemblyMeasure"
 		ukcm = "UnitedKingdomChurchMeasure"
@@ -62,6 +63,7 @@
 		UnitedKingdomPublicGeneralAct = "ukpga"
 		UnitedKingdomLocalAct = "ukla"
 		ScottishAct = "asp"
+		WelshParliamentAct = "asc"
 		WelshNationalAssemblyAct = "anaw"
 		WelshAssemblyMeasure = "mwa"
 		UnitedKingdomChurchMeasure = "ukcm"
@@ -94,7 +96,7 @@
 </xsl:variable>
 
 <xsl:variable name="primary-short-types" as="xs:string*" select="
-	( 'ukpga', 'ukla', 'asp', 'anaw', 'mwa', 'ukcm', 'nia', 'aosp', 'aep', 'aip', 'apgb', 'mnia', 'apni' )
+	( 'ukpga', 'ukla', 'asp', 'asc', 'anaw', 'mwa', 'ukcm', 'nia', 'aosp', 'aep', 'aip', 'apgb', 'mnia', 'apni' )
 " />
 
 <xsl:variable name="secondary-short-types" as="xs:string*" select="
