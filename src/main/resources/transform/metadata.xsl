@@ -133,7 +133,12 @@
 					<xsl:value-of select="substring(docDate/@date, 1, 10)" />
 				</xsl:attribute>
 				<xsl:attribute name="Class">
+					<xsl:variable name="event-ref" as="element(eventRef)?" select="key('id', substring(@refersTo, 2))" />
+					<xsl:variable name="source" as="element(TLCOrganization)?" select="key('id', substring($event-ref/@source, 2))" />
 					<xsl:choose>
+						<xsl:when test="exists($source)">
+							<xsl:value-of select="$source/@showAs" />
+						</xsl:when>
 						<xsl:when test="$doc-short-type = ('uksi', 'ukdsi')">
 							<xsl:text>UnitedKingdomParliament</xsl:text>
 						</xsl:when>
