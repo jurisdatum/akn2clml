@@ -62,7 +62,7 @@
 			<xsl:sequence select="local:make-id-from-number-1($e/num)" />
 		</xsl:when>
 		<xsl:when test="$e/self::hcontainer[@name=('crossheading','subheading')]">
-			<xsl:sequence select="translate(lower-case(normalize-space($e/heading)), ' ', '-')" />
+			<xsl:sequence select="concat('crossheading-', translate(lower-case(normalize-space($e/heading)), '/ ():.,‘’“”''&quot;', '--'))" />
 		</xsl:when>
 		<xsl:when test="$e/self::section or $e/self::article or $e/self::rule">
 			<xsl:sequence select="concat(local-name($e), '-', local:strip-punctuation-from-number(string($e/num)))" />
@@ -73,7 +73,21 @@
 		<xsl:when test="$e/self::hcontainer[@name='scheduleParagraph'] or $e/self::paragraph[@class='schProv1']">
 			<xsl:sequence select="concat(local:make-internal-id($e/ancestor::hcontainer[@name='schedule']), '-paragraph-', local:strip-punctuation-from-number(string($e/num)))" />
 		</xsl:when>
-		<xsl:when test="$e/self::subsection or $e/self::hcontainer[@name='SIParagraph'] or $e/self::paragraph or $e/self::subparagraph or $e/self::level or $e/self::subsubparagraph or $e/self::subsubsubparagraph or $e/self::clause or $e/self::subclause">
+		<xsl:when test="$e/self::subsection or $e/self::paragraph or $e/self::subparagraph or $e/self::level">
+			<xsl:variable name="parent" as="element()">
+				<xsl:choose>
+					<xsl:when test="$e/parent::*/self::hcontainer[@name=('wrapper1', 'wrapper2', 'P2group')]">
+						<xsl:sequence select="$e/parent::*/parent::*" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:sequence select="$e/parent::*" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:sequence select="concat(local:make-internal-id($parent), '-', local:strip-punctuation-from-number(string($e/num)))" />
+		</xsl:when>
+		<!-- legacy -->
+		<xsl:when test="$e/self::hcontainer[@name='SIParagraph'] or $e/self::subsubparagraph or $e/self::subsubsubparagraph or $e/self::clause or $e/self::subclause">
 			<xsl:variable name="parent" as="element()">
 				<xsl:choose>
 					<xsl:when test="$e/parent::*/self::hcontainer[@name=('wrapper1', 'wrapper2', 'P2group')]">
@@ -97,7 +111,32 @@
 
 <xsl:template name="add-id-if-necessary">
 	<xsl:param name="e" as="element()" select="." />
-	<xsl:if test="local:element-id-is-necessary($e)">
+	<xsl:variable name="should-add" as="xs:boolean">
+		<xsl:choose>
+			<xsl:when test="$e/self::akomaNtoso">
+				<xsl:sequence select="false()" />
+			</xsl:when>
+			<xsl:when test="$e/self::act">
+				<xsl:sequence select="local:element-id-is-necessary($e)" />
+			</xsl:when>
+			<xsl:when test="$e/self::body">
+				<xsl:sequence select="local:element-id-is-necessary($e)" />
+			</xsl:when>
+			<xsl:when test="$e/self::preface">
+				<xsl:sequence select="local:element-id-is-necessary($e)" />
+			</xsl:when>
+			<xsl:when test="exists($e/ancestor::quotedStructure) or exists($e/ancestor::embeddedStructure)">
+				<xsl:sequence select="local:element-id-is-necessary($e)" />
+			</xsl:when>
+			<xsl:when test="$e/self::hcontainer[@name='schedules']">
+				<xsl:sequence select="local:element-id-is-necessary($e)" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:sequence select="true()" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:if test="$should-add">
 		<xsl:attribute name="id">
 			<xsl:sequence select="local:make-internal-id($e)" />
 		</xsl:attribute>
