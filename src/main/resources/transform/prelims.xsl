@@ -13,32 +13,27 @@
 	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:choose>
 		<xsl:when test="$head = 'Primary'">
-			<xsl:variable name="child-context" as="xs:string*" select="('PrimaryPrelims', $context)" />
 			<PrimaryPrelims>
+				<xsl:variable name="child-context" as="xs:string*" select="('PrimaryPrelims', $context)" />
 				<xsl:call-template name="add-fragment-attributes">
 					<xsl:with-param name="from" select="preface" />
 				</xsl:call-template>
-				<xsl:apply-templates select="preface/block[@name='title']">
-					<xsl:with-param name="context" select="$child-context" tunnel="yes" />
-				</xsl:apply-templates>
 				<xsl:choose>
-					<xsl:when test="exists(preface/block[@name='number'])">
-						<xsl:apply-templates select="preface/block[@name='number']">
+					<xsl:when test="$doc-short-type = 'asp'">	<!-- move date of enactment to end -->
+						<xsl:variable name="date-of-enactment" as="element()*" select="preface/block[@name=('dateOfEnactment','DateOfEnactment')] | preface/p[exists(docDate/@class='assentDate')]" />
+						<xsl:apply-templates select="preface/* except $date-of-enactment">
+							<xsl:with-param name="context" select="$child-context" tunnel="yes" />
+						</xsl:apply-templates>
+						<xsl:apply-templates select="$date-of-enactment">
 							<xsl:with-param name="context" select="$child-context" tunnel="yes" />
 						</xsl:apply-templates>
 					</xsl:when>
 					<xsl:otherwise>
-						<xsl:apply-templates select="coverPage/block[@name='number']">
+						<xsl:apply-templates select="preface/*">
 							<xsl:with-param name="context" select="$child-context" tunnel="yes" />
 						</xsl:apply-templates>
 					</xsl:otherwise>
 				</xsl:choose>
-				<xsl:apply-templates select="preface/longTitle">
-					<xsl:with-param name="context" select="$child-context" tunnel="yes" />
-				</xsl:apply-templates>
-				<xsl:apply-templates select="preface/block[@name=('dateOfEnactment','DateOfEnactment')]">
-					<xsl:with-param name="context" select="$child-context" tunnel="yes" />
-				</xsl:apply-templates>
 				<xsl:apply-templates select="preamble">
 					<xsl:with-param name="context" select="$child-context" tunnel="yes" />
 				</xsl:apply-templates>
@@ -79,7 +74,7 @@
 	</Number>
 </xsl:template>
 
-<xsl:template match="preface/block[@name=('dateOfEnactment','DateOfEnactment')]">
+<xsl:template match="preface/block[@name=('dateOfEnactment','DateOfEnactment')] | preface/p[exists(docDate/@class='assentDate')]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<DateOfEnactment>
 		<DateText>
