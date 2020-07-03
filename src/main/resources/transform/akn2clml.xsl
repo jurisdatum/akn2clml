@@ -218,6 +218,12 @@
 	<xsl:apply-templates />
 </xsl:template>
 
+<xsl:template match="inline[@name='dropCap']">
+	<Uppercase>
+		<xsl:apply-templates />
+	</Uppercase>
+</xsl:template>
+
 
 <!-- text -->
 
