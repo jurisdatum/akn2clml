@@ -40,7 +40,7 @@
 </xsl:function>
 
 <xsl:function name="local:target-is-schedule" as="xs:boolean?">
-	<xsl:param name="qs" as="element(quotedStructure)" />
+	<xsl:param name="qs" as="element()" />
 	<xsl:choose>
 		<xsl:when test="exists($qs/@ukl:Context)">
 			<xsl:value-of select="$qs/@ukl:Context = 'schedule'" />
@@ -299,7 +299,17 @@
 				<xsl:value-of select="if (exists(@ukl:SourceSubClass)) then @ukl:SourceSubClass else 'unknown'" />
 			</xsl:attribute>
 			<xsl:attribute name="Context">
-				<xsl:value-of select="if (exists(@ukl:Context)) then @ukl:Context else 'unknown'" />
+				<xsl:choose>
+					<xsl:when test="exists(@ukl:Context)">
+						<xsl:value-of select="@ukl:Context" />
+					</xsl:when>
+					<xsl:when test="local:target-is-schedule(.)">
+						<xsl:text>schedule</xsl:text>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:text>main</xsl:text>
+					</xsl:otherwise>
+				</xsl:choose>
 			</xsl:attribute>
 			<xsl:attribute name="Format">
 				<xsl:value-of select="local:get-structure-format(.)" />

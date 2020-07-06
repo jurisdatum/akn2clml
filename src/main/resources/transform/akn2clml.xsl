@@ -13,6 +13,7 @@
 <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes" xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation" />
 
 <xsl:strip-space elements="*" />
+<xsl:preserve-space elements="block p docTitle docNumber docDate num heading subheading ref def term abbr date inline b i u sup sub span a mod quotedText ins" />
 
 <xsl:include href="ldapp.xsl" />
 <xsl:include href="id.xsl" />
@@ -110,7 +111,7 @@
 	<xsl:choose>
 		<xsl:when test="exists(mod)">
 			<xsl:call-template name="wrap-as-necessary">
-				<xsl:with-param name="clml" as="element()+">
+				<xsl:with-param name="clml" as="node()+">
 					<xsl:call-template name="block-with-mod">
 						<xsl:with-param name="context" select="(local:get-block-wrapper($context), $context)" tunnel="yes" />
 					</xsl:call-template>
@@ -234,11 +235,12 @@
 			<xsl:call-template name="strip-punctuation-from-number" />
 		</xsl:when>
 		<xsl:otherwise>
+			<xsl:variable name="normalized" as="xs:string" select="normalize-space(.)" />
 			<xsl:if test="matches(., '^\s')">
 				<xsl:text> </xsl:text>
 			</xsl:if>
-			<xsl:value-of select="normalize-space(.)" />
-			<xsl:if test="matches(., '\s$')">
+			<xsl:value-of select="$normalized" />
+			<xsl:if test="matches(., '\s$') and $normalized">
 				<xsl:text> </xsl:text>
 			</xsl:if>
 		</xsl:otherwise>

@@ -154,7 +154,7 @@
 </xsl:function>
 
 <xsl:template name="wrap-as-necessary">
-	<xsl:param name="clml" as="element()+" />
+	<xsl:param name="clml" as="node()+" />
 	<xsl:param name="context" as="xs:string+" tunnel="yes" />
 	<xsl:variable name="wrapper" as="xs:string?" select="local:get-wrapper(local-name($clml[1]), $context)" />
 	<xsl:choose>
