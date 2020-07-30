@@ -5,14 +5,27 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs local">
+	exclude-result-prefixes="xs ukl local">
 
 
 <xsl:function name="local:is-ordered" as="xs:boolean">
 	<xsl:param name="list" as="element(blockList)" />
 	<xsl:variable name="items" as="element()*" select="$list/*" />
 	<xsl:choose>
+		<xsl:when test="$list/@ukl:Name = 'OrderedList'">
+			<xsl:sequence select="true()" />
+		</xsl:when>
+		<xsl:when test="$list/@ukl:Name = 'UnorderedList'">
+			<xsl:sequence select="false()" />
+		</xsl:when>
+		<xsl:when test="tokenize($list/@class, ' ') = 'ordered'">
+			<xsl:sequence select="true()" />
+		</xsl:when>
+		<xsl:when test="tokenize($list/@class, ' ') = 'unordered'">
+			<xsl:sequence select="false()" />
+		</xsl:when>
 		<xsl:when test="some $item in $items satisfies empty($item/num)">
 			<xsl:sequence select="false()" />
 		</xsl:when>
@@ -68,7 +81,14 @@
 <xsl:function name="local:get-decoration-from-list" as="xs:string">
 	<xsl:param name="list" as="element(blockList)" />
 	<xsl:param name="ordered" as="xs:boolean" />
-	<xsl:sequence select="local:get-decoration-from-numbered-things($list/item)" />
+	<xsl:choose>
+		<xsl:when test="exists($list/@ukl:Decoration)">
+			<xsl:sequence select="string($list/@ukl:Decoration)" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="local:get-decoration-from-numbered-things($list/item)" />
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:function>
 
 <xsl:function name="local:get-ordered-list-type-from-numbered-things" as="xs:string?">
@@ -140,7 +160,14 @@
 <xsl:function name="local:get-type-of-ordered-list" as="xs:string?">
 	<xsl:param name="list" as="element(blockList)" />
 	<xsl:param name="decor" as="xs:string" />
-	<xsl:sequence select="local:get-ordered-list-type-from-numbered-things($list/item, $decor)" />
+	<xsl:choose>
+		<xsl:when test="exists($list/@ukl:Type)">
+			<xsl:sequence select="string($list/@ukl:Type)" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="local:get-ordered-list-type-from-numbered-things($list/item, $decor)" />
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:function>
 
 <xsl:template match="blockList">
@@ -394,6 +421,47 @@
 
 <xsl:template match="*" mode="list">
 	<xsl:apply-templates select="." />
+</xsl:template>
+
+
+<!-- CLML KeyLists -->
+
+<xsl:template match="blockList[@ukl:Name='KeyList']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:call-template name="wrap-as-necessary">
+		<xsl:with-param name="clml" as="element()">
+			<KeyList>
+				<xsl:if test="exists(@ukl:Separator)">
+					<xsl:attribute name="Separator">
+						<xsl:value-of select="@ukl:Separator" />
+					</xsl:attribute>
+				</xsl:if>
+				<xsl:apply-templates mode="key-list">
+					<xsl:with-param name="context" select="('KeyList', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</KeyList>
+		</xsl:with-param>
+	</xsl:call-template>
+</xsl:template>
+
+<xsl:template match="item" mode="key-list">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<KeyListItem>
+		<xsl:apply-templates select="heading" mode="key-list" />
+		<ListItem>
+			<xsl:apply-templates select="* except heading">
+			<xsl:with-param name="context" select="('ListItem', 'KeyListItem', $context)" tunnel="yes" />
+			</xsl:apply-templates>
+		</ListItem>
+	</KeyListItem>
+</xsl:template>
+
+<xsl:template match="heading" mode="key-list">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<Key>
+		<xsl:apply-templates>
+		</xsl:apply-templates>
+	</Key>
 </xsl:template>
 
 </xsl:transform>

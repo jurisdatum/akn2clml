@@ -53,6 +53,9 @@
 				</xsl:apply-templates>
 			</SecondaryPrelims>
 		</xsl:when>
+		<xsl:when test="$head = 'EURetained'">
+			<xsl:call-template name="eu-prelims" />
+		</xsl:when>
 	</xsl:choose>
 </xsl:template>
 
@@ -87,17 +90,22 @@
 
 <xsl:template match="preface/longTitle">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<LongTitle>
-		<xsl:apply-templates select="p/node()">
-			<xsl:with-param name="context" select="('LongTitle', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</LongTitle>
-	<xsl:if test="count(p) != 1">
-		<xsl:message terminate="yes" />
-	</xsl:if>
-	<xsl:if test="exists(node()[not(self::p or self::text()[not(normalize-space())])])">
-		<xsl:message terminate="yes" />
-	</xsl:if>
+	<xsl:choose>
+		<xsl:when test="count(*) eq 1">
+			<LongTitle>
+				<xsl:apply-templates select="*/node()">
+					<xsl:with-param name="context" select="('LongTitle', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</LongTitle>
+		</xsl:when>
+		<xsl:otherwise>
+			<MultilineTitle>
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="('MultilineTitle', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</MultilineTitle>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 
@@ -331,8 +339,7 @@
 	</Draft>
 </xsl:template>
 
-
-<xsl:template match="preamble/blockContainer[not(@class=('P3'))]">
+<xsl:template match="preamble/blockContainer[empty(child::num)]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<P>
 		<xsl:apply-templates>

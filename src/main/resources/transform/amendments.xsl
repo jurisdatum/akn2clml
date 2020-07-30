@@ -16,13 +16,28 @@
 	<xsl:param name="qs" as="element(quotedStructure)" />
 	<xsl:choose>
 		<xsl:when test="exists($qs/@ukl:TargetClass)">
-			<xsl:value-of select="$qs/@ukl:TargetClass" />
+			<xsl:sequence select="$qs/@ukl:TargetClass" />
 		</xsl:when>
 		<xsl:when test="exists($qs/@uk:docName)">
-			<xsl:value-of select="local:category-from-short-type($qs/@uk:docName)" />
+			<xsl:sequence select="local:category-from-short-type($qs/@uk:docName)" />
 		</xsl:when>
-		<xsl:when test="exists($qs/@ukl2:docName)">
-			<xsl:value-of select="local:category-from-short-type($qs/@ukl2:docName)" />
+		<xsl:when test="exists($qs/@ukl2:docName)">	<!-- legacy for LDAPP error -->
+			<xsl:sequence select="local:category-from-short-type($qs/@ukl2:docName)" />
+		</xsl:when>
+	</xsl:choose>
+</xsl:function>
+
+<xsl:function name="local:get-source-class" as="xs:string?">
+	<xsl:param name="es" as="element(embeddedStructure)" />
+	<xsl:choose>
+		<xsl:when test="exists($es/@ukl:SourceClass)">
+			<xsl:sequence select="$es/@ukl:SourceClass" />
+		</xsl:when>
+		<xsl:when test="exists($es/@uk:docName)">
+			<xsl:sequence select="local:category-from-short-type($es/@uk:docName)" />
+		</xsl:when>
+		<xsl:when test="exists($es/@ukl2:docName)">	<!-- legacy for LDAPP error -->
+			<xsl:sequence select="local:category-from-short-type($es/@ukl2:docName)" />
 		</xsl:when>
 	</xsl:choose>
 </xsl:function>

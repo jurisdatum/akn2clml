@@ -35,6 +35,7 @@
 <xsl:include href="changes.xsl" />
 <xsl:include href="math.xsl" />
 <xsl:include href="resources.xsl" />
+<xsl:include href="euretained.xsl" />
 
 
 <xsl:template match="/akomaNtoso">
@@ -63,6 +64,9 @@
 			<xsl:when test="$doc-category = 'secondary'">
 				<xsl:text>Secondary</xsl:text>
 			</xsl:when>
+			<xsl:when test="$doc-category = 'euretained'">
+				<xsl:text>EURetained</xsl:text>
+			</xsl:when>
 		</xsl:choose>
 	</xsl:variable>
 	<xsl:element name="{ $name }">
@@ -87,16 +91,23 @@
 
 <xsl:template match="body">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<Body>
-		<xsl:call-template name="add-fragment-attributes" />
-		<xsl:apply-templates select="*[not(self::hcontainer[@name='schedules'])]">
-			<xsl:with-param name="context" select="('Body', $context)" tunnel="yes" />
-		</xsl:apply-templates>
-	</Body>
-	<xsl:if test="exists(hcontainer[@name='schedules']/following-sibling::node())">
-		<xsl:message terminate="yes" />
-	</xsl:if>
-	<xsl:apply-templates select="hcontainer[@name='schedules']" />
+	<xsl:choose>
+		<xsl:when test="$context[1] = 'EURetained'">
+			<xsl:call-template name="eu-body" />
+		</xsl:when>
+		<xsl:otherwise>
+			<Body>
+				<xsl:call-template name="add-fragment-attributes" />
+				<xsl:apply-templates select="*[not(self::hcontainer[@name='schedules'])]">
+					<xsl:with-param name="context" select="('Body', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+				<xsl:if test="exists(hcontainer[@name='schedules']/following-sibling::node())">
+					<xsl:message terminate="yes" />
+				</xsl:if>
+			</Body>
+			<xsl:apply-templates select="hcontainer[@name='schedules']" />
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 
@@ -217,6 +228,24 @@
 <!-- there is no analog to an unqualified date -->
 <xsl:template match="date">
 	<xsl:apply-templates />
+</xsl:template>
+
+<xsl:template match="inline[@name='uppercase']">
+	<Uppercase>
+		<xsl:apply-templates />
+	</Uppercase>
+</xsl:template>
+
+<xsl:template match="inline[@name='strike']">
+	<Strike>
+		<xsl:apply-templates />
+	</Strike>
+</xsl:template>
+
+<xsl:template match="inline[@name='expanded']">
+	<Expanded>
+		<xsl:apply-templates />
+	</Expanded>
 </xsl:template>
 
 <xsl:template match="inline[@name='dropCap']">

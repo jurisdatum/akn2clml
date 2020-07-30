@@ -119,15 +119,46 @@
 	</xsl:choose>
 </xsl:function>
 
+<!-- better would be to pass this down as a tunnel parameter as in akn2html -->
 <xsl:function name="local:get-applicable-doc-class" as="xs:string">
 	<xsl:param name="e" as="element()" />
 	<xsl:variable name="qs" as="element()?" select="$e/ancestor::quotedStructure[1]" />
 	<xsl:choose>
 		<xsl:when test="exists($qs)">
-			<xsl:sequence select="local:get-target-class($qs)" />
+			<xsl:variable name="qs-class" as="xs:string?" select="local:get-target-class($qs)" />
+			<xsl:choose>
+				<xsl:when test="empty($qs-class)">
+					<xsl:sequence select="$doc-category" />
+				</xsl:when>
+				<xsl:when test="$qs-class = 'unknown'">
+					<xsl:sequence select="$doc-category" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:sequence select="$qs-class" />
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:when>
 		<xsl:otherwise>
-			<xsl:sequence select="$doc-category" />
+			<xsl:variable name="es" as="element()?" select="$e/ancestor::embeddedStructure[1]" />
+			<xsl:choose>
+				<xsl:when test="exists($es)">
+					<xsl:variable name="es-class" as="xs:string?" select="local:get-source-class($es)" />
+					<xsl:choose>
+						<xsl:when test="empty($es-class)">
+							<xsl:sequence select="$doc-category" />
+						</xsl:when>
+						<xsl:when test="$es-class = 'unknown'">
+							<xsl:sequence select="$doc-category" />
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:sequence select="$es-class" />
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:sequence select="$doc-category" />
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:function>
@@ -275,15 +306,23 @@
 	</xsl:element>
 </xsl:template>
 
-<xsl:template match="part">
+<xsl:template match="title">	<!-- for EU Titles -->
 	<xsl:call-template name="big-level">
-		<xsl:with-param name="name" select="'Part'" />
+		<xsl:with-param name="name" select="'EUTitle'" />
+	</xsl:call-template>
+</xsl:template>
+
+<xsl:template match="part">
+	<xsl:variable name="effective-document-category" as="xs:string" select="local:get-applicable-doc-class(.)" />
+	<xsl:call-template name="big-level">
+		<xsl:with-param name="name" select="if ($effective-document-category = 'euretained') then 'EUPart' else 'Part'" />
 	</xsl:call-template>
 </xsl:template>
 
 <xsl:template match="chapter">
+	<xsl:variable name="effective-document-category" as="xs:string" select="local:get-applicable-doc-class(.)" />
 	<xsl:call-template name="big-level">
-		<xsl:with-param name="name" select="'Chapter'" />
+		<xsl:with-param name="name" select="if ($effective-document-category = 'euretained') then 'EUChapter' else 'Chapter'" />
 	</xsl:call-template>
 </xsl:template>
 
@@ -293,9 +332,21 @@
 	</xsl:call-template>
 </xsl:template>
 
+<xsl:template match="section[local:get-applicable-doc-class(.)='euretained']">
+	<xsl:call-template name="big-level">
+		<xsl:with-param name="name" select="'EUSection'" />
+	</xsl:call-template>
+</xsl:template>
+
 <xsl:template match="subsection[local:get-applicable-doc-class(.)='secondary']">
 	<xsl:call-template name="big-level">
 		<xsl:with-param name="name" select="'PsubBlock'" />
+	</xsl:call-template>
+</xsl:template>
+
+<xsl:template match="subsection[local:get-applicable-doc-class(.)='euretained']">
+	<xsl:call-template name="big-level">
+		<xsl:with-param name="name" select="'EUSubsection'" />
 	</xsl:call-template>
 </xsl:template>
 
@@ -384,7 +435,7 @@
 	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="section | article | rule | hcontainer[@name='regulation'] | hcontainer[@name='scheduleParagraph'] | hcontainer[@name='direction']">
+<xsl:template match="section | article | rule | hcontainer[@name='regulation'] | hcontainer[@name='scheduleParagraph'] | hcontainer[@name='direction']" name="P1">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:choose>
 		<xsl:when test="exists(heading) and exists(num)">
@@ -438,7 +489,7 @@
 	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="subsection | hcontainer[@name='SIParagraph']">
+<xsl:template match="subsection | hcontainer[@name='SIParagraph']" name="P2">	<!-- legacy -->
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="clml" as="element()">
 		<xsl:choose>
@@ -512,7 +563,18 @@
 	</xsl:choose>
 </xsl:function>
 
-<xsl:template match="paragraph | subparagraph | level | hcontainer[@name=('subsubparagraph','step')] | point">
+<xsl:template match="paragraph">
+	<xsl:choose>
+		<xsl:when test="local:akn-is-within-schedule(.)">
+			<xsl:call-template name="P1" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:call-template name="P2" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
+
+<xsl:template match="subparagraph | level | hcontainer[@name=('subsubparagraph','step')] | point">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string" select="local:get-structure-name(., $context)" />
 	<xsl:if test="$name = ''">
@@ -751,20 +813,26 @@
 	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:variable name="name" as="xs:string">
 		<xsl:choose>
+			<xsl:when test="exists(@ukl:Name)">
+				<xsl:sequence select="string(@ukl:Name)" />
+			</xsl:when>
 			<xsl:when test="$head = ('Part', 'Chapter', 'Pblock', 'PsubBlock')">
-				<xsl:text>Number</xsl:text>
+				<xsl:sequence select="'Number'" />
+			</xsl:when>
+			<xsl:when test="$head = ('EUPart', 'EUTitle', 'EUChapter', 'EUSection', 'EUSubsection', 'Division')">
+				<xsl:sequence select="'Number'" />
 			</xsl:when>
 			<xsl:when test="$head = ('P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7')">
-				<xsl:text>Pnumber</xsl:text>
+				<xsl:sequence select="'Pnumber'" />
 			</xsl:when>
 			<xsl:when test="$head = 'Schedule'">
-				<xsl:text>Number</xsl:text>
+				<xsl:sequence select="'Number'" />
 			</xsl:when>
 			<xsl:when test="$head = ('Tabular', 'Form', 'Footnote')">
-				<xsl:text>Number</xsl:text>
+				<xsl:sequence select="'Number'" />
 			</xsl:when>
 			<xsl:when test="@ukl:Context = ('Part', 'Chapter', 'Pblock')"> <!-- see asp/2000/5 FragmentNumber -->
-				<xsl:text>Number</xsl:text>
+				<xsl:sequence select="'Number'" />
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:message>

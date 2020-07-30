@@ -43,9 +43,9 @@
 			<xsl:when test="$doc-category = 'secondary'">
 				<xsl:call-template name="secondary-metadata" />
 			</xsl:when>
-			<xsl:otherwise>
-				<xsl:message terminate="yes" />
-			</xsl:otherwise>
+			<xsl:when test="$doc-category = 'euretained'">
+				<xsl:call-template name="eu-metadata" />
+			</xsl:when>
 		</xsl:choose>
 	</Metadata>
 </xsl:template>

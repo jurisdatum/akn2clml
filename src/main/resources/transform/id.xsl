@@ -6,8 +6,9 @@
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:uk="https://www.legislation.gov.uk/namespaces/UK-AKN"
+	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs uk local">
+	exclude-result-prefixes="xs uk html local">
 
 <xsl:key name="internal-refs" match="ref[starts-with(@href,'#')]" use="substring(@href, 2)" />
 <xsl:key name="internal-refs-by-guid" match="ref[exists(@uk:targetGuid)]" use="@uk:targetGuid" />
@@ -40,7 +41,7 @@
 	<xsl:variable name="num" as="element(num)">
 		<xsl:apply-templates select="$num" mode="remove-schedule-reference" />
 	</xsl:variable>
-	<xsl:sequence select="translate(lower-case(normalize-space(string($num))), ' ', '-')" />
+	<xsl:sequence select="translate(lower-case(normalize-space(string($num))), ' &#160;&#8239;', '---')" />
 </xsl:function>
 
 <xsl:function name="local:make-id-from-number-2" as="xs:string">
@@ -49,10 +50,41 @@
 	<xsl:sequence select="concat($prefix, '-', local:strip-punctuation-from-number(string($num)))" />
 </xsl:function>
 
+<xsl:function name="local:make-id-from-p1-number" as="xs:string">
+	<xsl:param name="prefix" as="xs:string" />
+	<xsl:param name="num" as="element(num)" />
+	<xsl:variable name="stripped" as="xs:string" select="local:strip-punctuation-from-number(string($num))" />
+	<xsl:variable name="stripped" as="xs:string" select="translate($stripped, '&#160;&#8239;', '  ')" />	<!-- eudn/2019/15, eur/2019/2176 -->
+	<xsl:variable name="stripped" as="xs:string" select="if (contains($stripped, ' ')) then substring-after($stripped, ' ') else $stripped" />
+	<xsl:sequence select="concat($prefix, '-', $stripped)" />
+</xsl:function>
+
+<xsl:function name="local:make-schedule-id-from-number" as="xs:string">
+	<xsl:param name="num" as="element(num)" />
+	<xsl:variable name="id" as="xs:string" select="local:make-id-from-number-1($num)" />
+	<xsl:choose>
+		<xsl:when test="starts-with($id, 'schedule')">
+			<xsl:sequence select="$id" />
+		</xsl:when>
+		<xsl:when test="starts-with($id, 'annex')">
+			<xsl:sequence select="$id" />
+		</xsl:when>
+		<xsl:when test="$doc-category = 'euretained'">
+			<xsl:sequence select="concat('annex-', $id)" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="concat('schedule-', $id)" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
 <xsl:function name="local:make-internal-id" as="xs:string">
 	<xsl:param name="e" as="element()" />
 	<xsl:choose>
 		<xsl:when test="exists($e/ancestor::quotedStructure)">
+			<xsl:sequence select="local:make-necessary-id($e)" />
+		</xsl:when>
+		<xsl:when test="exists($e/ancestor::hcontainer[@name='attachment'])">
 			<xsl:sequence select="local:make-necessary-id($e)" />
 		</xsl:when>
 		<xsl:when test="$e/self::part">
@@ -65,10 +97,10 @@
 			<xsl:sequence select="concat('crossheading-', translate(lower-case(normalize-space($e/heading)), '/ ():.,‘’“”''&quot;', '--'))" />
 		</xsl:when>
 		<xsl:when test="$e/self::section or $e/self::article or $e/self::rule">
-			<xsl:sequence select="concat(local-name($e), '-', local:strip-punctuation-from-number(string($e/num)))" />
+			<xsl:sequence select="local:make-id-from-p1-number(local-name($e), $e/num)" />
 		</xsl:when>
 		<xsl:when test="$e/self::hcontainer[@name='regulation']">
-			<xsl:sequence select="concat($e/@name, '-', local:strip-punctuation-from-number(string($e/num)))" />
+			<xsl:sequence select="local:make-id-from-p1-number($e/@name, $e/num)" />
 		</xsl:when>
 		<xsl:when test="$e/self::hcontainer[@name='scheduleParagraph'] or $e/self::paragraph[@class='schProv1']">
 			<xsl:sequence select="concat(local:make-internal-id($e/ancestor::hcontainer[@name='schedule']), '-paragraph-', local:strip-punctuation-from-number(string($e/num)))" />
@@ -101,7 +133,20 @@
 			<xsl:sequence select="concat(local:make-internal-id($parent), '-', local:strip-punctuation-from-number(string($e/num)))" />
 		</xsl:when>
 		<xsl:when test="$e/self::hcontainer[@name='schedule']">
-			<xsl:sequence select="local:make-id-from-number-1($e/num)" />
+			<xsl:sequence select="local:make-schedule-id-from-number($e/num)" />
+		</xsl:when>
+		<xsl:when test="$e/self::hcontainer[@name='division']">
+			<xsl:variable name="parent" as="element()" select="$e/parent::*" />
+			<xsl:variable name="parent-id" as="xs:string" select="local:make-internal-id($parent)" />
+			<xsl:variable name="position" as="xs:integer" select="count($e/preceding-sibling::*) + 1" />
+			<xsl:choose>
+				<xsl:when test="$parent/self::hcontainer[@name='division']">
+					<xsl:sequence select="concat($parent-id, '-', string($position))" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:sequence select="concat($parent-id, '-division-', string($position))" />
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:sequence select="generate-id($e)" />
@@ -129,6 +174,15 @@
 				<xsl:sequence select="local:element-id-is-necessary($e)" />
 			</xsl:when>
 			<xsl:when test="$e/self::hcontainer[@name='schedules']">
+				<xsl:sequence select="local:element-id-is-necessary($e)" />
+			</xsl:when>
+			<xsl:when test="exists($e/self::hcontainer[@name='attachments'])">
+				<xsl:sequence select="local:element-id-is-necessary($e)" />
+			</xsl:when>
+			<xsl:when test="exists($e/ancestor-or-self::hcontainer[@name='attachment'])">
+				<xsl:sequence select="local:element-id-is-necessary($e)" />
+			</xsl:when>
+			<xsl:when test="exists($e/ancestor::html:*)">
 				<xsl:sequence select="local:element-id-is-necessary($e)" />
 			</xsl:when>
 			<xsl:otherwise>

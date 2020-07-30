@@ -18,7 +18,10 @@
 		<xsl:when test="$name = ('Pblock', 'PsubBlock')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
-		<xsl:when test="$name = ('P1group', 'P1', 'P2group', 'P2', 'P3', 'P3group', 'P4', 'P5', 'P6', 'P7', 'P')">
+		<xsl:when test="$name = 'Division'">
+			<xsl:value-of select="true()" />
+		</xsl:when>
+		<xsl:when test="$name = ('P1group', 'P1', 'P2group', 'P2', 'P3group', 'P3', 'P4', 'P5', 'P6', 'P7', 'P')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
 		<xsl:otherwise>
@@ -30,7 +33,7 @@
 <xsl:function name="local:clml-element-is-block" as="xs:boolean">
 	<xsl:param name="name" as="xs:string" />
 	<xsl:choose>
-		<xsl:when test="$name = ('OrderedList', 'UnorderedList', 'Tabular', 'Figure', 'Formula', 'BlockAmendment', 'BlockExtract', 'BlockText', 'Text')">
+		<xsl:when test="$name = ('OrderedList', 'UnorderedList', 'KeyList', 'Tabular', 'Figure', 'Formula', 'BlockAmendment', 'BlockExtract', 'BlockText', 'Text')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
 		<xsl:otherwise>
@@ -104,6 +107,12 @@
 		<xsl:when test="$head = 'EnactingText'">
 			<xsl:text>Para</xsl:text>
 		</xsl:when>
+		<xsl:when test="$head = 'EUPreamble'">
+			<xsl:text>P</xsl:text>
+		</xsl:when>
+		<xsl:when test="$head = 'Division'">
+			<xsl:text>Para</xsl:text>
+		</xsl:when>
 		<xsl:when test="$head = ('BlockText', 'ListItem', 'FootnoteText', 'Commentary', 'TableText', 'th', 'td')">
 			<xsl:text>Para</xsl:text>
 		</xsl:when>
@@ -118,6 +127,9 @@
 		</xsl:when>
 		<xsl:when test="$head = ('ExplanatoryNotes', 'EarlierOrders')">
 			<xsl:text>P</xsl:text>
+		</xsl:when>
+		<xsl:when test="$head = 'EUBody'">	<!-- for attachments, eudr/2019/1 -->
+			<xsl:sequence select="'P'" />
 		</xsl:when>
 	</xsl:choose>
 </xsl:function>
