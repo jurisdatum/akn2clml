@@ -565,16 +565,19 @@
 
 <xsl:template match="paragraph">
 	<xsl:choose>
+		<xsl:when test="@class = 'para1'">
+			<xsl:call-template name="level" />
+		</xsl:when>
 		<xsl:when test="local:akn-is-within-schedule(.)">
 			<xsl:call-template name="P1" />
 		</xsl:when>
 		<xsl:otherwise>
-			<xsl:call-template name="P2" />
+			<xsl:call-template name="level" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="subparagraph | level | hcontainer[@name=('subsubparagraph','step')] | point">
+<xsl:template match="subparagraph | level | hcontainer[@name=('subsubparagraph','step')] | point" name="level">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string" select="local:get-structure-name(., $context)" />
 	<xsl:if test="$name = ''">

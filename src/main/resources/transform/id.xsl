@@ -119,7 +119,7 @@
 			<xsl:sequence select="concat(local:make-internal-id($parent), '-', local:strip-punctuation-from-number(string($e/num)))" />
 		</xsl:when>
 		<!-- legacy -->
-		<xsl:when test="$e/self::hcontainer[@name='SIParagraph'] or $e/self::subsubparagraph or $e/self::subsubsubparagraph or $e/self::clause or $e/self::subclause">
+		<xsl:when test="$e/self::hcontainer[@name='SIParagraph'] or $e/self::hcontainer[@name='subsubparagraph'] or $e/self::hcontainer[@name='subsubsubparagraph'] or $e/self::clause or $e/self::subclause">
 			<xsl:variable name="parent" as="element()">
 				<xsl:choose>
 					<xsl:when test="$e/parent::*/self::hcontainer[@name=('wrapper1', 'wrapper2', 'P2group')]">
@@ -131,6 +131,21 @@
 				</xsl:choose>
 			</xsl:variable>
 			<xsl:sequence select="concat(local:make-internal-id($parent), '-', local:strip-punctuation-from-number(string($e/num)))" />
+		</xsl:when>
+		<xsl:when test="$e/self::hcontainer[@name='step']">
+			<xsl:variable name="number" as="xs:string">
+				<xsl:choose>
+					<xsl:when test="starts-with($e/num, 'step ')">
+						<xsl:sequence select="normalize-space(substring-after($e/num, ' '))" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:sequence select="string(count($e/preceding-sibling::hcontainer) + 1)" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:variable name="parent" as="element()" select="$e/parent::*" />
+			<xsl:variable name="parent-id" as="xs:string" select="local:make-internal-id($parent)" />
+			<xsl:sequence select="concat($parent-id, '-', $number)" />
 		</xsl:when>
 		<xsl:when test="$e/self::hcontainer[@name='schedule']">
 			<xsl:sequence select="local:make-schedule-id-from-number($e/num)" />
