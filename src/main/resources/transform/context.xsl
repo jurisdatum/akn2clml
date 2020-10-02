@@ -12,13 +12,13 @@
 <xsl:function name="local:clml-element-is-structural" as="xs:boolean">
 	<xsl:param name="name" as="xs:string" />
 	<xsl:choose>
-		<xsl:when test="$name = ('Part', 'Chapter')">
+		<xsl:when test="$name = ('Group', 'Part', 'Chapter')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
 		<xsl:when test="$name = ('Pblock', 'PsubBlock')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
-		<xsl:when test="$name = 'Division'">
+		<xsl:when test="$name = ('EUPart', 'EUTitle', 'EUChapter', 'EUSection', 'EUSubsection', 'Division')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
 		<xsl:when test="$name = ('P1group', 'P1', 'P2group', 'P2', 'P3group', 'P3', 'P4', 'P5', 'P6', 'P7', 'P')">
@@ -46,13 +46,13 @@
 	<xsl:param name="context" as="xs:string+" />
 	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:choose>
-		<xsl:when test="$head = 'P1'">
+		<xsl:when test="$head = ('P1', 'P1group')">
 			<xsl:text>P1para</xsl:text>
 		</xsl:when>
-		<xsl:when test="$head = 'P2'">
+		<xsl:when test="$head = ('P2', 'P2group')">
 			<xsl:text>P2para</xsl:text>
 		</xsl:when>
-		<xsl:when test="$head = 'P3'">
+		<xsl:when test="$head = ('P3', 'P3group')">
 			<xsl:text>P3para</xsl:text>
 		</xsl:when>
 		<xsl:when test="$head = 'P4'">
@@ -74,19 +74,22 @@
 	<xsl:param name="context" as="xs:string+" />
 	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:choose>
-		<xsl:when test="$head = ('Part', 'Chapter')">
+		<xsl:when test="$head = ('Body', 'EUBody')">
+			<xsl:sequence select="'P'" />
+		</xsl:when>
+		<xsl:when test="$head = ('Group', 'Part', 'Chapter')">
 			<xsl:text>P</xsl:text>
 		</xsl:when>
 		<xsl:when test="$head = 'P1group'">
 			<xsl:text>P</xsl:text>
 		</xsl:when>
-		<xsl:when test="$head = 'P1'">
+		<xsl:when test="$head = ('P1', 'P1group')">
 			<xsl:text>P1para</xsl:text>
 		</xsl:when>
-		<xsl:when test="$head = 'P2'">
+		<xsl:when test="$head = ('P2', 'P2group')">
 			<xsl:text>P2para</xsl:text>
 		</xsl:when>
-		<xsl:when test="$head = 'P3'">
+		<xsl:when test="$head = ('P3', 'P3group')">
 			<xsl:text>P3para</xsl:text>
 		</xsl:when>
 		<xsl:when test="$head = 'P4'">
@@ -110,10 +113,13 @@
 		<xsl:when test="$head = 'EUPreamble'">
 			<xsl:text>P</xsl:text>
 		</xsl:when>
+		<xsl:when test="$head = ('EUPart', 'EUTitle', 'EUChapter', 'EUSection', 'EUSubsection')">
+			<xsl:sequence select="'P'" />
+		</xsl:when>
 		<xsl:when test="$head = 'Division'">
 			<xsl:text>Para</xsl:text>
 		</xsl:when>
-		<xsl:when test="$head = ('BlockText', 'ListItem', 'FootnoteText', 'Commentary', 'TableText', 'th', 'td')">
+		<xsl:when test="$head = ('BlockText', 'ListItem', 'FootnoteText', 'MarginNote', 'Commentary', 'TableText', 'th', 'td')">
 			<xsl:text>Para</xsl:text>
 		</xsl:when>
 		<xsl:when test="$head = 'BlockExtract'">
@@ -128,9 +134,6 @@
 		<xsl:when test="$head = ('ExplanatoryNotes', 'EarlierOrders')">
 			<xsl:text>P</xsl:text>
 		</xsl:when>
-		<xsl:when test="$head = 'EUBody'">	<!-- for attachments, eudr/2019/1 -->
-			<xsl:sequence select="'P'" />
-		</xsl:when>
 	</xsl:choose>
 </xsl:function>
 
@@ -141,15 +144,8 @@
 		<xsl:when test="local:clml-element-is-structural($clml)">
 			<xsl:sequence select="local:get-structure-wrapper($context)" />
 		</xsl:when>
-		<xsl:when test="$clml = ('Tabular', 'Figure', 'Form')">
-			<xsl:choose>
-				<xsl:when test="$context[1] = 'ScheduleBody'">
-					<xsl:sequence select="()" />
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:sequence select="local:get-block-wrapper($context)" />
-				</xsl:otherwise>
-			</xsl:choose>
+		<xsl:when test="$clml = ('Tabular', 'Figure', 'Form') and $context[1] = 'ScheduleBody'">
+			<xsl:sequence select="()" />
 		</xsl:when>
 		<xsl:when test="local:clml-element-is-block($clml)">
 			<xsl:sequence select="local:get-block-wrapper($context)" />

@@ -54,7 +54,7 @@
 	<xsl:param name="prefix" as="xs:string" />
 	<xsl:param name="num" as="element(num)" />
 	<xsl:variable name="stripped" as="xs:string" select="local:strip-punctuation-from-number(string($num))" />
-	<xsl:variable name="stripped" as="xs:string" select="translate($stripped, '&#160;&#8239;', '  ')" />	<!-- eudn/2019/15, eur/2019/2176 -->
+	<xsl:variable name="stripped" as="xs:string" select="translate($stripped, '&#160;&#8239;—', '  -')" />	<!-- eudn/2019/15, eur/2019/2176, ukpga/Vict/58-59/16 -->
 	<xsl:variable name="stripped" as="xs:string" select="if (contains($stripped, ' ')) then substring-after($stripped, ' ') else $stripped" />
 	<xsl:sequence select="concat($prefix, '-', $stripped)" />
 </xsl:function>
@@ -88,21 +88,97 @@
 			<xsl:sequence select="local:make-necessary-id($e)" />
 		</xsl:when>
 		<xsl:when test="$e/self::part">
-			<xsl:sequence select="local:make-id-from-number-1($e/num)" />
+			<xsl:variable name="id" as="xs:string">
+				<xsl:choose>
+					<xsl:when test="exists($e/num)">
+						<xsl:sequence select="local:make-id-from-number-1($e/num)" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:sequence select="concat('part-', string(count($e/preceding-sibling::part) + 1))" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:choose>
+				<xsl:when test="local:akn-is-within-schedule($e)">
+					<xsl:variable name="parent" as="element()" select="$e/parent::*" />
+					<xsl:variable name="parent-id" as="xs:string" select="local:make-internal-id($parent)" />
+					<xsl:sequence select="concat($parent-id, '-', $id)" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:sequence select="$id" />
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:when>
 		<xsl:when test="$e/self::chapter">
-			<xsl:sequence select="local:make-id-from-number-1($e/num)" />
+			<xsl:variable name="id" as="xs:string">
+				<xsl:choose>
+					<xsl:when test="exists($e/num)">
+						<xsl:sequence select="local:make-id-from-number-1($e/num)" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:sequence select="concat('chapter-', string(count($e/preceding-sibling::chapter) + 1))" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:choose>
+				<xsl:when test="exists($e/parent::Part) or local:akn-is-within-schedule($e)">
+					<xsl:variable name="parent" as="element()" select="$e/parent::*" />
+					<xsl:variable name="parent-id" as="xs:string" select="local:make-internal-id($parent)" />
+					<xsl:sequence select="concat($parent-id, '-', $id)" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:sequence select="$id" />
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:when>
 		<xsl:when test="$e/self::hcontainer[@name=('crossheading','subheading')]">
-			<xsl:sequence select="concat('crossheading-', translate(lower-case(normalize-space($e/heading)), '/ ():.,‘’“”''&quot;', '--'))" />
+			<xsl:sequence select="concat('crossheading-', translate(lower-case(normalize-space($e/heading[1])), '/ ():.,‘’“”''&quot;', '--'))" />
 		</xsl:when>
 		<xsl:when test="$e/self::section or $e/self::article or $e/self::rule">
-			<xsl:sequence select="local:make-id-from-p1-number(local-name($e), $e/num)" />
+			<xsl:choose>
+				<xsl:when test="starts-with($e/@eId, 'section-') or starts-with($e/@eId, 'article-') or starts-with($e/@eId, 'rule-')">
+					<xsl:sequence select="string($e/@eId)" />
+				</xsl:when>
+				<xsl:when test="exists($e/num)">
+					<xsl:sequence select="local:make-id-from-p1-number(local-name($e), $e/num)" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:variable name="preceding" as="element()?" select="$e/preceding-sibling::*[1]" />
+					<xsl:choose>
+						<xsl:when test="exists($preceding)">
+							<xsl:variable name="preceding-id" as="xs:string" select="local:make-internal-id($preceding)" />
+							<xsl:sequence select="concat($preceding-id, '-bis')" />
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:sequence select="concat(local-name($e), '-1')" />
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:when>
 		<xsl:when test="$e/self::hcontainer[@name='regulation']">
-			<xsl:sequence select="local:make-id-from-p1-number($e/@name, $e/num)" />
+			<xsl:choose>
+				<xsl:when test="starts-with($e/@eId, 'regulation-')">
+					<xsl:sequence select="string($e/@eId)" />
+				</xsl:when>
+				<xsl:when test="exists($e/num)">
+					<xsl:sequence select="local:make-id-from-p1-number($e/@name, $e/num)" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:variable name="preceding" as="element()?" select="$e/preceding-sibling::*[1]" />
+					<xsl:choose>
+						<xsl:when test="exists($preceding)">
+							<xsl:variable name="preceding-id" as="xs:string" select="local:make-internal-id($preceding)" />
+							<xsl:sequence select="concat($preceding-id, '-bis')" />
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:sequence select="'regulation-1'" />
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:when>
-		<xsl:when test="$e/self::hcontainer[@name='scheduleParagraph'] or $e/self::paragraph[@class='schProv1']">
+		<xsl:when test="$e/self::paragraph[local:akn-is-within-schedule(.)] or $e/self::hcontainer[@name='scheduleParagraph'] or $e/self::paragraph[@class='schProv1']">
 			<xsl:sequence select="concat(local:make-internal-id($e/ancestor::hcontainer[@name='schedule']), '-paragraph-', local:strip-punctuation-from-number(string($e/num)))" />
 		</xsl:when>
 		<xsl:when test="$e/self::subsection or $e/self::paragraph or $e/self::subparagraph or $e/self::level">
@@ -150,8 +226,26 @@
 		<xsl:when test="$e/self::hcontainer[@name='schedule']">
 			<xsl:sequence select="local:make-schedule-id-from-number($e/num)" />
 		</xsl:when>
+		<xsl:when test="$e/self::hcontainer[@name='appendix']">
+			<xsl:variable name="number" as="xs:string">
+				<xsl:sequence select="string(count($e/preceding-sibling::hcontainer[@name='appendix']) + 1)" />
+			</xsl:variable>
+			<xsl:variable name="parent" as="element()" select="$e/parent::*" />
+			<xsl:variable name="parent-id" as="xs:string" select="local:make-internal-id($parent)" />
+			<xsl:sequence select="concat($parent-id, '-appendix-', $number)" />
+		</xsl:when>
 		<xsl:when test="$e/self::hcontainer[@name='division']">
 			<xsl:variable name="parent" as="element()" select="$e/parent::*" />
+			<xsl:variable name="parent" as="element()">
+				<xsl:choose>
+					<xsl:when test="$parent/self::hcontainer[@name=('wrapper1','wrapper2','scheduleBody','appendixBody')]">
+						<xsl:sequence select="$parent/parent::*" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:sequence select="$parent" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
 			<xsl:variable name="parent-id" as="xs:string" select="local:make-internal-id($parent)" />
 			<xsl:variable name="position" as="xs:integer" select="count($e/preceding-sibling::*) + 1" />
 			<xsl:choose>
@@ -163,6 +257,21 @@
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:when>
+		
+		<xsl:when test="$e/self::title">
+			<xsl:choose>
+				<xsl:when test="exists($e/ancestor::hcontainer[@name='schedule'])">
+					<xsl:variable name="id" as="xs:string" select="local:make-id-from-number-1($e/num)" />
+					<xsl:variable name="parent" as="element()" select="$e/parent::*" />
+					<xsl:variable name="parent-id" as="xs:string" select="local:make-internal-id($parent)" />
+					<xsl:sequence select="concat($parent-id, '-', $id)" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:sequence select="local:make-id-from-number-1($e/num)" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:when>
+		
 		<xsl:otherwise>
 			<xsl:sequence select="generate-id($e)" />
 		</xsl:otherwise>

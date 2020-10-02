@@ -49,6 +49,18 @@
 	</xsl:choose>
 </xsl:variable>
 
+<xsl:variable name="ldapp-doc-procedure-type" as="xs:string?" select="key('tlc', 'varProcedureType')/@showAs"/>
+<!--
+Draft Affirmative
+Made Affirmative
+Emergency Procedure
+Draft Negative
+Made Negative
+Made (laid for Parliament’s information)
+No procedure
+Other
+-->
+
 <xsl:variable name="ldapp-doc-year" as="xs:integer?">
 	<xsl:choose>
 		<xsl:when test="$doc-category = 'primary'">
@@ -236,5 +248,15 @@
 		<xsl:sequence select="(local:make-internal-id($from), local:make-internal-id($up-to))" />
 	</xsl:if>
 </xsl:function>
+
+
+<!-- suppress tables of contents -->
+
+<xsl:template match="toc" priority="100">
+	<xsl:if test="not(ldapp:is-ldapp(root(.)))">
+		<xsl:next-match />
+	</xsl:if>
+</xsl:template>
+
 
 </xsl:transform>

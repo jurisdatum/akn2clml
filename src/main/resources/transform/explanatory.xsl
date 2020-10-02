@@ -33,7 +33,7 @@
 	</Comment>
 </xsl:template>
 
-<xsl:template match="blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes','earlierOrders','commencementHistory')]//tblock[not(@class=('table','tabular'))]" priority="1">
+<xsl:template match="blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes','earlierOrders','commencementHistory')]//tblock[not(@class=('figure','image','table','tabular'))]" priority="1">
 	<xsl:call-template name="en-structure" />
 </xsl:template>
 

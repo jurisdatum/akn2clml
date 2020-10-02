@@ -15,7 +15,10 @@
 	<xsl:variable name="wrapper" as="xs:string?" select="local:get-wrapper('Tabular', $context)" />
 	<xsl:variable name="clml" as="element()">
 		<Tabular Orientation="{ if (exists(@ukl:Orientation)) then @ukl:Orientation else 'portrait' }">
-			<xsl:variable name="table-text" as="element(p)*" select="if (exists(*[not(self::p)])) then *[not(self::p)]/preceding-sibling::p else *" />
+			<xsl:apply-templates select="num | heading | subheading">
+				<xsl:with-param name="context" select="('Tabular', $wrapper, $context)" tunnel="yes" />
+			</xsl:apply-templates>
+			<xsl:variable name="table-text" as="element()*" select="foreign[1]/preceding-sibling::* except (num, heading, subheading)" />
 			<xsl:if test="exists($table-text)">
 				<TableText>
 					<xsl:apply-templates select="$table-text">
@@ -23,7 +26,7 @@
 					</xsl:apply-templates>
 				</TableText>
 			</xsl:if>
-			<xsl:apply-templates select="* except $table-text">
+			<xsl:apply-templates select="* except (num, heading, subheading, $table-text)">
 				<xsl:with-param name="context" select="('Tabular', $wrapper, $context)" tunnel="yes" />
 			</xsl:apply-templates>
 		</Tabular>
@@ -56,14 +59,40 @@
 
 <xsl:template match="html:tbody[1]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:call-template name="table-footnotes">
-		<xsl:with-param name="table" select="ancestor::html:table" />
-	</xsl:call-template>
+	<xsl:if test="empty(preceding-sibling::html:tfoot)">
+		<xsl:call-template name="table-footnotes">
+			<xsl:with-param name="table" select="ancestor::html:table[1]" />
+		</xsl:call-template>
+	</xsl:if>
 	<xsl:copy copy-namespaces="no">
 		<xsl:apply-templates select="@*" />
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="(local-name(.), $context)" tunnel="yes" />
 		</xsl:apply-templates>
+	</xsl:copy>
+</xsl:template>
+
+<xsl:template match="html:tfoot">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:copy copy-namespaces="no">
+		<xsl:apply-templates select="@*" />
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="(local-name(.), $context)" tunnel="yes" />
+		</xsl:apply-templates>
+
+		<xsl:variable name="table" as="element(html:table)" select="parent::*" />
+		<xsl:variable name="footnotes-in-table" as="element(authorialNote)*" select="$table/descendant::authorialNote[not(@placement='inline')]" />
+		<xsl:if test="exists($footnotes-in-table)">
+			<xsl:variable name="colspan" as="xs:integer" select="if (exists($table/html:colgroup)) then count($table/html:colgroup/html:col) else max($table/descendant::html:tr/count(html:td))" />
+			<xsl:for-each select="$footnotes-in-table" >
+				<tr xmlns="http://www.w3.org/1999/xhtml">
+					<td colspan="{ $colspan }">
+						<xsl:apply-templates select="." mode="footnote" />
+					</td>
+				</tr>
+			</xsl:for-each>
+		</xsl:if>
+
 	</xsl:copy>
 </xsl:template>
 
@@ -74,7 +103,7 @@
 
 <xsl:template name="table-footnotes">
 	<xsl:param name="table" as="element(html:table)" />
-	<xsl:variable name="footnotes-in-table" as="element(authorialNote)*" select="$table/descendant::authorialNote" />
+	<xsl:variable name="footnotes-in-table" as="element(authorialNote)*" select="$table/descendant::authorialNote[not(@placement='inline')]" />
 	<xsl:if test="exists($footnotes-in-table)">
 		<xsl:variable name="colspan" as="xs:integer" select="if (exists($table/html:colgroup)) then count($table/html:colgroup/html:col) else max($table/descendant::html:tr/count(html:td))" />
 		<tfoot xmlns="http://www.w3.org/1999/xhtml">
@@ -87,6 +116,10 @@
 			</xsl:for-each>
 		</tfoot>
 	</xsl:if>
+</xsl:template>
+
+<xsl:template match="html:tfoot//authorialNote[@ukl:Name='Footnote'][@placement='inline']">
+	<xsl:apply-templates select="." mode="footnote" />
 </xsl:template>
 
 

@@ -107,12 +107,19 @@
 				<xsl:variable name="parts" as="xs:string*" select="tokenize(., ' ')" />
 				<AlternativeNumber Category="{ $parts[1] }" Value="{ $parts[2] }" />
 			</xsl:for-each>
-		</xsl:if>
-		
-		<xsl:variable name="sifted" as="element(eventRef)?" select="/akomaNtoso/*/meta/lifecycle/eventRef[@eId = 'date-sifted']" />
+		</xsl:if>		
+<!--
+ 		<xsl:variable name="sifted" as="element(eventRef)?" select="/akomaNtoso/*/meta/lifecycle/eventRef[@eId = 'date-sifted']" />
 		<xsl:if test="exists($sifted)">
 			<Sifted Date="{ $sifted/@date }" />
-		</xsl:if>
+		</xsl:if> -->
+		<xsl:for-each select="/akomaNtoso/*/preface/container[@name='dates']/block[@name=('siftedDate','otherDate')][docDate]">
+			<Sifted>
+				<xsl:attribute name="Date">
+					<xsl:value-of select="substring(docDate/@date, 1, 10)" />	<!-- for LDAPP -->
+				</xsl:attribute>
+			</Sifted>
+		</xsl:for-each>
 
 		<Made>
 			<xsl:attribute name="Date">
@@ -130,7 +137,7 @@
 		<xsl:for-each select="/akomaNtoso/*/preface/container[@name='dates']/block[@name='laidDate'][docDate]">
 			<Laid>
 				<xsl:attribute name="Date">
-					<xsl:value-of select="substring(docDate/@date, 1, 10)" />
+					<xsl:value-of select="substring(docDate/@date, 1, 10)" />	<!-- for LDAPP -->
 				</xsl:attribute>
 				<xsl:attribute name="Class">
 					<xsl:variable name="event-ref" as="element(eventRef)?" select="key('id', substring(@refersTo, 2))" />
@@ -139,7 +146,7 @@
 						<xsl:when test="exists($source)">
 							<xsl:value-of select="$source/@showAs" />
 						</xsl:when>
-						<xsl:when test="$doc-short-type = ('uksi', 'ukdsi')">
+						<xsl:when test="$doc-short-type = ('uksi', 'ukdsi', 'nisi', 'uksro')">
 							<xsl:text>UnitedKingdomParliament</xsl:text>
 						</xsl:when>
 						<xsl:when test="$doc-short-type = ('ssi', 'sdsi')">
@@ -147,6 +154,9 @@
 						</xsl:when>
 						<xsl:when test="$doc-short-type = ('wsi', 'wdsi')">
 							<xsl:text>WelshAssembly</xsl:text>
+						</xsl:when>
+						<xsl:when test="$doc-short-type = ('nisr', 'nidsr', 'nisro')">
+							<xsl:text>NorthernIrelandAssembly</xsl:text>
 						</xsl:when>
 					</xsl:choose>
 				</xsl:attribute>
@@ -177,10 +187,10 @@
 	<xsl:variable name="restriction" as="element(restriction)?">
 		<xsl:choose>
 			<xsl:when test="exists($from/@eId)">
-				<xsl:sequence select="key('temporal-restriction', $from/@eId)" /> <!-- add [1] to guard against two elements having the same @id -->
+				<xsl:sequence select="key('temporal-restriction', $from/@eId)[1]" /> <!-- [1] protects against duplicate ids -->
 			</xsl:when>
 			<xsl:when test="$from/parent::akomaNtoso">
-				<xsl:sequence select="key('temporal-restriction', '')" />
+				<xsl:sequence select="key('temporal-restriction', '')[1]" />	<!-- for [1] see ukpga/Geo5/2-3/30 -->
 			</xsl:when>
 		</xsl:choose>
 	</xsl:variable>
@@ -211,10 +221,10 @@
 	<xsl:variable name="restriction" as="element(restriction)?">
 		<xsl:choose>
 			<xsl:when test="exists($from/@eId)">
-				<xsl:sequence select="key('extent-restriction', $from/@eId)" />
+				<xsl:sequence select="key('extent-restriction', $from/@eId)[1]" />	<!-- [1] protects against duplicate ids -->
 			</xsl:when>
 			<xsl:when test="$from/parent::akomaNtoso">
-				<xsl:sequence select="key('extent-restriction', '')" />
+				<xsl:sequence select="key('extent-restriction', '')[1]" />	<!-- [1] for id="" in ukla/Geo6/14/3 -->
 			</xsl:when>
 		</xsl:choose>
 	</xsl:variable>
@@ -237,7 +247,7 @@
 	<xsl:variable name="status" as="element(uk:status)?">
 		<xsl:choose>
 			<xsl:when test="exists($from/@eId)">
-				<xsl:sequence select="key('status', $from/@eId)" />
+				<xsl:sequence select="key('status', $from/@eId)[1]" />	<!-- [1] protects against duplicate ids -->
 			</xsl:when>
 			<xsl:when test="$from/parent::akomaNtoso">
 				<xsl:sequence select="key('status', '')" />
@@ -263,10 +273,10 @@
 	<xsl:variable name="confers-power" as="element(uk:confersPower)?">
 		<xsl:choose>
 			<xsl:when test="exists($from/@eId)">
-				<xsl:sequence select="key('confers-power', $from/@eId)" />
+				<xsl:sequence select="key('confers-power', $from/@eId)[1]" />	<!--  -->
 			</xsl:when>
 			<xsl:when test="$from/parent::akomaNtoso">
-				<xsl:sequence select="key('confers-power', '')" />
+				<xsl:sequence select="key('confers-power', '')[1]" />	<!--  -->
 			</xsl:when>
 		</xsl:choose>
 	</xsl:variable>
@@ -287,7 +297,7 @@
 	<xsl:variable name="match" as="element(uk:match)?">
 		<xsl:choose>
 			<xsl:when test="exists($from/@eId)">
-				<xsl:sequence select="key('match', $from/@eId)" />
+				<xsl:sequence select="key('match', $from/@eId)[1]" />	<!-- [1] protects against duplicate ids -->
 			</xsl:when>
 			<xsl:when test="$from/parent::akomaNtoso">
 				<xsl:sequence select="key('match', '')" />

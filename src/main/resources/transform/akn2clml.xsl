@@ -21,6 +21,7 @@
 <xsl:include href="metadata.xsl" />
 <xsl:include href="context.xsl" />
 <xsl:include href="prelims.xsl" />
+<xsl:include href="toc.xsl" />
 <xsl:include href="structure.xsl" />
 <xsl:include href="numbers.xsl" />
 <xsl:include href="lists.xsl" />
@@ -50,6 +51,7 @@
 			<xsl:call-template name="main" />
 		</xsl:if>
 		<xsl:call-template name="footnotes" />
+		<xsl:call-template name="margin-notes" />
 		<xsl:call-template name="resources" />
 		<xsl:call-template name="commentaries" />
 	</Legislation>
@@ -80,7 +82,7 @@
 			<xsl:with-param name="context" select="$name" tunnel="yes" />
 		</xsl:apply-templates>
 	</xsl:element>
-	<xsl:if test="exists(*[not(self::meta) and not(self::coverPage) and not(self::preface) and not(self::preamble) and not(self::body) and not(self::conclusions)])">
+	<xsl:if test="exists(*[not(self::meta) and not(self::coverPage) and not(self::preface) and not(self::preamble) and not(self::body) and not(self::conclusions) and not(self::components)])">
 		<xsl:message terminate="yes">
 		</xsl:message>
 	</xsl:if>
@@ -130,20 +132,47 @@
 			</xsl:call-template>
 		</xsl:when>
 		<xsl:when test="exists(embeddedStructure)">
-			<xsl:apply-templates />
+			<xsl:choose>
+				<xsl:when test="$context[1] = 'BlockAmendment'">
+					<Para>
+						<xsl:apply-templates>
+							<xsl:with-param name="context" select="('Para', $context)" tunnel="yes" />
+						</xsl:apply-templates>
+					</Para>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:apply-templates />
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:call-template name="create-element-and-wrap-as-necessary">
-				<xsl:with-param name="name" as="xs:string" select="'Text'" />
+				<xsl:with-param name="name" select="'Text'" />
 			</xsl:call-template>
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="blockContainer[@ukl:Name='BlockText']" priority="2">
-	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" as="xs:string" select="'BlockText'" />
-	</xsl:call-template>
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:choose>
+		<xsl:when test="$context[1] = ('BlockAmendment', 'td')">
+			<Para>
+				<BlockText>
+					<xsl:apply-templates>
+						<xsl:with-param name="context" select="('BlockText', 'Para', $context)" tunnel="yes" />
+					</xsl:apply-templates>
+				</BlockText>
+			</Para>
+		</xsl:when>
+		<xsl:otherwise>
+			<BlockText>
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="('BlockText', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</BlockText>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 
@@ -213,6 +242,12 @@
 	<Term>
 		<xsl:apply-templates />
 	</Term>
+</xsl:template>
+
+<xsl:template match="inline[@name='proviso']">
+	<Proviso>
+		<xsl:apply-templates />
+	</Proviso>
 </xsl:template>
 
 <xsl:template match="span">

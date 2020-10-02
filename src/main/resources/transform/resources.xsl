@@ -25,6 +25,7 @@
 		<xsl:sequence select="." />
 	</xsl:for-each-group>
 	<xsl:sequence select="//math:math[@altimg]" />
+	<xsl:sequence select="/akomaNtoso/*/components/component" />
 </xsl:variable>
 
 <xsl:function name="local:get-first-index-of-node" as="xs:integer?">
@@ -125,5 +126,37 @@
 	</xsl:apply-templates>
 </xsl:template>
 
+
+<!-- components / IncludedDocuments -->
+
+<xsl:template match="componentRef">
+	<xsl:variable name="id" as="xs:string" select="substring(@src, 2)" />
+	<xsl:variable name="resource" as="element()" select="key('id', $id)" />
+	<IncludedDocument ResourceRef="{ local:make-resource-id($resource) }" />
+</xsl:template>
+
+<xsl:template match="component" mode="resource">
+	<Resource id="r{format-number(position(),'00000')}">
+		<InternalVersion>
+			<XMLcontent>
+				<xsl:apply-templates mode="component">
+					<xsl:with-param name="context" select="('Resource')" tunnel="yes" />
+				</xsl:apply-templates>
+			</XMLcontent>
+		</InternalVersion>
+	</Resource>
+</xsl:template>
+
+<xsl:template match="toc" mode="component">
+	<xsl:apply-templates select="." />
+</xsl:template>
+
+<xsl:template match="interstitial | p" mode="component">
+	<xsl:apply-templates mode="component" />
+</xsl:template>
+
+<xsl:template match="subFlow" mode="component">
+	<xsl:apply-templates />
+</xsl:template>
 
 </xsl:transform>

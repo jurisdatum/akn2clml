@@ -12,11 +12,19 @@
 <xsl:template match="tblock[@class='form']">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<Form>
-		<xsl:apply-templates>
+		<xsl:apply-templates select="num | heading | subheading">
+			<xsl:with-param name="context" select="('Form', $context)" tunnel="yes" />
+		</xsl:apply-templates>
+		<xsl:apply-templates select="num/authorialNote[@class='referenceNote']" mode="reference" />
+		<xsl:apply-templates select="heading/authorialNote[@class='referenceNote']" mode="reference" />
+		<xsl:apply-templates select="* except (num, heading, subheading)">
 			<xsl:with-param name="context" select="('Form', $context)" tunnel="yes" />
 		</xsl:apply-templates>
 	</Form>
 </xsl:template>
+
+<xsl:template match="tblock[@class='form']/num/authorialNote[@class='referenceNote']" />
+<xsl:template match="tblock[@class='form']/heading/authorialNote[@class='referenceNote']" />
 
 <xsl:template match="tblock[@class='form']/heading">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
@@ -29,6 +37,12 @@
 
 <xsl:template match="tblock[@class='form']/p[exists(img) and (count(*) eq 1)]">
 	<IncludedDocument ResourceRef="{ local:make-resource-id(*) }" />
+</xsl:template>
+
+<xsl:template match="block[@name='reference']">	<!-- for forms with neither Number nor Title, e.g., uksi/1965/135 -->
+	<Reference>
+		<xsl:apply-templates />
+	</Reference>
 </xsl:template>
 
 </xsl:transform>

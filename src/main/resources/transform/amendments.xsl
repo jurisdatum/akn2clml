@@ -146,21 +146,6 @@
 			</xsl:choose>
 			<xsl:apply-templates select="quotedStructure/following-sibling::node()" />
 		</xsl:when>
-		<xsl:when test="exists(quotedText)">
-			<!-- text in between -->
-			<xsl:if test="count(quotedText) ne 1 or count(quotedStructure) ne 1 or empty(quotedText/following-sibling::quotedStructure)">
-				<xsl:message terminate="yes">
-					<xsl:sequence select="." />
-				</xsl:message>
-			</xsl:if>
-			<Text>
-				<xsl:apply-templates select="quotedStructure/preceding-sibling::node()" />
-			</Text>
-			<xsl:call-template name="block-amendment">
-				<xsl:with-param name="source" select="quotedStructure" />
-			</xsl:call-template>
-			<xsl:apply-templates select="quotedStructure/following-sibling::node()" />
-		</xsl:when>
 		<xsl:otherwise>
 			<xsl:variable name="qs1" as="element(quotedStructure)" select="quotedStructure[1]" />
 			<xsl:variable name="before" as="node()*" select="$qs1/preceding-sibling::node()" />
@@ -228,6 +213,9 @@
 					<xsl:with-param name="elements" select="$source/*" />
 				</xsl:call-template>
 			</xsl:when>
+			<xsl:when test="exists($source/tocItem) and (every $child in $source/* satisfies $child/self::tocItem)">
+				<xsl:call-template name="toc-items" />
+			</xsl:when>
 			<xsl:otherwise>
 				<xsl:apply-templates select="$source/*">
 					<xsl:with-param name="context" select="('BlockAmendment', $context)" tunnel="yes" />
@@ -238,55 +226,10 @@
 </xsl:template>
 
 <xsl:template match="quotedStructure">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<BlockAmendment>
-		<xsl:attribute name="TargetClass">
-			<xsl:value-of select="local:get-target-class(.)" />
-		</xsl:attribute>
-		<xsl:attribute name="TargetSubClass">
-			<xsl:value-of select="local:get-target-subclass(.)" />
-		</xsl:attribute>
-		<xsl:attribute name="Context">
-			<xsl:choose>
-				<xsl:when test="exists(@ukl:Context)">
-					<xsl:value-of select="@ukl:Context" />
-				</xsl:when>
-				<xsl:when test="local:target-is-schedule(.)">
-					<xsl:text>schedule</xsl:text>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:text>main</xsl:text>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:attribute>
-		<xsl:attribute name="Format">
-			<xsl:choose>
-				<xsl:when test="exists(@ukl:Format)">
-					<xsl:value-of select="@ukl:Format" />
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select="local:get-structure-format(.)" />
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:attribute>
-		<xsl:choose>
-			<xsl:when test="exists(*) and (every $child in * satisfies $child/self::hcontainer[@name='definition'])">
-				<xsl:call-template name="definition-list">
-					<xsl:with-param name="definitions" select="*" />
-				</xsl:call-template>
-			</xsl:when>
-			<xsl:when test="exists(hcontainer[@name='definition']) and (every $child in * satisfies ($child/self::p or $child/self::hcontainer[@name='definition']))">
-				<xsl:call-template name="group-definitions-for-block-amendment">
-					<xsl:with-param name="elements" select="*" />
-				</xsl:call-template>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:apply-templates>
-					<xsl:with-param name="context" select="('BlockAmendment', $context)" tunnel="yes" />
-				</xsl:apply-templates>
-			</xsl:otherwise>
-		</xsl:choose>
-	</BlockAmendment>
+	<xsl:call-template name="block-amendment">
+		<xsl:with-param name="lead-in" select="()" />
+		<xsl:with-param name="source" select="." />
+	</xsl:call-template>
 </xsl:template>
 
 <xsl:template match="inline[@name=('appendText','AppendText')]">
@@ -305,7 +248,7 @@
 
 <xsl:template match="embeddedStructure">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:variable name="clml" as="element()">
+	<xsl:variable name="clml" as="element()+">
 		<BlockExtract>
 			<xsl:attribute name="SourceClass">
 				<xsl:value-of select="if (exists(@ukl:SourceClass)) then @ukl:SourceClass else 'unknown'" />

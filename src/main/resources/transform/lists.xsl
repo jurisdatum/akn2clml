@@ -196,7 +196,7 @@
 </xsl:template>
 
 <xsl:template match="item">
-	<xsl:param name="decor" as="xs:string" />
+	<xsl:param name="decor" as="xs:string" select="local:get-decoration-from-numbered-things(.)" />
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<ListItem>
 		<xsl:if test="exists(num)">
@@ -221,15 +221,28 @@
 <xsl:template name="merge-intro-and-definitions">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="wrapper" as="xs:string?" select="local:get-block-wrapper($context)" />
-	<xsl:element name="{ $wrapper }">
-		<xsl:apply-templates select="intro/*">
-			<xsl:with-param name="context" select="($wrapper, $context)" tunnel="yes" />
-		</xsl:apply-templates>
-		<xsl:call-template name="definition-list">
-			<xsl:with-param name="definitions" select="hcontainer[@name='definition']" />
-			<xsl:with-param name="context" select="($wrapper, $context)" tunnel="yes" />
-		</xsl:call-template>
-	</xsl:element>
+	<xsl:choose>
+		<xsl:when test="empty($wrapper)">
+			<xsl:apply-templates select="intro/*">
+				<xsl:with-param name="context" select="($wrapper, $context)" tunnel="yes" />
+			</xsl:apply-templates>
+			<xsl:call-template name="definition-list">
+				<xsl:with-param name="definitions" select="hcontainer[@name='definition']" />
+				<xsl:with-param name="context" select="($wrapper, $context)" tunnel="yes" />
+			</xsl:call-template>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:element name="{ $wrapper }">
+				<xsl:apply-templates select="intro/*">
+					<xsl:with-param name="context" select="($wrapper, $context)" tunnel="yes" />
+				</xsl:apply-templates>
+				<xsl:call-template name="definition-list">
+					<xsl:with-param name="definitions" select="hcontainer[@name='definition']" />
+					<xsl:with-param name="context" select="($wrapper, $context)" tunnel="yes" />
+				</xsl:call-template>
+			</xsl:element>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template name="definition-list">

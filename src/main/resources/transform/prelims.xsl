@@ -88,22 +88,22 @@
 	</DateOfEnactment>
 </xsl:template>
 
-<xsl:template match="preface/longTitle">
+<xsl:template match="longTitle">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:choose>
-		<xsl:when test="count(*) eq 1">
-			<LongTitle>
-				<xsl:apply-templates select="*/node()">
-					<xsl:with-param name="context" select="('LongTitle', $context)" tunnel="yes" />
-				</xsl:apply-templates>
-			</LongTitle>
-		</xsl:when>
-		<xsl:otherwise>
+		<xsl:when test="local:get-applicable-doc-class(.) = 'euretained'">
 			<MultilineTitle>
 				<xsl:apply-templates>
 					<xsl:with-param name="context" select="('MultilineTitle', $context)" tunnel="yes" />
 				</xsl:apply-templates>
 			</MultilineTitle>
+		</xsl:when>
+		<xsl:otherwise>
+			<LongTitle>
+				<xsl:apply-templates select="*/node()">
+					<xsl:with-param name="context" select="('LongTitle', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</LongTitle>
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
@@ -159,12 +159,10 @@
 	</Subtitle>
 </xsl:template>
 
-<xsl:template match="block[@name='resolution']">
+<xsl:template match="container[@name='resolution']">
 	<Resolution>
 		<Para>
-			<Text>
-				<xsl:apply-templates />
-			</Text>
+			<xsl:apply-templates />
 		</Para>
 	</Resolution>
 </xsl:template>
@@ -183,7 +181,7 @@
 	<xsl:apply-templates />
 </xsl:template>
 
-<xsl:template match="block[@name='siftedDate']">
+<xsl:template match="block[@name=('siftedDate','otherDate')]">
 	<SiftedDate>
 		<xsl:apply-templates />
 	</SiftedDate>
@@ -237,13 +235,13 @@
 	</ComingIntoForceClauses>
 </xsl:template>
 
-<xsl:template match="block[@name=('siftedDate','madeDate','laidDraft','laidInDraft','laidDate','commenceDate')]/span">
+<xsl:template match="block[@name=('siftedDate','madeDate','laidDraft','laidInDraft','laidDate','commenceDate','otherDate')]/span">
 	<Text>
 		<xsl:apply-templates />
 	</Text>
 </xsl:template>
 
-<xsl:template match="block[@name=('siftedDate','madeDate','laidDate','commenceDate')]/docDate">
+<xsl:template match="block[@name=('siftedDate','madeDate','laidDate','commenceDate','otherDate')]/docDate">
 	<DateText>
 		<xsl:apply-templates />
 	</DateText>
@@ -290,21 +288,30 @@
 		<xsl:when test="$context1 = 'SecondaryPrelims'">
 			<SecondaryPreamble>
 				<xsl:apply-templates select="container[@name=('royalPresence','royal')]" />
-				<xsl:variable name="enacting-text" as="element()" select="formula[1]" />
-				<xsl:variable name="intro" as="element()*" select="$enacting-text/preceding-sibling::*[not(self::container[@name=('royalPresence','royal')])]" />
-				<xsl:if test="exists($intro)">
-					<IntroductoryText>
-						<xsl:apply-templates select="$intro">
-							<xsl:with-param name="context" select="('IntroductoryText', 'SecondaryPreamble', $context)" tunnel="yes" />
+				<xsl:variable name="enacting-text" as="element()?" select="formula[1]" />
+				<xsl:choose>
+					<xsl:when test="empty($enacting-text)">	<!-- resolution only -->
+						<xsl:apply-templates>
+							<xsl:with-param name="context" select="('SecondaryPreamble', $context)" tunnel="yes" />
 						</xsl:apply-templates>
-					</IntroductoryText>
-				</xsl:if>
-				<xsl:apply-templates select="$enacting-text">
-					<xsl:with-param name="context" select="('SecondaryPreamble', $context)" tunnel="yes" />
-				</xsl:apply-templates>
-				<xsl:apply-templates select="$enacting-text/following-sibling::*">
-					<xsl:with-param name="context" select="('SecondaryPreamble', $context)" tunnel="yes" />
-				</xsl:apply-templates>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:variable name="intro" as="element()*" select="$enacting-text/preceding-sibling::*[not(self::container[@name=('royalPresence','royal')])]" />
+						<xsl:if test="exists($intro)">
+							<IntroductoryText>
+								<xsl:apply-templates select="$intro">
+									<xsl:with-param name="context" select="('IntroductoryText', 'SecondaryPreamble', $context)" tunnel="yes" />
+								</xsl:apply-templates>
+							</IntroductoryText>
+						</xsl:if>
+						<xsl:apply-templates select="$enacting-text">
+							<xsl:with-param name="context" select="('SecondaryPreamble', $context)" tunnel="yes" />
+						</xsl:apply-templates>
+						<xsl:apply-templates select="$enacting-text/following-sibling::*">
+							<xsl:with-param name="context" select="('SecondaryPreamble', $context)" tunnel="yes" />
+						</xsl:apply-templates>
+					</xsl:otherwise>
+				</xsl:choose>
 			</SecondaryPreamble>
 		</xsl:when>
 	</xsl:choose>
@@ -356,12 +363,5 @@
 		</xsl:apply-templates>
 	</EnactingText>
 </xsl:template>
-
-
-<!-- table of contents -->
-
-<xsl:template match="block[@name='ToCHeading']" />
-
-<xsl:template match="toc" />
 
 </xsl:transform>

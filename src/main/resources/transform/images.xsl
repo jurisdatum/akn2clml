@@ -93,4 +93,24 @@
 	</Image>
 </xsl:template>
 
+<xsl:template match="tblock[tokenize(@class,' ')=('figure','image')]/container[@name='notes']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<Notes>
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('Notes', $context)" />
+		</xsl:apply-templates>
+	</Notes>
+</xsl:template>
+
+<xsl:template match="tblock[tokenize(@class,' ')=('figure','image')]/container[@name='notes']/tblock[@class='note']">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<Footnote id="{ @eId }">
+		<FootnoteText>
+			<xsl:apply-templates>
+				<xsl:with-param name="context" select="('FootnoteText', 'Footnote', $context)" />
+			</xsl:apply-templates>
+		</FootnoteText>
+	</Footnote>
+</xsl:template>
+
 </xsl:transform>
