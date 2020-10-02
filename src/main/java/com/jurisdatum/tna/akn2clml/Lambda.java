@@ -1,6 +1,8 @@
 package com.jurisdatum.tna.akn2clml;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,10 +35,20 @@ public class Lambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGa
 		try {
 			clml = transform.transform(akn, isbn);
 		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			String error = sw.toString();
+			pw.close();
+			try {
+				sw.close();
+			} catch (IOException e2) {
+				e2.printStackTrace();
+			}
 			return new APIGatewayProxyResponseEvent()
 				.withStatusCode(500)
 				.withHeaders(Collections.singletonMap("Content-Type", "text/plain"))
-				.withBody(e.getLocalizedMessage());
+				.withBody(error);
 		}
 		Map<String, String> headers = new LinkedHashMap<>();
 		headers.put("Content-Type", "application/xml");
