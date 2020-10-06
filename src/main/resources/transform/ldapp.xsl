@@ -97,9 +97,18 @@ Other
 <xsl:variable name="ldapp-doc-number" as="xs:string?">
 	<xsl:choose>
 		<xsl:when test="$doc-category = 'primary'">
-			<xsl:variable name="var-act-no" as="xs:string?" select="key('tlc', 'varActNo')/@showAs" />
+			<xsl:variable name="var-act-no-comp" as="xs:string?" select="key('tlc', 'varActNoComp')/@showAs/normalize-space()" />
+			<xsl:variable name="var-act-no" as="xs:string?">
+				<xsl:variable name="tlc" select="key('tlc', 'varActNo')/@showAs/normalize-space()" />
+				<xsl:if test="exists($tlc)">
+					<xsl:sequence select="tokenize($tlc, ' ')[last()]" />
+				</xsl:if>
+			</xsl:variable>
 			<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value" />
 			<xsl:choose>
+				<xsl:when test="$var-act-no-comp castable as xs:integer">
+					<xsl:sequence select="$var-act-no-comp" />
+				</xsl:when>
 				<xsl:when test="$var-act-no castable as xs:integer">
 					<xsl:sequence select="$var-act-no" />
 				</xsl:when>
