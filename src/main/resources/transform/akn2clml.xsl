@@ -154,25 +154,9 @@
 </xsl:template>
 
 <xsl:template match="blockContainer[@ukl:Name='BlockText']" priority="2">
-	<xsl:param name="context" as="xs:string*" tunnel="yes" />
-	<xsl:choose>
-		<xsl:when test="$context[1] = ('BlockAmendment', 'td')">
-			<Para>
-				<BlockText>
-					<xsl:apply-templates>
-						<xsl:with-param name="context" select="('BlockText', 'Para', $context)" tunnel="yes" />
-					</xsl:apply-templates>
-				</BlockText>
-			</Para>
-		</xsl:when>
-		<xsl:otherwise>
-			<BlockText>
-				<xsl:apply-templates>
-					<xsl:with-param name="context" select="('BlockText', $context)" tunnel="yes" />
-				</xsl:apply-templates>
-			</BlockText>
-		</xsl:otherwise>
-	</xsl:choose>
+	<xsl:call-template name="create-element-and-wrap-as-necessary">
+		<xsl:with-param name="name" select="'BlockText'" />
+	</xsl:call-template>
 </xsl:template>
 
 

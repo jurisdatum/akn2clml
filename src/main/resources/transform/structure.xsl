@@ -612,7 +612,7 @@
 	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="subparagraph | level | hcontainer[@name=('subsubparagraph','step')] | point" name="level">
+<xsl:template match="subparagraph | level[not(@class='unnumberedParagraph')] | hcontainer[@name=('subsubparagraph','step')] | point" name="level">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="name" as="xs:string" select="local:get-structure-name(., $context)" />
 	<xsl:if test="$name = ''">
@@ -655,12 +655,6 @@
 		</xsl:with-param>
 	</xsl:call-template>
 </xsl:template>
-
-<!-- <xsl:template match="level">
-	<xsl:call-template name="create-element-and-wrap-as-necessary">
-		<xsl:with-param name="name" select="'P2group'" />
-	</xsl:call-template>
-</xsl:template> -->
 
 <!-- hcontainer[@name='wrapper1'] maps P?paras where more than one sibling contain structural children -->
 
@@ -722,6 +716,10 @@
 			<xsl:apply-templates />
 		</xsl:otherwise>
 	</xsl:choose>
+</xsl:template>
+
+<xsl:template match="level[@class='unnumberedParagraph']">
+	<xsl:apply-templates />
 </xsl:template>
 
 

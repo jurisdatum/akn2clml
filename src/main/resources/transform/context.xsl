@@ -46,13 +46,13 @@
 	<xsl:param name="context" as="xs:string+" />
 	<xsl:variable name="head" as="xs:string" select="$context[1]" />
 	<xsl:choose>
-		<xsl:when test="$head = ('P1', 'P1group')">
+		<xsl:when test="$head = ('P1')">
 			<xsl:text>P1para</xsl:text>
 		</xsl:when>
-		<xsl:when test="$head = ('P2', 'P2group')">
+		<xsl:when test="$head = ('P2')">
 			<xsl:text>P2para</xsl:text>
 		</xsl:when>
-		<xsl:when test="$head = ('P3', 'P3group')">
+		<xsl:when test="$head = ('P3')">
 			<xsl:text>P3para</xsl:text>
 		</xsl:when>
 		<xsl:when test="$head = 'P4'">
@@ -146,6 +146,9 @@
 		</xsl:when>
 		<xsl:when test="$clml = ('Tabular', 'Figure', 'Form') and $context[1] = 'ScheduleBody'">
 			<xsl:sequence select="()" />
+		</xsl:when>
+		<xsl:when test="$clml = 'BlockText' and $context[1] = ('BlockAmendment', 'td')">
+			<xsl:sequence select="'Para'" />
 		</xsl:when>
 		<xsl:when test="local:clml-element-is-block($clml)">
 			<xsl:sequence select="local:get-block-wrapper($context)" />
