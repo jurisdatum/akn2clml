@@ -210,6 +210,9 @@
 	<xsl:variable name="doc-title" as="element(docTitle)?" select="(//docTitle)[1]" />
 	<xsl:variable name="long-title" as="element(longTitle)?" select="(//longTitle)[1]" />
 	<xsl:choose>
+		<xsl:when test="exists($ldapp-doc-title)">
+			<xsl:value-of select="$ldapp-doc-title" />
+		</xsl:when>
 		<xsl:when test="exists($short-title)">
 			<xsl:value-of select="normalize-space($short-title)" />
 		</xsl:when>
@@ -218,9 +221,6 @@
 		</xsl:when>
 		<xsl:when test="exists($long-title)">
 			<xsl:value-of select="normalize-space($long-title)" />
-		</xsl:when>
-		<xsl:when test="exists($ldapp-doc-title)">
-			<xsl:value-of select="$ldapp-doc-title" />
 		</xsl:when>
 	</xsl:choose>
 </xsl:variable>

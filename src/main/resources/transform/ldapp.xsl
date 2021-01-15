@@ -143,7 +143,7 @@ Other
 	</xsl:if>
 </xsl:variable>
 
-<xsl:variable name="ldapp-doc-title" as="xs:string?">	<xsl:variable name="var-act-no" as="xs:string?" select="key('tlc', 'varActNo')/@showAs" />
+<xsl:variable name="ldapp-doc-title" as="xs:string?">
 	<xsl:choose>
 		<xsl:when test="$doc-category = 'primary'">
 			<xsl:variable name="var-act-title" as="attribute()?" select="key('tlc', 'varActTitle')/@showAs" />
@@ -179,7 +179,7 @@ Other
 
 <!-- dates -->
 
-<xsl:variable name="ldapp-assent-date" as="xs:date?" select="key('tlc', 'varAssentDate')/@showAs" />
+<xsl:variable name="ldapp-assent-date" as="xs:date?" select="key('tlc', 'varAssentDate')/@showAs" />	<!-- [. castable as xs:date] -->
 
 <xsl:variable name="ldapp-work-date" as="xs:date?">
 	<xsl:sequence select="$ldapp-assent-date" />

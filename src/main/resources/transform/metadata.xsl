@@ -11,7 +11,8 @@
 	exclude-result-prefixes="xs ukl ukm uk local">
 
 <xsl:variable name="work-date" as="xs:date">
-	<xsl:variable name="frbr" as="xs:date" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRdate/@date" />
+	<xsl:variable name="raw" as="xs:string" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRdate[1]/@date" />
+	<xsl:variable name="frbr" as="xs:date" select="xs:date(substring($raw, 1, 10))" />
 	<xsl:choose>
 		<xsl:when test="starts-with(string($frbr), '9999-') and exists($ldapp-work-date)">
 			<xsl:sequence select="$ldapp-work-date" />
