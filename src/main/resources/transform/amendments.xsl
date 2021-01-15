@@ -297,4 +297,47 @@
 	</xsl:call-template>
 </xsl:template>
 
+<!-- FragmentNumber and FragmentTitle -->
+
+<xsl:template match="quotedStructure/*[self::part or self::chapter][empty(*[not(self::num or self::heading)])]" priority="1">
+	<xsl:apply-templates mode="fragment" />
+</xsl:template>
+
+<xsl:template match="num" mode="fragment">
+	<FragmentNumber>
+		<xsl:attribute name="Context">
+			<xsl:choose>
+				<xsl:when test="exists(parent::part)">
+					<xsl:text>Part</xsl:text>
+				</xsl:when>
+				<xsl:when test="exists(parent::chapter)">
+					<xsl:text>Chapter</xsl:text>
+				</xsl:when>
+			</xsl:choose>
+		</xsl:attribute>
+		<Number>
+			<xsl:apply-templates/>
+		</Number>
+	</FragmentNumber>
+</xsl:template>
+
+<xsl:template match="heading" mode="fragment">
+	<FragmentTitle>
+		<xsl:attribute name="Context">
+			<xsl:choose>
+				<xsl:when test="exists(parent::part)">
+					<xsl:text>Part</xsl:text>
+				</xsl:when>
+				<xsl:when test="exists(parent::chapter)">
+					<xsl:text>Chapter</xsl:text>
+				</xsl:when>
+			</xsl:choose>
+		</xsl:attribute>
+		<Title>
+			<xsl:apply-templates/>
+		</Title>
+	</FragmentTitle>
+</xsl:template>
+
+
 </xsl:transform>
