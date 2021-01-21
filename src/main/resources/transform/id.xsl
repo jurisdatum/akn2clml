@@ -294,6 +294,16 @@
 			<xsl:when test="$e/self::preface">
 				<xsl:sequence select="local:element-id-is-necessary($e)" />
 			</xsl:when>
+			<xsl:when test="$e/self::hcontainer/@name='crossheading'">
+				<xsl:choose>
+					<xsl:when test="local:crossheading-is-p1group(.)">
+						<xsl:sequence select="local:element-id-is-necessary($e)" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:sequence select="true()" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:when>
 			<xsl:when test="exists($e/ancestor::quotedStructure) or exists($e/ancestor::embeddedStructure)">
 				<xsl:sequence select="local:element-id-is-necessary($e)" />
 			</xsl:when>

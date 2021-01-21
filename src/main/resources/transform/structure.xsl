@@ -367,23 +367,38 @@
 	</xsl:call-template>
 </xsl:template>
 
+<xsl:function name="local:crossheading-is-p1group" as="xs:boolean">
+	<xsl:param name="xheading" as="element(hcontainer)" />
+	<xsl:choose>
+		<xsl:when test="$xheading/@ukl:Name = 'P1group'">
+			<xsl:sequence select="true()" />
+		</xsl:when>
+		<!-- LDAPP uses crossheadings for certain schedule paragraphs -->
+		<xsl:when test="false() and local:akn-is-within-schedule($xheading) and exists($xheading/child::paragraph) and empty($xheading/child::paragraph/heading) and (exists($xheading/preceding-sibling::paragraph) or exists($xheading/following-sibling::paragraph))">
+			<xsl:sequence select="true()" />
+		</xsl:when>
+		<xsl:when test="$xheading/parent::hcontainer[@name='schedule'] and exists($xheading/child::paragraph) and empty($xheading/child::paragraph/heading) and empty($xheading/preceding-sibling::hcontainer[@name='crossheading']/paragraph/heading) and empty($xheading/following-sibling::hcontainer[@name='crossheading']/paragraph/heading) and empty($xheading/preceding-sibling::paragraph)">
+		<!-- last condition is for asp/2000/5/schedule/5 -->
+			<xsl:sequence select="true()" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="false()" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
 <xsl:template match="hcontainer[@name='crossheading']">
 	<xsl:call-template name="big-level">
 		<xsl:with-param name="name">
 			<xsl:choose>
 				<xsl:when test="exists(@ukl:Name)">
-					<xsl:value-of select="@ukl:Name" />
+					<xsl:sequence select="string(@ukl:Name)" />
 				</xsl:when>
-				<!-- LDAPP uses crossheadings for certain schedule paragraphs -->
-				<xsl:when test="false() and local:akn-is-within-schedule(.) and exists(child::paragraph) and empty(child::paragraph/heading) and (exists(preceding-sibling::paragraph) or exists(following-sibling::paragraph))">
-					<xsl:text>P1group</xsl:text>
-				</xsl:when>
-				<xsl:when test="parent::hcontainer[@name='schedule'] and exists(child::paragraph) and empty(child::paragraph/heading) and empty(preceding-sibling::hcontainer[@name='crossheading']/paragraph/heading) and empty(following-sibling::hcontainer[@name='crossheading']/paragraph/heading) and empty(preceding-sibling::paragraph)">
-				<!-- last condition is for asp/2000/5/schedule/5 -->
-					<xsl:text>P1group</xsl:text>
+				<xsl:when test="local:crossheading-is-p1group(.)">
+					<xsl:sequence select="'P1group'" />
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:text>Pblock</xsl:text>
+					<xsl:sequence select="'Pblock'" />
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:with-param>
