@@ -223,12 +223,12 @@ Other
 
 <!-- images -->
 
+<!-- convert mm to pt -->
 <xsl:function name="ldapp:scale-image-dimension" as="xs:string">
 	<xsl:param name="dimension" as="attribute()" />
-	<xsl:variable name="font-size-points" as="xs:decimal" select="10.5" />
 	<xsl:variable name="dimension-mm" as="xs:integer" select="xs:integer($dimension)" />
-	<xsl:variable name="dimension-em" as="xs:decimal" select="$dimension-mm * 2.83465 div $font-size-points" />
-	<xsl:sequence select="concat(format-number($dimension-em,'#.###'), 'em')" />
+	<xsl:variable name="dimension-pt" as="xs:decimal" select="$dimension-mm * 2.83465" />
+	<xsl:sequence select="concat(format-number($dimension-pt,'#.###'), 'pt')" />
 </xsl:function>
 
 
