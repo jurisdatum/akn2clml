@@ -293,7 +293,6 @@
 	</xsl:variable>
 	<xsl:call-template name="wrap-as-necessary">
 		<xsl:with-param name="clml" select="$clml" />
-		<xsl:with-param name="context" select="$context" />
 	</xsl:call-template>
 </xsl:template>
 
