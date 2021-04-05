@@ -30,15 +30,15 @@
 		</DocumentClassification>
 		<Year Value="{ $doc-year }" />
 		<Number Value="{ $doc-number }" />
-		<xsl:apply-templates select="meta/proprietary/ukm:EURLexIdentifiers" />
-		<xsl:apply-templates select="meta/proprietary/ukm:EnactmentDate" />
-		<xsl:apply-templates select="meta/proprietary/ukm:EURLexModified" />
-		<xsl:apply-templates select="meta/proprietary/ukm:EURLexExtracted" />
-		<xsl:apply-templates select="meta/proprietary/ukm:XMLGenerated" />
-		<xsl:apply-templates select="meta/proprietary/ukm:XMLImported" />
-		<xsl:apply-templates select="meta/proprietary/ukm:Treaty" />
-		<xsl:apply-templates select="meta/proprietary/ukm:CreatedBy" />
-		<xsl:apply-templates select="meta/proprietary/ukm:Subject" />
+		<xsl:apply-templates select="meta/proprietary/ukm:EUMetadata/ukm:EURLexIdentifiers" />
+		<xsl:apply-templates select="meta/proprietary/ukm:EUMetadata/ukm:EnactmentDate" />
+		<xsl:apply-templates select="meta/proprietary/ukm:EUMetadata/ukm:EURLexModified" />
+		<xsl:apply-templates select="meta/proprietary/ukm:EUMetadata/ukm:EURLexExtracted" />
+		<xsl:apply-templates select="meta/proprietary/ukm:EUMetadata/ukm:XMLGenerated" />
+		<xsl:apply-templates select="meta/proprietary/ukm:EUMetadata/ukm:XMLImported" />
+		<xsl:apply-templates select="meta/proprietary/ukm:EUMetadata/ukm:Treaty" />
+		<xsl:apply-templates select="meta/proprietary/ukm:EUMetadata/ukm:CreatedBy" />
+		<xsl:apply-templates select="meta/proprietary/ukm:EUMetadata/ukm:Subject" />
 	</EUMetadata>
 </xsl:template>
 

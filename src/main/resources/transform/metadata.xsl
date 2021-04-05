@@ -72,7 +72,7 @@
 		<Year Value="{ $doc-year }" />
 		<Number Value="{ $doc-number }" />
 		<EnactmentDate Date="{ $work-date }" />
-		<xsl:for-each select="/akomaNtoso/*/meta/proprietary/ukm:ISBN">
+		<xsl:for-each select="/akomaNtoso/*/meta/proprietary//ukm:ISBN">
 			<ISBN Value="{ @Value }" />
 		</xsl:for-each>
 	</PrimaryMetadata>
@@ -172,7 +172,7 @@
 				</xsl:for-each>
 			</ComingIntoForce>
 		</xsl:if>
-		<xsl:for-each select="/akomaNtoso/*/meta/proprietary/ukm:ISBN">
+		<xsl:for-each select="/akomaNtoso/*/meta/proprietary//ukm:ISBN">
 			<ISBN Value="{ @Value }" />
 		</xsl:for-each>
 	</SecondaryMetadata>
