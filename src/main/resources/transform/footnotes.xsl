@@ -59,38 +59,4 @@
 	</Footnote>
 </xsl:template>
 
-
-<!-- marginal notes -->
-
-<xsl:variable name="all-margin-notes" as="element()*">
-	<xsl:sequence select="//authorialNote[@placement=('side','left','right')]" />
-</xsl:variable>
-
-<xsl:function name="local:make-margin-note-id" as="xs:string">
-	<xsl:param name="e" as="element(authorialNote)" />
-	<xsl:variable name="index" as="xs:integer?" select="local:get-first-index-of-node($e, $all-margin-notes)" />
-	<xsl:variable name="num" as="xs:integer" select="if (exists($index)) then $index else 0" />
-	<xsl:sequence select="concat('m', format-number($num,'00000'))" />
-</xsl:function>
-
-<xsl:template match="authorialNote[@placement=('side','left','right')]">
-	<MarginNoteRef Ref="{ local:make-margin-note-id(.) }" />
-</xsl:template>
-
-<xsl:template name="margin-notes">
-	<xsl:if test="exists($all-margin-notes)">
-		<MarginNotes>
-			<xsl:apply-templates select="$all-margin-notes" mode="margin-note" />
-		</MarginNotes>
-	</xsl:if>
-</xsl:template>
-
-<xsl:template match="authorialNote[@placement=('side','left','right')]" mode="margin-note">
-	<MarginNote id="{ local:make-margin-note-id(.) }">
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="('MarginNote')" tunnel="yes" />
-		</xsl:apply-templates>
-	</MarginNote>
-</xsl:template>
-
 </xsl:transform>

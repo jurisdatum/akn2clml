@@ -47,7 +47,7 @@
 	</xsl:attribute>
 </xsl:template>
 
-<xsl:template match="noteRef[starts-with(@class, 'commentary')]">
+<xsl:template match="noteRef[starts-with(@class, 'commentary') and not(@ukl:Name='MarginNoteRef')]">
 	<xsl:variable name="ref" as="xs:string" select="substring(@href, 2)" />
 	<!-- this is necessary because I add noteRefs for f-notes even though there is no CommentaryRef in the source CLML -->
 	<!-- it works only because I include @ukl:CommentaryRef attributes on <ins> and <del> elements -->
@@ -59,7 +59,7 @@
 </xsl:template>
 
 <xsl:template name="commentaries">
-	<xsl:variable name="commentaries" as="element()*" select="/akomaNtoso/*/meta/notes/note[@ukl:Name='Commentary' or starts-with(@class,'commentary')]" />
+	<xsl:variable name="commentaries" as="element(note)*" select="/akomaNtoso/*/meta/notes/note[@ukl:Name='Commentary' or (starts-with(@class,'commentary') and not(@ukl:Name='MarginNote'))]" />
 	<xsl:if test="exists($commentaries)">
 		<Commentaries>
 			<xsl:apply-templates select="$commentaries" />
@@ -67,7 +67,7 @@
 	</xsl:if> 
 </xsl:template>
 
-<xsl:template match="note[@ukl:Name='Commentary' or starts-with(@class,'commentary')]">
+<xsl:template match="note[@ukl:Name='Commentary' or (starts-with(@class,'commentary') and not(@ukl:Name='MarginNote'))]">
 	<Commentary id="{ @eId }" Type="{ if (exists(@ukl:Type)) then @ukl:Type else tokenize(@class, ' ')[2] }">
 		<xsl:apply-templates>
 			<xsl:with-param name="context" select="('Commentary')" tunnel="yes" />
@@ -87,6 +87,42 @@
 
 <xsl:template match="note" mode="commentary-ref">
 	<CommentaryRef Ref="{ @eId }" />
+</xsl:template>
+
+
+<!-- margin notes -->
+
+<xsl:variable name="all-margin-notes" as="element(note)*">
+	<xsl:sequence select="/akomaNtoso/*/meta/notes/note[@ukl:Name='MarginNote']" />
+</xsl:variable>
+
+<xsl:function name="local:make-margin-note-id" as="xs:string">
+	<xsl:param name="e" as="element(note)" />
+	<xsl:variable name="index" as="xs:integer?" select="local:get-first-index-of-node($e, $all-margin-notes)" />
+	<xsl:variable name="num" as="xs:integer" select="if (exists($index)) then $index else 0" />
+	<xsl:sequence select="concat('m', format-number($num,'00000'))" />
+</xsl:function>
+
+<xsl:template match="noteRef[@ukl:Name='MarginNoteRef']">
+	<xsl:variable name="ref" as="xs:string" select="substring(@href, 2)" />
+	<xsl:variable name="margin-note" as="element()" select="key('id', $ref)" />
+	<MarginNoteRef Ref="{ local:make-margin-note-id($margin-note) }" />
+</xsl:template>
+
+<xsl:template name="margin-notes">
+	<xsl:if test="exists($all-margin-notes)">
+		<MarginNotes>
+			<xsl:apply-templates select="$all-margin-notes" mode="margin-note" />
+		</MarginNotes>
+	</xsl:if>
+</xsl:template>
+
+<xsl:template match="note" mode="margin-note">
+	<MarginNote id="{ local:make-margin-note-id(.) }">
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="('MarginNote')" tunnel="yes" />
+		</xsl:apply-templates>
+	</MarginNote>
 </xsl:template>
 
 </xsl:transform>
