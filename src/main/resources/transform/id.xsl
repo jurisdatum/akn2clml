@@ -6,9 +6,10 @@
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:uk="https://www.legislation.gov.uk/namespaces/UK-AKN"
+	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
-	exclude-result-prefixes="xs uk html local">
+	exclude-result-prefixes="xs uk ukl html local">
 
 <xsl:key name="internal-refs" match="ref[starts-with(@href,'#')]" use="substring(@href, 2)" />
 <xsl:key name="internal-refs-by-guid" match="ref[exists(@uk:targetGuid)]" use="@uk:targetGuid" />
@@ -133,6 +134,10 @@
 		</xsl:when>
 		<xsl:when test="$e/self::hcontainer[@name=('crossheading','subheading')]">
 			<xsl:sequence select="concat('crossheading-', translate(lower-case(normalize-space($e/heading[1])), '/ ():.,‘’“”''&quot;', '--'))" />
+		</xsl:when>
+		<xsl:when test="$e/self::section[@ukl:Name='Pblock']">	<!-- uksi/2015/104/schedule/1/made -->
+			<xsl:variable name="number" as="xs:integer" select="count($e/preceding-sibling::section[@ukl:Name='Pblock']) + 1" />
+			<xsl:sequence select="concat(local:make-internal-id($e/parent::*), '-crossheading-', string($number))" />
 		</xsl:when>
 		<xsl:when test="$e/self::section or $e/self::article or $e/self::rule">
 			<xsl:choose>
