@@ -5,6 +5,7 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
 	xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:uk="https://www.legislation.gov.uk/namespaces/UK-AKN"
 	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
@@ -44,7 +45,7 @@
 </xsl:template>
 
 <xsl:template match="/akomaNtoso/*">
-	<Legislation SchemaVersion="2.0">
+	<Legislation SchemaVersion="2.0" xsi:schemaLocation="http://www.legislation.gov.uk/namespaces/legislation http://www.legislation.gov.uk/schema/legislation.xsd">
 		<xsl:call-template name="add-fragment-attributes" />
 		<xsl:call-template name="metadata" />
 		<xsl:if test="exists(body)">
