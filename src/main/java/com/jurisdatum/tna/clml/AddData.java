@@ -69,7 +69,7 @@ public class AddData {
 	public AddData() throws IOException {
 		XsltCompiler compiler = Saxon.processor.newXsltCompiler();
 		InputStream stream = this.getClass().getResourceAsStream(stylesheet);
-		Source source = new StreamSource(stream);
+		Source source = new StreamSource(stream, "add-data.xsl");
 		try {
 			executable = compiler.compile(source);
 		} catch (SaxonApiException e) {
