@@ -17,23 +17,27 @@ import com.jurisdatum.tna.clml.AddData.Parameters;
 import com.jurisdatum.xml.Saxon;
 
 import net.sf.saxon.s9api.Destination;
+import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.s9api.XsltTransformer;
 
 public class LDAPP {
 	
+	private final Fix transform0;
 	private final Transform transform1;
 	private final AddData transform2;
 
 	public LDAPP() throws IOException {
+		transform0 = new Fix();
 		transform1 = new Transform();
 		transform2 = new AddData();
 	}
 	
 	private void transform(Source akn, Destination destination, String isbn) {
-		Parameters params = new Parameters().withIsbn(isbn).withDefaultPublisher(true).withDefaultSchemaLocation();
+		XdmNode fixed = transform0.fix(akn);
+		Parameters params = new Parameters().withIsbn(isbn).withDefaultPublisher(true);
 		XsltTransformer addData = transform2.load(params);
 		addData.setDestination(destination);
-		transform1.transform(akn, addData);
+		transform1.transform(fixed.asSource(), addData);
 	}
 
 	public void transform(Source akn, Result clml, String isbn) {
