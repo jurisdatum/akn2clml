@@ -24,9 +24,12 @@ public class Lambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGa
 	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
 		String akn = request.getBody();
 		if (akn == null) {
+			Map<String, String> headers = new LinkedHashMap<>();
+			headers.put("Content-Type", "text/plain");
+			headers.put("Access-Control-Allow-Origin", "*");
 			return new APIGatewayProxyResponseEvent()
 				.withStatusCode(400)
-				.withHeaders(Collections.singletonMap("Content-Type", "text/plain"))
+				.withHeaders(headers)
 				.withBody("body is empty");
 		}
 		Map<String, String> params = request.getQueryStringParameters();
@@ -45,9 +48,12 @@ public class Lambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGa
 			} catch (IOException e2) {
 				e2.printStackTrace();
 			}
+			Map<String, String> headers = new LinkedHashMap<>();
+			headers.put("Content-Type", "text/plain");
+			headers.put("Access-Control-Allow-Origin", "*");
 			return new APIGatewayProxyResponseEvent()
 				.withStatusCode(500)
-				.withHeaders(Collections.singletonMap("Content-Type", "text/plain"))
+				.withHeaders(headers)
 				.withBody(error);
 		}
 		Map<String, String> headers = new LinkedHashMap<>();
