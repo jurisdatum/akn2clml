@@ -95,6 +95,7 @@ Other
 </xsl:variable>
 
 <xsl:variable name="ldapp-doc-number" as="xs:string?">
+	<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value[. castable as xs:integer][1]" />
 	<xsl:choose>
 		<xsl:when test="$doc-category = 'primary'">
 			<xsl:variable name="var-act-no-comp" as="xs:string?" select="key('tlc', 'varActNoComp')/@showAs/normalize-space()" />
@@ -104,7 +105,6 @@ Other
 					<xsl:sequence select="tokenize($tlc, ' ')[last()]" />
 				</xsl:if>
 			</xsl:variable>
-			<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value" />
 			<xsl:choose>
 				<xsl:when test="$var-act-no-comp castable as xs:integer">
 					<xsl:sequence select="$var-act-no-comp" />
@@ -112,19 +112,18 @@ Other
 				<xsl:when test="$var-act-no castable as xs:integer">
 					<xsl:sequence select="$var-act-no" />
 				</xsl:when>
-				<xsl:when test="$frbr castable as xs:integer">
+				<xsl:when test="exists($frbr)">
 					<xsl:sequence select="$frbr" />
 				</xsl:when>
 			</xsl:choose>
 		</xsl:when>
 		<xsl:when test="$doc-category = 'secondary'">
 			<xsl:variable name="var-si-no-comp" as="xs:string?" select="key('tlc', 'varSINoComp')/@showAs" />
-			<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value" />
 			<xsl:choose>
 				<xsl:when test="$var-si-no-comp castable as xs:integer">
 					<xsl:sequence select="$var-si-no-comp" />
 				</xsl:when>
-				<xsl:when test="$frbr castable as xs:integer">
+				<xsl:when test="exists($frbr)">
 					<xsl:sequence select="$frbr" />
 				</xsl:when>
 			</xsl:choose>

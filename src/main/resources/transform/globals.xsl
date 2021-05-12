@@ -190,18 +190,15 @@
 	</xsl:choose>
 </xsl:variable>
 
-<xsl:variable name="doc-number" as="xs:string">
-	<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value" />
+<xsl:variable name="doc-number" as="xs:string?">
+	<xsl:variable name="frbr" as="xs:string?" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value[. castable as xs:integer][1]" />
 	<xsl:choose>
-		<xsl:when test="$frbr castable as xs:integer">
+		<xsl:when test="exists($frbr)">
 			<xsl:sequence select="$frbr" />
 		</xsl:when>
 		<xsl:when test="exists($ldapp-doc-number)">
 			<xsl:sequence select="$ldapp-doc-number" />
 		</xsl:when>
-		<xsl:otherwise>
-			<xsl:sequence select="'0'" />
-		</xsl:otherwise>
 	</xsl:choose>
 </xsl:variable>
 
@@ -225,36 +222,37 @@
 	</xsl:choose>
 </xsl:variable>
 
-<xsl:variable name="doc-short-id" as="xs:string">
-	<xsl:value-of select="concat($doc-short-type, '/', $doc-year, '/', $doc-number)" />
+<xsl:variable name="doc-short-id" as="xs:string?">
+	<xsl:if test="exists($doc-number)">
+		<xsl:sequence select="concat($doc-short-type, '/', $doc-year, '/', $doc-number)" />
+	</xsl:if>
 </xsl:variable>
 
-<xsl:variable name="doc-long-id" as="xs:string">
-	<xsl:value-of select="concat('http://www.legislation.gov.uk/', $doc-short-id)" />
+<xsl:variable name="doc-long-id" as="xs:string?">
+	<xsl:if test="exists($doc-short-id)">
+		<xsl:sequence select="concat('http://www.legislation.gov.uk/', $doc-short-id)" />
+	</xsl:if>
 </xsl:variable>
 
-<xsl:variable name="doc-version" as="xs:string">
+<xsl:variable name="doc-version" as="xs:string?">
 	<xsl:variable name="exp-uri" as="xs:string" select="/akomaNtoso/*/meta/identification/FRBRExpression/FRBRthis/@value" />
-	<xsl:variable name="version" as="xs:string" select="substring-after($exp-uri, concat($doc-short-id, '/'))" />
+	<xsl:variable name="uri-version" as="xs:string" select="tokenize($exp-uri, '/')[last()]" />
 	<xsl:choose>
-		<xsl:when test="$version = ('enacted', 'made', 'adopted')">
-			<xsl:value-of select="$version" />
+		<xsl:when test="$uri-version = ('enacted', 'made', 'adopted')">
+			<xsl:sequence select="$uri-version" />
 		</xsl:when>
-		<xsl:when test="$version castable as xs:date">
-			<xsl:value-of select="$version" />
+		<xsl:when test="$uri-version castable as xs:date">
+			<xsl:sequence select="$uri-version" />
 		</xsl:when>
 		<xsl:when test="$doc-category = 'primary'">
-			<xsl:text>enacted</xsl:text>
+			<xsl:sequence select="'enacted'" />
 		</xsl:when>
 		<xsl:when test="$doc-category = 'secondary'">
-			<xsl:text>made</xsl:text>
+			<xsl:sequence select="'made'" />
 		</xsl:when>
 		<xsl:when test="$doc-category = 'euretained'">
 			<xsl:sequence select="'adopted'" />
 		</xsl:when>
-		<xsl:otherwise>
-			<xsl:sequence select="'unknown'" />
-		</xsl:otherwise>
 	</xsl:choose>
 </xsl:variable>
 

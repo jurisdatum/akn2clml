@@ -29,7 +29,9 @@
 			</DocumentStatus>
 		</DocumentClassification>
 		<Year Value="{ $doc-year }" />
-		<Number Value="{ $doc-number }" />
+		<xsl:if test="exists($doc-number)">
+			<Number Value="{ $doc-number }" />
+		</xsl:if>
 		<xsl:apply-templates select="meta/proprietary/ukm:EUMetadata/ukm:EURLexIdentifiers" />
 		<xsl:apply-templates select="meta/proprietary/ukm:EUMetadata/ukm:EnactmentDate" />
 		<xsl:apply-templates select="meta/proprietary/ukm:EUMetadata/ukm:EURLexModified" />

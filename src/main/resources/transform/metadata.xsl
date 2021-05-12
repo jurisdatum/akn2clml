@@ -23,14 +23,17 @@
 	</xsl:choose>
 </xsl:variable>
 
-
 <xsl:template name="metadata">
 	<Metadata xmlns="http://www.legislation.gov.uk/namespaces/metadata" xmlns:dc="http://purl.org/dc/elements/1.1/">
-		<dc:identifier>
-			<xsl:value-of select="$doc-long-id" />
-			<xsl:text>/</xsl:text>
-			<xsl:value-of select="$doc-version" />
-		</dc:identifier>
+		<xsl:if test="exists($doc-long-id)">
+			<dc:identifier>
+				<xsl:value-of select="$doc-long-id" />
+				<xsl:if test="exists($doc-version)">
+					<xsl:text>/</xsl:text>
+					<xsl:value-of select="$doc-version" />
+				</xsl:if>
+			</dc:identifier>
+		</xsl:if>
 		<dc:title>
 			<xsl:value-of select="$doc-title" />
 		</dc:title>
@@ -70,7 +73,9 @@
 			</DocumentStatus>
 		</DocumentClassification>
 		<Year Value="{ $doc-year }" />
-		<Number Value="{ $doc-number }" />
+		<xsl:if test="exists($doc-number)">
+			<Number Value="{ $doc-number }" />
+		</xsl:if>
 		<EnactmentDate Date="{ $work-date }" />
 		<xsl:for-each select="/akomaNtoso/*/meta/proprietary//ukm:ISBN">
 			<ISBN Value="{ @Value }" />
@@ -98,22 +103,28 @@
 			<DocumentMinorType Value="{ $doc-subtype }" />
 		</DocumentClassification>
 		<Year Value="{ $doc-year }" />
-		<Number Value="{ $doc-number }" />
-		
-		<xsl:variable name="alternative-numbers" as="xs:string*">
-			<xsl:sequence select="$ldapp-doc-subsid-numbers" />
+
+		<xsl:if test="exists($doc-number)">
+			<Number Value="{ $doc-number }" />
+		</xsl:if>
+		<xsl:variable name="lgu-alt-numbers" as="xs:string*">
+			<xsl:sequence select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value[matches(.,'^(C|L|S|W|Cy)\. \d+$')]" />
 		</xsl:variable>
-		<xsl:if test="exists($alternative-numbers)">
-			<xsl:for-each select="$alternative-numbers">
-				<xsl:variable name="parts" as="xs:string*" select="tokenize(., ' ')" />
-				<AlternativeNumber Category="{ $parts[1] }" Value="{ $parts[2] }" />
-			</xsl:for-each>
-		</xsl:if>		
-<!--
- 		<xsl:variable name="sifted" as="element(eventRef)?" select="/akomaNtoso/*/meta/lifecycle/eventRef[@eId = 'date-sifted']" />
-		<xsl:if test="exists($sifted)">
-			<Sifted Date="{ $sifted/@date }" />
-		</xsl:if> -->
+		<xsl:choose>
+			<xsl:when test="exists($lgu-alt-numbers)">
+				<xsl:for-each select="$lgu-alt-numbers">
+					<xsl:variable name="parts" as="xs:string*" select="tokenize(., '\. ')" />
+					<AlternativeNumber Category="{ $parts[1] }" Value="{ $parts[2] }" />
+				</xsl:for-each>
+			</xsl:when>
+			<xsl:when test="exists($ldapp-doc-subsid-numbers)">
+				<xsl:for-each select="$ldapp-doc-subsid-numbers">
+					<xsl:variable name="parts" as="xs:string*" select="tokenize(., ' ')" />
+					<AlternativeNumber Category="{ $parts[1] }" Value="{ $parts[2] }" />
+				</xsl:for-each>
+			</xsl:when>
+		</xsl:choose>
+
 		<xsl:for-each select="/akomaNtoso/*/preface/container[@name='dates']/block[@name=('siftedDate','otherDate')][docDate]">
 			<Sifted>
 				<xsl:attribute name="Date">
