@@ -218,7 +218,12 @@
 
 <xsl:template match="def">
 	<xsl:value-of select="@uk:startQuote" />
-	<xsl:element name="{ if (@ukl:name='Definition') then 'Definition' else 'Term' }">
+	<xsl:element name="{ if (@ukl:Name='Definition') then 'Definition' else 'Term' }">
+		<xsl:if test="exists(@ukl:TermRef)">
+			<xsl:attribute name="TermRef">
+				<xsl:value-of select="@ukl:TermRef" />
+			</xsl:attribute>
+		</xsl:if>
 		<xsl:apply-templates />
 	</xsl:element>
 	<xsl:value-of select="@uk:endQuote" />
@@ -226,6 +231,11 @@
 
 <xsl:template match="term">
 	<Term>
+		<xsl:if test="exists(@eId)">
+			<xsl:attribute name="id">
+				<xsl:value-of select="@eId" />
+			</xsl:attribute>
+		</xsl:if>
 		<xsl:apply-templates />
 	</Term>
 </xsl:template>
