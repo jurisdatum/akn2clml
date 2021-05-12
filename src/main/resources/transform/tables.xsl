@@ -81,44 +81,45 @@
 		</xsl:apply-templates>
 
 		<xsl:variable name="table" as="element(html:table)" select="parent::*" />
-		<xsl:variable name="footnotes-in-table" as="element(authorialNote)*" select="$table/descendant::authorialNote[not(@placement='inline')]" />
-		<xsl:if test="exists($footnotes-in-table)">
+		<xsl:variable name="table-notes" as="element(authorialNote)*" select="$table/descendant::authorialNote[tokenize(@class)='tablenote']" />
+		<xsl:if test="exists($table-notes)">
 			<xsl:variable name="colspan" as="xs:integer" select="if (exists($table/html:colgroup)) then count($table/html:colgroup/html:col) else max($table/descendant::html:tr/count(html:td))" />
-			<xsl:for-each select="$footnotes-in-table" >
-				<tr xmlns="http://www.w3.org/1999/xhtml">
-					<td colspan="{ $colspan }">
-						<xsl:apply-templates select="." mode="footnote" />
-					</td>
-				</tr>
-			</xsl:for-each>
+			<xsl:call-template name="add-rows-for-table-footnotes">
+				<xsl:with-param name="table-notes" select="$table-notes" />
+				<xsl:with-param name="colspan" select="$colspan" />
+			</xsl:call-template>
 		</xsl:if>
-
 	</xsl:copy>
 </xsl:template>
 
-<xsl:function name="local:footnote-appears-in-table" as="xs:boolean">
-	<xsl:param name="note" as="element(authorialNote)" />
-	<xsl:sequence select="exists($note/ancestor::html:table)" />
-</xsl:function>
-
 <xsl:template name="table-footnotes">
 	<xsl:param name="table" as="element(html:table)" />
-	<xsl:variable name="footnotes-in-table" as="element(authorialNote)*" select="$table/descendant::authorialNote[not(@placement='inline')]" />
-	<xsl:if test="exists($footnotes-in-table)">
+	<xsl:variable name="table-notes" as="element(authorialNote)*" select="$table/descendant::authorialNote[tokenize(@class)='tablenote']" />
+	<xsl:if test="exists($table-notes)">
 		<xsl:variable name="colspan" as="xs:integer" select="if (exists($table/html:colgroup)) then count($table/html:colgroup/html:col) else max($table/descendant::html:tr/count(html:td))" />
 		<tfoot xmlns="http://www.w3.org/1999/xhtml">
-			<xsl:for-each select="$footnotes-in-table" >
-				<tr>
-					<td colspan="{ $colspan }">
-						<xsl:apply-templates select="." mode="footnote" />
-					</td>
-				</tr>
-			</xsl:for-each>
+			<xsl:call-template name="add-rows-for-table-footnotes">
+				<xsl:with-param name="table-notes" select="$table-notes" />
+				<xsl:with-param name="colspan" select="$colspan" />
+			</xsl:call-template>
 		</tfoot>
 	</xsl:if>
 </xsl:template>
 
-<xsl:template match="html:tfoot//authorialNote[@ukl:Name='Footnote'][@placement='inline']">
+<xsl:template name="add-rows-for-table-footnotes">
+	<xsl:param name="table-notes" as="element(authorialNote)*" />
+	<xsl:param name="colspan" as="xs:integer" />
+	<xsl:for-each select="$table-notes" >
+		<tr>
+			<td colspan="{ $colspan }">
+				<xsl:apply-templates select="." mode="footnote" />
+			</td>
+		</tr>
+	</xsl:for-each>
+</xsl:template>
+
+<!-- orphan table footnotes -->
+<xsl:template match="html:tfoot//authorialNote[@placement='inline']">
 	<xsl:apply-templates select="." mode="footnote" />
 </xsl:template>
 

@@ -11,8 +11,7 @@
 	exclude-result-prefixes="xs uk html local">
 
 <xsl:variable name="all-footnotes" as="element()*">
-	<xsl:sequence select="//authorialNote[tokenize(@class,' ')='footnote']" />
-	<xsl:sequence select="//html:tfoot//authorialNote[@placement='inline']" />
+	<xsl:sequence select="//authorialNote[tokenize(@class)=('footnote','tablenote')]" />
 </xsl:variable>
 
 <xsl:function name="local:make-footnote-id" as="xs:string">
@@ -22,23 +21,24 @@
 	<xsl:sequence select="concat('f', format-number($num,'00000'))" />
 </xsl:function>
 
-<xsl:function name="local:make-footnote-id-2" as="xs:string">
+<xsl:function name="local:make-footnote-id-2" as="xs:string?">
 	<xsl:param name="ref" as="element(noteRef)" />
 	<xsl:variable name="note" as="element(authorialNote)?" select="key('id', substring($ref/@href, 2), root($ref))" />
-	<xsl:sequence select="local:make-footnote-id($note)" />
+	<xsl:if test="exists($note)">
+		<xsl:sequence select="local:make-footnote-id($note)" />
+	</xsl:if>
 </xsl:function>
 
-<xsl:template match="authorialNote[@uk:name='footnote' or tokenize(@class,' ')='footnote']">
+<xsl:template match="authorialNote[tokenize(@class)=('footnote','tablenote')]">
 	<FootnoteRef Ref="{ local:make-footnote-id(.) }" />
 </xsl:template>
 
-<xsl:template match="noteRef[@uk:name='footnote' or tokenize(@class,' ')='footnote']">
+<xsl:template match="noteRef[tokenize(@class)=('footnote','tablenote')]">
 	<FootnoteRef Ref="{ local:make-footnote-id-2(.) }" />
 </xsl:template>
 
 <xsl:template name="footnotes">
-	<xsl:variable name="bottom-footnotes" as="element()*" select="//authorialNote[@uk:name='footnote' or tokenize(@class,' ')='footnote'][not(local:footnote-appears-in-table(.))][not(@placement='inline')]" />
-	<!-- not(@placement='inline') is not currently necessary. They are for table footnotes without references. But included here b/c @class test may not always be reliable. -->
+	<xsl:variable name="bottom-footnotes" as="element(authorialNote)*" select="$all-footnotes[tokenize(@class)='footnote']" />
 	<xsl:if test="exists($bottom-footnotes)">
 		<Footnotes>
 			<xsl:apply-templates select="$bottom-footnotes" mode="footnote" />
