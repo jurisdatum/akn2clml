@@ -195,9 +195,7 @@
 
 <xsl:template match="block[@name=('laidDraft','laidInDraft')]">
 	<LaidDraft>
-		<Text>
-			<xsl:apply-templates />
-		</Text>
+		<xsl:apply-templates />
 	</LaidDraft>
 </xsl:template>
 
