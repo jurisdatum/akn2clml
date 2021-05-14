@@ -108,7 +108,7 @@
 			<Number Value="{ $doc-number }" />
 		</xsl:if>
 		<xsl:variable name="lgu-alt-numbers" as="xs:string*">
-			<xsl:sequence select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value[matches(.,'^(C|L|S|W|Cy)\. \d+$')]" />
+			<xsl:sequence select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRnumber/@value[matches(.,'^(C|L|S|NI|W|Cy)\. \d+$')]" />
 		</xsl:variable>
 		<xsl:choose>
 			<xsl:when test="exists($lgu-alt-numbers)">

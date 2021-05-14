@@ -134,7 +134,7 @@ Other
 <xsl:variable name="ldapp-doc-subsid-numbers" as="xs:string*">
 	<xsl:variable name="subsid-nos" as="attribute()?" select="key('tlc', 'varSISubsidiaryNos')/@showAs" />
 	<xsl:if test="exists($subsid-nos)">
-		<xsl:analyze-string select="$subsid-nos" regex="\((C|W)\. ?(\d+)\)">
+		<xsl:analyze-string select="$subsid-nos" regex="\(([A-Za-z])\. ?(\d+)\)">
 			<xsl:matching-substring>
 				<xsl:sequence select="concat(regex-group(1), ' ', regex-group(2))" />
 			</xsl:matching-substring>
