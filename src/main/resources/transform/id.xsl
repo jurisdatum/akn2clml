@@ -290,6 +290,9 @@
 			<xsl:when test="$e/self::akomaNtoso">
 				<xsl:sequence select="false()" />
 			</xsl:when>
+			<xsl:when test="$e/parent::akomaNtoso">
+				<xsl:sequence select="false()" />
+			</xsl:when>
 			<xsl:when test="$e/self::act">
 				<xsl:sequence select="local:element-id-is-necessary($e)" />
 			</xsl:when>
