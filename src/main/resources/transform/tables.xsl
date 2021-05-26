@@ -81,7 +81,7 @@
 		</xsl:apply-templates>
 
 		<xsl:variable name="table" as="element(html:table)" select="parent::*" />
-		<xsl:variable name="table-notes" as="element(authorialNote)*" select="$table/descendant::authorialNote[tokenize(@class)='tablenote']" />
+		<xsl:variable name="table-notes" as="element(authorialNote)*" select="$table/descendant::authorialNote[tokenize(@class,' ')='tablenote']" />
 		<xsl:if test="exists($table-notes)">
 			<xsl:variable name="colspan" as="xs:integer" select="if (exists($table/html:colgroup)) then count($table/html:colgroup/html:col) else max($table/descendant::html:tr/count(html:td))" />
 			<xsl:call-template name="add-rows-for-table-footnotes">
@@ -94,7 +94,7 @@
 
 <xsl:template name="table-footnotes">
 	<xsl:param name="table" as="element(html:table)" />
-	<xsl:variable name="table-notes" as="element(authorialNote)*" select="$table/descendant::authorialNote[tokenize(@class)='tablenote']" />
+	<xsl:variable name="table-notes" as="element(authorialNote)*" select="$table/descendant::authorialNote[tokenize(@class,' ')='tablenote']" />
 	<xsl:if test="exists($table-notes)">
 		<xsl:variable name="colspan" as="xs:integer" select="if (exists($table/html:colgroup)) then count($table/html:colgroup/html:col) else max($table/descendant::html:tr/count(html:td))" />
 		<tfoot xmlns="http://www.w3.org/1999/xhtml">

@@ -11,7 +11,7 @@
 	exclude-result-prefixes="xs uk html local">
 
 <xsl:variable name="all-footnotes" as="element()*">
-	<xsl:sequence select="//authorialNote[tokenize(@class)=('footnote','tablenote')]" />
+	<xsl:sequence select="//authorialNote[tokenize(@class,' ')=('footnote','tablenote')]" />
 </xsl:variable>
 
 <xsl:function name="local:make-footnote-id" as="xs:string">
@@ -29,16 +29,16 @@
 	</xsl:if>
 </xsl:function>
 
-<xsl:template match="authorialNote[tokenize(@class)=('footnote','tablenote')]">
+<xsl:template match="authorialNote[tokenize(@class,' ')=('footnote','tablenote')]">
 	<FootnoteRef Ref="{ local:make-footnote-id(.) }" />
 </xsl:template>
 
-<xsl:template match="noteRef[tokenize(@class)=('footnote','tablenote')]">
+<xsl:template match="noteRef[tokenize(@class,' ')=('footnote','tablenote')]">
 	<FootnoteRef Ref="{ local:make-footnote-id-2(.) }" />
 </xsl:template>
 
 <xsl:template name="footnotes">
-	<xsl:variable name="bottom-footnotes" as="element(authorialNote)*" select="$all-footnotes[tokenize(@class)='footnote']" />
+	<xsl:variable name="bottom-footnotes" as="element(authorialNote)*" select="$all-footnotes[tokenize(@class,' ')='footnote']" />
 	<xsl:if test="exists($bottom-footnotes)">
 		<Footnotes>
 			<xsl:apply-templates select="$bottom-footnotes" mode="footnote" />
