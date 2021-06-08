@@ -103,6 +103,10 @@
 	( 'uksi', 'wsi', 'ssi', 'nisi', 'nisr', 'ukci', 'ukmd', 'ukmo', 'uksro', 'nisro', 'ukdpb', 'ukdsi', 'sdsi', 'nidsr' )
 " />
 
+<xsl:variable name="draft-secondary-short-types" as="xs:string*" select="
+	( 'ukdpb', 'ukdsi', 'sdsi', 'nidsr' )
+" />
+
 <xsl:variable name="eu-short-types" as="xs:string*" select="
 	( 'eur', 'eudn', 'eudr', 'eut' )
 " />

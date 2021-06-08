@@ -91,6 +91,9 @@
 			<DocumentStatus>
 				<xsl:attribute name="Value">
 					<xsl:choose>
+						<xsl:when test="$doc-short-type = $draft-secondary-short-types">
+							<xsl:text>draft</xsl:text>
+						</xsl:when>
 						<xsl:when test="$doc-version = 'made'">
 							<xsl:text>final</xsl:text>
 						</xsl:when>
