@@ -35,6 +35,9 @@
 		<xsl:when test="every $item in $items satisfies matches($item/num, '—')">
 			<xsl:sequence select="false()" />
 		</xsl:when>
+		<xsl:when test="every $item in $items satisfies matches($item/num, '-')">
+			<xsl:sequence select="false()" />
+		</xsl:when>
 		<xsl:otherwise>
 			<xsl:sequence select="true()" />
 		</xsl:otherwise>
@@ -69,7 +72,7 @@
 		<xsl:when test="every $num in $nums satisfies $num = '•'">
 			<xsl:sequence select="'bullet'" />
 		</xsl:when>
-		<xsl:when test="every $num in $nums satisfies $num = '—'">
+		<xsl:when test="every $num in $nums satisfies $num = ('—','-')">
 			<xsl:sequence select="'dash'" />
 		</xsl:when>
 		<xsl:otherwise>
