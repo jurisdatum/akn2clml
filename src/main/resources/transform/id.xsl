@@ -21,12 +21,9 @@
 	<xsl:sequence select="$ref-to-id-exists or $ref-to-guid-exists" />
 </xsl:function>
 
-<xsl:variable name="elements-whose-ids-are-necessary" as="element()*" select="//*[local:element-id-is-necessary(.)]" />
-
 <xsl:function name="local:make-necessary-id" as="xs:string">
 	<xsl:param name="e" as="element()" />
-	<xsl:variable name="index" as="xs:integer?" select="local:get-first-index-of-node($e, $elements-whose-ids-are-necessary)" />
-	<xsl:variable name="num" as="xs:integer" select="if (exists($index)) then $index else 0" />
+	<xsl:variable name="num" as="xs:integer" select="count($e/preceding::*)" />
 	<xsl:sequence select="concat('p', format-number($num,'00000'))" />
 </xsl:function>
 
@@ -328,18 +325,18 @@
 			<xsl:when test="$e/self::preface">
 				<xsl:sequence select="local:element-id-is-necessary($e)" />
 			</xsl:when>
+			<xsl:when test="exists($e/ancestor::quotedStructure) or exists($e/ancestor::embeddedStructure)">
+				<xsl:sequence select="local:element-id-is-necessary($e)" />
+			</xsl:when>
 			<xsl:when test="$e/self::hcontainer/@name='crossheading'">
 				<xsl:choose>
 					<xsl:when test="local:crossheading-is-p1group(.)">
-						<xsl:sequence select="local:element-id-is-necessary($e)" />
+						<xsl:sequence select="true()" />
 					</xsl:when>
 					<xsl:otherwise>
-						<xsl:sequence select="true()" />
+						<xsl:sequence select="local:element-id-is-necessary($e)" />
 					</xsl:otherwise>
 				</xsl:choose>
-			</xsl:when>
-			<xsl:when test="exists($e/ancestor::quotedStructure) or exists($e/ancestor::embeddedStructure)">
-				<xsl:sequence select="local:element-id-is-necessary($e)" />
 			</xsl:when>
 			<xsl:when test="$e/self::hcontainer[@name='schedules']">
 				<xsl:sequence select="local:element-id-is-necessary($e)" />
