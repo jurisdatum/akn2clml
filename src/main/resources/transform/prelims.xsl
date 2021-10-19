@@ -190,6 +190,9 @@
 <xsl:template match="block[@name='madeDate']">
 	<MadeDate>
 		<xsl:apply-templates />
+		<xsl:if test="empty(docDate)">
+			<DateText />
+		</xsl:if>
 	</MadeDate>
 </xsl:template>
 
