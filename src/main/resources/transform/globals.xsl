@@ -158,19 +158,19 @@
 	</xsl:variable>
 	<!-- order, regulation, rule, scheme, resolution, unknown -->
 	<xsl:choose>
-		<xsl:when test="$value = ('order')">
+		<xsl:when test="$value = ('order', 'Order', 'Order in Council')">
 			<xsl:sequence select="'order'" />
 		</xsl:when>
 		<xsl:when test="$value = ('regulation', 'Regulations')">
 			<xsl:sequence select="'regulation'" />
 		</xsl:when>
-		<xsl:when test="$value = ('rule')">
+		<xsl:when test="$value = ('rule', 'Rules')">
 			<xsl:sequence select="'rule'" />
 		</xsl:when>
-		<xsl:when test="$value = ('scheme')">
+		<xsl:when test="$value = ('scheme', 'Scheme')">
 			<xsl:sequence select="'scheme'" />
 		</xsl:when>
-		<xsl:when test="$value = ('resolution')">
+		<xsl:when test="$value = ('resolution', 'Resolution', 'Resolution (of Parliament)')">
 			<xsl:sequence select="'resolution'" />
 		</xsl:when>
 		<xsl:otherwise>
