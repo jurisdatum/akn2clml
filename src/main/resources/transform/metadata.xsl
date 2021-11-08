@@ -131,13 +131,18 @@
 		<xsl:for-each select="/akomaNtoso/*/preface/container[@name='dates']/block[@name=('siftedDate','otherDate')][docDate]">
 			<Sifted>
 				<xsl:attribute name="Date">
-					<xsl:value-of select="substring(docDate/@date, 1, 10)" />	<!-- for LDAPP -->
+					<xsl:value-of select="substring(docDate/@date, 1, 10)" />
 				</xsl:attribute>
+				<xsl:if test="docDate/@date castable as xs:dateTime">
+					<xsl:attribute name="Time">
+						<xsl:value-of select="xs:time(xs:dateTime(docDate/@date))"/>
+					</xsl:attribute>
+				</xsl:if>
 			</Sifted>
 		</xsl:for-each>
 
 		<Made>
-			<xsl:attribute name="Date">
+			<xsl:variable name="made-date">
 				<xsl:choose>
 					<xsl:when test="exists($ldapp-made-date)">
 						<xsl:sequence select="$ldapp-made-date" />
@@ -146,14 +151,27 @@
 						<xsl:sequence select="$work-date" />
 					</xsl:otherwise>
 				</xsl:choose>
+			</xsl:variable>
+			<xsl:attribute name="Date">
+				<xsl:value-of select="substring($made-date, 1, 10)" />
 			</xsl:attribute>
+			<xsl:if test="$made-date castable as xs:dateTime">
+				<xsl:attribute name="Time">
+					<xsl:value-of select="xs:time(xs:dateTime($made-date))"/>
+				</xsl:attribute>
+			</xsl:if>
 		</Made>
 
 		<xsl:for-each select="/akomaNtoso/*/preface/container[@name='dates']/block[@name='laidDate'][docDate]">
 			<Laid>
 				<xsl:attribute name="Date">
-					<xsl:value-of select="substring(docDate/@date, 1, 10)" />	<!-- for LDAPP -->
+					<xsl:value-of select="substring(docDate/@date, 1, 10)" />
 				</xsl:attribute>
+				<xsl:if test="docDate/@date castable as xs:dateTime">
+					<xsl:attribute name="Time">
+						<xsl:value-of select="xs:time(xs:dateTime(docDate/@date))"/>
+					</xsl:attribute>
+				</xsl:if>
 				<xsl:attribute name="Class">
 					<xsl:variable name="event-ref" as="element(eventRef)?" select="key('id', substring(@refersTo, 2))" />
 					<xsl:variable name="source" as="element(TLCOrganization)?" select="key('id', substring($event-ref/@source, 2))" />
@@ -178,14 +196,24 @@
 			</Laid>
 		</xsl:for-each>
 
-		<xsl:variable name="cif-dates" as="element(eventRef)*" select="/akomaNtoso/*/meta/lifecycle/eventRef[starts-with(@eId, 'date-cif')]" />
+ 		<xsl:variable name="cif-dates" as="element(block)*" select="/akomaNtoso/*/preface/container[@name='dates']/block[@name='commenceDate'][docDate]" />
 		<xsl:if test="exists($cif-dates)">
 			<ComingIntoForce>
 				<xsl:for-each select="$cif-dates">
-					<DateTime Date="{ @date }" />
+					<DateTime>
+						<xsl:attribute name="Date">
+							<xsl:value-of select="substring(docDate/@date, 1, 10)" />
+						</xsl:attribute>
+						<xsl:if test="docDate/@date castable as xs:dateTime">
+							<xsl:attribute name="Time">
+								<xsl:value-of select="xs:time(xs:dateTime(docDate/@date))"/>
+							</xsl:attribute>
+						</xsl:if>
+					</DateTime>
 				</xsl:for-each>
 			</ComingIntoForce>
 		</xsl:if>
+
 		<xsl:for-each select="/akomaNtoso/*/meta/proprietary//ukm:ISBN">
 			<ISBN Value="{ @Value }" />
 		</xsl:for-each>

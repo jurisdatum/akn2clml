@@ -184,12 +184,16 @@ Other
 	<xsl:sequence select="$ldapp-assent-date" />
 </xsl:variable>
 
-<xsl:variable name="ldapp-made-date" as="xs:date?">
+<xsl:variable name="ldapp-made-date">
 	<xsl:variable name="var-made-date" as="attribute()?" select="key('tlc', 'varMadeDate')/@showAs" />
-	<xsl:variable name="substring" as="xs:string" select="substring($var-made-date, 1, 10)" />
-	<xsl:if test="$substring castable as xs:date">
-		<xsl:sequence select="xs:date($substring)" />
-	</xsl:if>
+	<xsl:choose>
+		<xsl:when test="$var-made-date castable as xs:date">
+			<xsl:sequence select="xs:date($var-made-date)" />
+		</xsl:when>
+		<xsl:when test="$var-made-date castable as xs:dateTime">
+			<xsl:sequence select="xs:dateTime($var-made-date)" />
+		</xsl:when>
+	</xsl:choose>
 </xsl:variable>
 
 
