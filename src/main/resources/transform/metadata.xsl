@@ -10,16 +10,18 @@
 	xmlns:local="http://www.jurisdatum.com/tna/akn2clml"
 	exclude-result-prefixes="xs ukl ukm uk local">
 
-<xsl:variable name="work-date" as="xs:date">
-	<xsl:variable name="raw" as="xs:string" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRdate[1]/@date" />
-	<xsl:variable name="frbr" as="xs:date" select="xs:date(substring($raw, 1, 10))" />
+<xsl:variable name="work-date" as="item()?">
+	<xsl:variable name="frbr" as="xs:string" select="/akomaNtoso/*/meta/identification/FRBRWork/FRBRdate[1]/@date" />
 	<xsl:choose>
-		<xsl:when test="starts-with(string($frbr), '9999-') and exists($ldapp-work-date)">
-			<xsl:sequence select="$ldapp-work-date" />
+		<xsl:when test="starts-with(string($frbr), '9999-')">
+			<xsl:sequence select="()" />
 		</xsl:when>
-		<xsl:otherwise>
-			<xsl:sequence select="$frbr" />
-		</xsl:otherwise>
+		<xsl:when test="$frbr castable as xs:date">
+			<xsl:sequence select="xs:date($frbr)" />
+		</xsl:when>
+		<xsl:when test="$frbr castable as xs:dateTime">
+			<xsl:sequence select="xs:dateTime($frbr)" />
+		</xsl:when>
 	</xsl:choose>
 </xsl:variable>
 
@@ -141,26 +143,28 @@
 			</Sifted>
 		</xsl:for-each>
 
-		<Made>
-			<xsl:variable name="made-date">
-				<xsl:choose>
-					<xsl:when test="exists($ldapp-made-date)">
-						<xsl:sequence select="$ldapp-made-date" />
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:sequence select="$work-date" />
-					</xsl:otherwise>
-				</xsl:choose>
-			</xsl:variable>
-			<xsl:attribute name="Date">
-				<xsl:value-of select="substring($made-date, 1, 10)" />
-			</xsl:attribute>
-			<xsl:if test="$made-date castable as xs:dateTime">
-				<xsl:attribute name="Time">
-					<xsl:value-of select="xs:time(xs:dateTime($made-date))"/>
+		<xsl:if test="exists($ldapp-made-date) or exists($work-date)">
+			<Made>
+				<xsl:variable name="made-date">
+					<xsl:choose>
+						<xsl:when test="exists($ldapp-made-date)">
+							<xsl:sequence select="$ldapp-made-date" />
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:sequence select="$work-date" />
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+				<xsl:attribute name="Date">
+					<xsl:value-of select="substring($made-date, 1, 10)" />
 				</xsl:attribute>
-			</xsl:if>
-		</Made>
+				<xsl:if test="$made-date instance of xs:dateTime">
+					<xsl:attribute name="Time">
+						<xsl:value-of select="xs:time($made-date)"/>
+					</xsl:attribute>
+				</xsl:if>
+			</Made>
+		</xsl:if>
 
 		<xsl:for-each select="/akomaNtoso/*/preface/container[@name='dates']/block[@name='laidDate'][docDate]">
 			<Laid>

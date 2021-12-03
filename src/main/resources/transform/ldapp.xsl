@@ -184,7 +184,7 @@ Other
 	<xsl:sequence select="$ldapp-assent-date" />
 </xsl:variable>
 
-<xsl:variable name="ldapp-made-date">
+<xsl:variable name="ldapp-made-date" as="item()?">
 	<xsl:variable name="var-made-date" as="attribute()?" select="key('tlc', 'varMadeDate')/@showAs" />
 	<xsl:choose>
 		<xsl:when test="$var-made-date castable as xs:date">
