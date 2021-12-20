@@ -78,7 +78,7 @@
 		<xsl:if test="exists($doc-number)">
 			<Number Value="{ $doc-number }" />
 		</xsl:if>
-		<EnactmentDate Date="{ $work-date }" />
+		<EnactmentDate Date="{ if (exists($work-date)) then substring($work-date, 1, 10) else $ldapp-assent-date }" />
 		<xsl:for-each select="/akomaNtoso/*/meta/proprietary//ukm:ISBN">
 			<ISBN Value="{ @Value }" />
 		</xsl:for-each>
