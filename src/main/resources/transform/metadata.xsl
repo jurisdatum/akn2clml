@@ -78,7 +78,7 @@
 		<xsl:if test="exists($doc-number)">
 			<Number Value="{ $doc-number }" />
 		</xsl:if>
-		<EnactmentDate Date="{ if (exists($work-date)) then substring($work-date, 1, 10) else $ldapp-assent-date }" />
+		<EnactmentDate Date="{ if (exists($work-date)) then substring(string($work-date), 1, 10) else $ldapp-assent-date }" />
 		<xsl:for-each select="/akomaNtoso/*/meta/proprietary//ukm:ISBN">
 			<ISBN Value="{ @Value }" />
 		</xsl:for-each>
@@ -156,7 +156,7 @@
 					</xsl:choose>
 				</xsl:variable>
 				<xsl:attribute name="Date">
-					<xsl:value-of select="substring($made-date, 1, 10)" />
+					<xsl:value-of select="substring(string($made-date), 1, 10)" />
 				</xsl:attribute>
 				<xsl:if test="$made-date instance of xs:dateTime">
 					<xsl:attribute name="Time">
