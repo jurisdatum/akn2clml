@@ -180,10 +180,6 @@ Other
 
 <xsl:variable name="ldapp-assent-date" as="xs:date?" select="key('tlc', 'varAssentDate')/@showAs" />	<!-- [. castable as xs:date] -->
 
-<xsl:variable name="ldapp-work-date" as="xs:date?">
-	<xsl:sequence select="$ldapp-assent-date" />
-</xsl:variable>
-
 <xsl:variable name="ldapp-made-date" as="item()?">
 	<xsl:variable name="var-made-date" as="attribute()?" select="key('tlc', 'varMadeDate')/@showAs" />
 	<xsl:choose>

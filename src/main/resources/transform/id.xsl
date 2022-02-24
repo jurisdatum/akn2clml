@@ -60,7 +60,8 @@
 <xsl:function name="local:make-id-from-heading" as="xs:string">
 	<xsl:param name="prefix" as="xs:string" />
 	<xsl:param name="heading" as="element(heading)" />
-	<xsl:sequence select="concat($prefix, '-', translate(lower-case(normalize-space($heading)), '/ ():.,‘’“”''&quot;', '--'))" />
+	<xsl:variable name="fixed" as="xs:string" select="translate($heading, '&#8199;', ' ')" />
+	<xsl:sequence select="concat($prefix, '-', translate(lower-case(normalize-space($fixed)), '/ ():.,‘’“”''&quot;', '--'))" />
 </xsl:function>
 
 <xsl:function name="local:make-id-for-crossheading" as="xs:string">
