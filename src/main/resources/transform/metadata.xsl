@@ -364,9 +364,12 @@
 
 <xsl:template name="add-fragment-attributes">
 	<xsl:param name="from" as="element()" select="." />
-	<xsl:call-template name="add-id-if-necessary">
-		<xsl:with-param name="e" select="$from" />
-	</xsl:call-template>
+	<xsl:param name="including-id" as="xs:boolean" select="true()" />
+	<xsl:if test="$including-id">
+		<xsl:call-template name="add-id-if-necessary">
+			<xsl:with-param name="e" select="$from" />
+		</xsl:call-template>
+	</xsl:if>
 	<xsl:call-template name="add-restrict-extent-attr">
 		<xsl:with-param name="from" select="$from" />
 	</xsl:call-template>

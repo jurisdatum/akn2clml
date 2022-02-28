@@ -281,8 +281,11 @@
 </xsl:function>
 
 <xsl:template name="add-structure-attributes">
+	<xsl:param name="including-id" as="xs:boolean" select="true()" />
 	<xsl:call-template name="alt-version-refs" />
-	<xsl:call-template name="add-fragment-attributes" />
+	<xsl:call-template name="add-fragment-attributes">
+		<xsl:with-param name="including-id" select="$including-id" />
+	</xsl:call-template>
 </xsl:template>
 
 <xsl:template name="big-level">
@@ -490,11 +493,14 @@
 	<xsl:choose>
 		<xsl:when test="exists(heading) and exists(num)">
 			<P1group>
-				<xsl:call-template name="add-structure-attributes" />
+				<xsl:call-template name="add-structure-attributes">
+					<xsl:with-param name="including-id" select="false()" />
+				</xsl:call-template>
 				<xsl:apply-templates select="heading | subheading">
 					<xsl:with-param name="context" select="('P1group', $context)" tunnel="yes" />
 				</xsl:apply-templates>
 				<P1>
+					<xsl:call-template name="add-id-if-necessary" />
 					<xsl:apply-templates select="num">
 						<xsl:with-param name="context" select="('P1', 'P1group', $context)" tunnel="yes" />
 					</xsl:apply-templates>
@@ -506,7 +512,8 @@
 		</xsl:when>
 		<xsl:when test="exists(num)">
 			<P1>
-				<xsl:call-template name="add-structure-attributes" />
+				<!-- <xsl:call-template name="add-structure-attributes" /> -->
+				<xsl:call-template name="add-id-if-necessary" />
 				<xsl:apply-templates select="num">
 					<xsl:with-param name="context" select="('P1', $context)" tunnel="yes" />
 				</xsl:apply-templates>
@@ -545,11 +552,14 @@
 		<xsl:choose>
 			<xsl:when test="exists(heading)">
 				<P2group>
-					<xsl:call-template name="add-structure-attributes" />
+					<xsl:call-template name="add-structure-attributes">
+						<xsl:with-param name="including-id" select="false()" />
+					</xsl:call-template>
 					<xsl:apply-templates select="heading | subheading">
 						<xsl:with-param name="context" select="('P2group', $context)" tunnel="yes" />
 					</xsl:apply-templates>
 					<P2>
+						<xsl:call-template name="add-id-if-necessary" />
 						<xsl:apply-templates select="num">
 							<xsl:with-param name="context" select="('P2', 'P2group', $context)" tunnel="yes" />
 						</xsl:apply-templates>
