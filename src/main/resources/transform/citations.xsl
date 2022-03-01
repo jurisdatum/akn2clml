@@ -99,6 +99,10 @@
 	</xsl:choose>
 </xsl:function>
 
+<xsl:template match="ref[@class='ignore']">
+	<xsl:apply-templates />
+</xsl:template>
+
 <xsl:template match="ref">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<xsl:variable name="components" as="element()?" select="local:parse-uri(@href)" />
