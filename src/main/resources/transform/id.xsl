@@ -140,7 +140,7 @@
 				</xsl:choose>
 			</xsl:variable>
 			<xsl:choose>
-				<xsl:when test="exists($e/parent::Part) or local:akn-is-within-schedule($e)">
+				<xsl:when test="exists($e/parent::part) or local:akn-is-within-schedule($e)">
 					<xsl:variable name="parent" as="element()" select="$e/parent::*" />
 					<xsl:variable name="parent-id" as="xs:string" select="local:make-internal-id($parent)" />
 					<xsl:sequence select="concat($parent-id, '-', $id)" />
