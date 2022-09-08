@@ -86,19 +86,19 @@
 	</Department>
 </xsl:template>
 
-<xsl:template match="blockContainer[@class='address']">
+<xsl:template match="blockContainer[@class='address'] | tblock[@class='address']">
 	<Address>
 		<xsl:apply-templates />
 	</Address>
 </xsl:template>
 
-<xsl:template match="blockContainer[@class='address']/p">
+<xsl:template match="blockContainer[@class='address']/p | tblock[@class='address']/block">
 	<AddressLine>
 		<xsl:apply-templates />
 	</AddressLine>
 </xsl:template>
 
-<xsl:template match="block[@name='location']">
+<xsl:template match="block[@name='location'][not(parent::tblock[@class='address'])]"><!-- for old LDAPP documents -->
 	<Address>
 		<AddressLine>
 			<xsl:apply-templates />
