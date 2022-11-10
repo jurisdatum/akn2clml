@@ -17,10 +17,34 @@
 <xsl:template match="blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes')]">
 	<xsl:param name="context" as="xs:string*" tunnel="yes" />
 	<ExplanatoryNotes>
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="('ExplanatoryNotes', $context)" tunnel="yes" />
-		</xsl:apply-templates>
+		<xsl:choose>
+			<xsl:when test="exists(tblock[@class='para1']) and (every $child in * satisfies $child[self::heading or self::subheading or self::p or self::tblock[@class='para1']])">
+				<xsl:call-template name="fix-explanatory-note" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="('ExplanatoryNotes', $context)" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:otherwise>
+		</xsl:choose>
 	</ExplanatoryNotes>
+</xsl:template>
+
+<xsl:template name="fix-explanatory-note">
+	<xsl:param name="context" as="xs:string*" tunnel="yes" />
+	<xsl:apply-templates select="heading | subheading">
+		<xsl:with-param name="context" select="('ExplanatoryNotes', $context)" tunnel="yes" />
+	</xsl:apply-templates>
+	<xsl:for-each-group select="* except (heading, subheading)" group-starting-with="p">
+		<P>
+			<xsl:apply-templates select="current-group()[1]">
+				<xsl:with-param name="context" select="('P', 'ExplanatoryNotes', $context)" tunnel="yes" />
+			</xsl:apply-templates>
+			<xsl:apply-templates select="subsequence(current-group(), 2)">
+				<xsl:with-param name="context" select="('P', 'ExplanatoryNotes', $context)" tunnel="yes" />
+			</xsl:apply-templates>
+		</P>
+	</xsl:for-each-group>
 </xsl:template>
 
 <xsl:template match="blockContainer[tokenize(@class, ' ')=('explanatoryNote','explanatoryNotes')]/subheading" name="en-comment">
