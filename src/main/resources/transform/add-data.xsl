@@ -58,13 +58,13 @@
 	<xsl:variable name="doc-type" as="xs:string?" select="/ukl:Legislation/Metadata/*/DocumentClassification/DocumentMainType/@Value" />
 	<xsl:choose>
 		<xsl:when test="$doc-type = 'UnitedKingdomPublicGeneralAct'">
-			<xsl:text>Queen's Printer of Acts of Parliament</xsl:text>
+			<xsl:text>King's Printer of Acts of Parliament</xsl:text>
 		</xsl:when>
 		<xsl:when test="$doc-type = 'ScottishAct'">
-			<xsl:text>Queen's Printer for Scotland</xsl:text>
+			<xsl:text>King's Printer for Scotland</xsl:text>
 		</xsl:when>
 		<xsl:when test="$doc-type = 'UnitedKingdomStatutoryInstrument'">
-			<xsl:text>Queen's Printer of Acts of Parliament</xsl:text>
+			<xsl:text>King's Printer of Acts of Parliament</xsl:text>
 		</xsl:when>
 	</xsl:choose>
 </xsl:variable>
